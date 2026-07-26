@@ -1,0 +1,12 @@
+/*!
+ * stagger-button.css v1.0.0
+ * Behavioural CSS for js/components/stagger-button.js — clips the staggering
+ * characters and provides the positioning context for the cloned label.
+ * No visual design here; colors/typography stay in Webflow Designer.
+ */
+
+[stagger-up-animate] .text-wrap {
+  position: relative;
+  display: inline-block;
+  overflow: clip;
+}

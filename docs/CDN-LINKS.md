@@ -14,8 +14,9 @@ Base URL: `https://cdn.jsdelivr.net/gh/roicool/marveltour@main/`
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@barba/core@2.10.3/dist/barba.umd.min.js" defer></script>
 
 <!-- Yalnız dokunmatik carousel gereken sayfalarda -->
@@ -36,20 +37,21 @@ Her sayfada, bu sırayla:
 
 ## JS — Components / Effects / Animations
 
-*(Henüz modül yok — eklendikçe buraya yazılır.)*
-
 ```html
-<!-- <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/<name>.js" defer></script> -->
+<!-- stagger-button v1.0.0 — buton hover'ında karakter bazlı text swap (gsap + SplitText gerekir) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/stagger-button.js" defer></script>
+
 <!-- <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/effects/<name>.js" defer></script> -->
 <!-- <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/<name>.js" defer></script> -->
 ```
 
 ## CSS
 
-*(Henüz modül CSS'i yok — yalnız sayfada kullanılan modüllerin CSS'i yüklenir.)*
+Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 
 ```html
-<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/<kategori>/<name>.css"> -->
+<!-- stagger-button -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stagger-button.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -57,12 +59,13 @@ Her sayfada, bu sırayla:
 ```html
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger, SplitText);
     Marveltour.initLenis();
     Marveltour.initBarba({
       logo: 'Marveltour', // veya SVG string / logo URL'i
       onEach: function (container) {
         // sayfa modüllerinin init'leri buraya — hepsi container-scoped
+        Marveltour.initStaggerButton(container);
       }
     });
   });
