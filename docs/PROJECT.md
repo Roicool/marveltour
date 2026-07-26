@@ -139,6 +139,8 @@ alanlarına yazılır.
     /* Sayfa katmanı — ilk yüklemede VE her Barba geçişinde yeniden kurulur.
        Barba yüklü değilse onEach(document) bir kez çalışır (fallback). */
     Marveltour.initBarba({
+      logo: 'Marveltour', // veya SVG string / logo URL'i; sayfada
+                          // [data-transition-logo] template'i varsa gerekmez
       onEach: function (container) {
         // sayfa modüllerinin init'leri buraya — hepsi container parametresi almalı
         // örn. Marveltour.initFoo(container);
@@ -214,18 +216,30 @@ Barba, sayfa geçişinde yalnız `[data-barba="container"]` içini değiştirir;
 bir daha ateşlenmez ve eski sayfanın ScrollTrigger'ları kendiliğinden ölmez. Bu yüzden
 tüm yaşam döngüsü `js/core/barba-init.js`'te merkezi yönetilir:
 
+Geçiş: **"Cover + Logo Flash"** — panel alttan yukarı ekranı kapatır, ortada kısa bir
+marka anı (logo), panel aynı yönde devam ederek açılır. Container'ın kendisi HİÇ
+anime edilmez → container'a hiç `transform` yazılmaz (pin Kural 3 için en güvenli kurgu).
+
 ```
 tıklama
   │
-  leave        → lenis.stop() + eski container fade-out
-  afterLeave   → TÜM ScrollTrigger'lar kill() + scroll 0'a (immediate)
-  enter        → yeni container fade-in (transform ile)
-  after        → 1) container'dan transform/opacity CLEARPROPS (pin Kural 3!)
-                 2) lenis.start()
-                 3) onEach(container) → modüller yeniden kurulur
-                 4) TEK ScrollTrigger.refresh() (refreshPriority sırasıyla)
+  leave        → lenis.stop() + panel alttan kapanır (0.55s power3.inOut),
+                 logo belirir (0.35s, hafif gecikmeli)
+  afterLeave   → PERDE KAPALI: TÜM ScrollTrigger'lar kill() + scroll 0'a
+                 (kullanıcı zıplamayı görmez)
+  enter        → görsel iş yok — yeni container perdenin altında hazır
+  after        → 1) onEach(container) → modüller kurulur (perde hâlâ kapalı)
+                 2) TEK ScrollTrigger.refresh() (refreshPriority sırasıyla,
+                    ölçümler perde altında kararlı)
+                 3) logo söner (0.18s marka anı sonrası), panel yukarı açılır
+                 4) lenis.start() (geçiş tamamen bitince)
                  5) yeni görseller yüklendikçe debounce'lu ek refresh
 ```
+
+Logo kaynağı (öncelik sırasıyla): sayfadaki gizli `[data-transition-logo]` template'i →
+`opts.logo` (inline SVG string / görsel URL'i / düz metin wordmark). Panel rengi
+`opts.coverColor` (default `var(--surface--inverted)`), logo rengi `var(--color-text--inverted)`.
+`prefers-reduced-motion`'da panel animasyonsuz anlık görünüp kaybolur.
 
 ### Kural B1 — İki katman: kalıcı vs. sayfa
 
@@ -244,10 +258,10 @@ düşünce çöpe gider.
 
 ### Kural B3 — Geçiş animasyonu container'a transform bırakamaz
 
-Fade/slide geçişi container'a `transform` yazar. Pin'ler kurulmadan önce
-`clearProps: "transform"` yapılmazsa tüm pin'ler kayar (Kural 3'ün Barba hali).
-`barba-init.js` bunu `after` hook'unda otomatik yapar — **özel transition yazarsan bu
-adımı atlama.**
+Mevcut cover geçişi container'ı hiç anime etmediği için bu risk yok. Ama ileride
+container'ı hareket ettiren özel bir transition yazılırsa (fade/slide vb.): pin'ler
+kurulmadan önce container'dan `clearProps: "transform"` yapılmazsa tüm pin'ler kayar
+(Kural 3'ün Barba hali). **Özel transition yazarsan bu adımı atlama.**
 
 ### Kural B4 — Webflow'da script'ler SITE-WIDE yüklenir
 
@@ -263,6 +277,7 @@ yoksa modül zaten sessizce çıkar — maliyeti yalnız cache'lenmiş dosyanın
 | Page Wrapper (nav dahil en dış) | `data-barba="wrapper"` |
 | İçerik sarmalayıcı (nav HARİÇ, sayfada değişen her şey) | `data-barba="container"` + `data-barba-namespace="sayfa-adi"` |
 | Barba'ya girmemesi gereken link (dosya indirme vb.) | `data-barba-prevent` |
+| Geçiş logosu template'i (gizli, opsiyonel) | `data-transition-logo` (içine SVG/img; `display:none` verilebilir) |
 
 Nav wrapper içinde ama container dışında durur → geçişte yerinde kalır. Footer sayfalar
 arasında farklıysa container İÇİNE alınır. Aynı sayfa `#anchor` linkleri Barba'ya girmez

@@ -60,6 +60,7 @@ Her sayfada, bu sırayla:
     gsap.registerPlugin(ScrollTrigger);
     Marveltour.initLenis();
     Marveltour.initBarba({
+      logo: 'Marveltour', // veya SVG string / logo URL'i
       onEach: function (container) {
         // sayfa modüllerinin init'leri buraya — hepsi container-scoped
       }

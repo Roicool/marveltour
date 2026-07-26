@@ -1,18 +1,21 @@
 /*!
  * Marveltour — core/barba-init.js
- * v1.0.0
+ * v1.1.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
+ *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
+ *          pin'li ScrollTrigger'lar için en güvenli kurgu.
  * ------------------------------------------------------------
  * Barba.js page transitions, Lenis + ScrollTrigger ile güvenli.
  * Requires (defer, before this file): @barba/core, gsap,
  * ScrollTrigger, lenis, lenis-init.js
  *
  * ScrollTrigger'ı bozmayan yaşam döngüsü:
- *   leave      → lenis.stop() + eski container fade-out
- *   afterLeave → TÜM ScrollTrigger'lar kill + scroll sıfırla
- *   enter      → yeni container fade-in (transform'lu)
- *   after      → container'dan transform TEMİZLENİR (pin Kural 3!),
- *                modüller yeni container'da yeniden kurulur,
- *                lenis.start(), TEK ScrollTrigger.refresh()
+ *   leave      → lenis.stop() + panel alttan yukarı kapanır, logo belirir
+ *   afterLeave → TÜM ScrollTrigger'lar kill + scroll sıfırla (perde kapalı,
+ *                kullanıcı zıplamayı GÖRMEZ)
+ *   enter      → görsel iş yok (yeni container perdenin altında hazır)
+ *   after      → modüller yeni container'da kurulur + TEK refresh
+ *                (perde hâlâ kapalıyken → ölçümler kararlı),
+ *                sonra logo söner, panel yukarı açılır, lenis.start()
  *
  * Markup (Webflow):
  *   Page Wrapper           → data-barba="wrapper"   (nav bunun içinde ama
@@ -20,9 +23,18 @@
  *   Main / içerik sarmalı  → data-barba="container"
  *                            data-barba-namespace="home" (sayfa adı)
  *
+ * Logo (üç yol, öncelik sırasıyla):
+ *   1. Sayfada gizli bir template: <div data-transition-logo> …svg/img… </div>
+ *      (Webflow'da yönetmek için en rahatı — display:none verilebilir)
+ *   2. opts.logo = '<svg …>…</svg>'        (inline SVG string)
+ *   3. opts.logo = 'https://…/logo.svg'    (görsel URL'i)
+ *      opts.logo = 'Marveltour'            (düz metin — wordmark)
+ *
  * Usage (Webflow </body> custom code):
  *   Marveltour.initBarba({
- *     onEach: function (container) {   // ilk yüklemede VE her geçişte çalışır
+ *     logo: 'Marveltour',                // veya SVG/URL; data-transition-logo varsa gerekmez
+ *     coverColor: '',                    // default: var(--surface--inverted)
+ *     onEach: function (container) {
  *       // sayfa modüllerinin init'leri buraya, hepsi container-scoped:
  *       // Marveltour.initFoo(container);
  *     }
@@ -33,7 +45,7 @@
  * multi-page olarak yaşamaya devam eder.
  * ------------------------------------------------------------
  */
-(function (window) {
+(function (window, document) {
   "use strict";
 
   var Marveltour = window.Marveltour || (window.Marveltour = {});
@@ -56,16 +68,61 @@
     var gsap = window.gsap;
     var ScrollTrigger = window.ScrollTrigger;
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var DUR_OUT = reduced ? 0 : 0.4;
-    var DUR_IN = reduced ? 0 : 0.55;
 
     /* Barba geçişlerinde scroll'u BİZ yönetiyoruz — tarayıcı restore etmesin */
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
+    /* ============================================================
+       Cover (perde) — JS kurar, Webflow markup'ı gerekmez
+       ============================================================ */
+    var COVER_BG = opts.coverColor || "var(--surface--inverted, oklch(14% 0 0))";
+
+    var style = document.createElement("style");
+    style.textContent =
+      ".mt-page-cover{position:fixed;inset:0;z-index:9999;display:flex;" +
+      "align-items:center;justify-content:center;background:" + COVER_BG + ";" +
+      "transform:translateY(101%);will-change:transform;pointer-events:none;visibility:hidden}" +
+      ".mt-page-cover__logo{opacity:0;color:var(--color-text--inverted,#fff);" +
+      "max-width:min(40vw,16rem)}" +
+      ".mt-page-cover__logo img,.mt-page-cover__logo svg{display:block;width:100%;height:auto}" +
+      ".mt-page-cover__logo--text{font-size:var(--text--xl,1.5rem);font-weight:600;" +
+      "letter-spacing:0.04em;white-space:nowrap}";
+    document.head.appendChild(style);
+
+    var cover = document.createElement("div");
+    cover.className = "mt-page-cover";
+    cover.setAttribute("aria-hidden", "true");
+
+    var logoWrap = document.createElement("div");
+    logoWrap.className = "mt-page-cover__logo";
+
+    /* Logo kaynağı: DOM template > SVG string > URL > düz metin */
+    var tpl = document.querySelector("[data-transition-logo]");
+    if (tpl) {
+      logoWrap.innerHTML = tpl.innerHTML;
+    } else if (typeof opts.logo === "string" && opts.logo.length) {
+      if (opts.logo.charAt(0) === "<") {
+        logoWrap.innerHTML = opts.logo; // inline SVG
+      } else if (/\/|\.(svg|png|webp|avif|jpe?g)$/i.test(opts.logo)) {
+        var img = document.createElement("img");
+        img.src = opts.logo;
+        img.alt = "";
+        logoWrap.appendChild(img);
+      } else {
+        logoWrap.classList.add("mt-page-cover__logo--text");
+        logoWrap.textContent = opts.logo; // wordmark
+      }
+    }
+
+    cover.appendChild(logoWrap);
+    document.body.appendChild(cover);
+
+    /* ============================================================
+       Yardımcılar
+       ============================================================ */
     function killAllTriggers() {
       if (!ScrollTrigger) return;
       ScrollTrigger.getAll().forEach(function (t) { t.kill(); });
-      /* pin-spacing artıkları ve scroll hafızası temizlensin */
       if (ScrollTrigger.clearScrollMemory) ScrollTrigger.clearScrollMemory();
     }
 
@@ -96,6 +153,9 @@
       });
     }
 
+    /* ============================================================
+       Barba
+       ============================================================ */
     window.barba.init({
       timeout: 7000,
       preventRunning: true, // geçiş sürerken ikinci tıklama kuyruklanmaz
@@ -106,63 +166,87 @@
       },
       transitions: [
         {
-          name: "mt-fade",
+          name: "mt-cover-logo",
 
-          /* İlk yükleme — geçiş yok, modüller kurulur */
+          /* İlk yükleme — perde yok, modüller kurulur */
           once: function (data) {
             runPage(data.next.container);
           },
 
+          /* Perde kapanır: panel alttan yukarı, logo hafif gecikmeli belirir */
           leave: function (data) {
             if (Marveltour.lenis) Marveltour.lenis.stop();
             onLeave(data.current.container);
-            return gsap.to(data.current.container, {
-              autoAlpha: 0,
-              y: reduced ? 0 : -24,
-              duration: DUR_OUT,
-              ease: "power2.in"
-            });
+
+            if (reduced) {
+              /* Reduced motion: hareket yok, anlık sade karartma */
+              gsap.set(cover, { visibility: "visible", yPercent: 0, opacity: 1 });
+              return;
+            }
+
+            var tl = gsap.timeline();
+            tl.set(cover, { visibility: "visible" })
+              .fromTo(cover,
+                { yPercent: 101 },
+                { yPercent: 0, duration: 0.55, ease: "power3.inOut" }
+              )
+              .fromTo(logoWrap,
+                { autoAlpha: 0, y: 24, scale: 0.92 },
+                { autoAlpha: 1, y: 0, scale: 1, duration: 0.35, ease: "power3.out" },
+                "-=0.22"
+              );
+            return tl;
           },
 
+          /* Perde KAPALI — kullanıcı hiçbir şey görmez:
+             eski trigger'lar ölür, scroll sıfırlanır */
           afterLeave: function () {
-            /* Eski sayfanın TÜM trigger'ları ölür — pin-spacing artığı kalmaz */
             killAllTriggers();
             resetScroll();
           },
 
-          enter: function (data) {
-            gsap.set(data.next.container, {
-              autoAlpha: 0,
-              y: reduced ? 0 : 24
-            });
-            return gsap.to(data.next.container, {
-              autoAlpha: 1,
-              y: 0,
-              duration: DUR_IN,
-              ease: "power2.out"
-            });
-          },
+          /* Yeni container perdenin altında olduğu gibi durur —
+             container'a HİÇ transform/opacity yazılmaz (pin Kural 3 bonusu) */
+          enter: function () {},
 
+          /* Modüller kurulur + TEK refresh (hâlâ perde altında, ölçüm kararlı),
+             sonra logo söner, panel yukarı devam ederek açılır */
           after: function (data) {
-            /* KRİTİK (pin Kural 3): geçiş animasyonunun container'da
-               bıraktığı transform, içeride kurulacak pin'lerin
-               position:fixed'ini kırar. Trigger'lar kurulmadan ÖNCE sil. */
-            gsap.set(data.next.container, {
-              clearProps: "transform,opacity,visibility"
-            });
-
-            if (Marveltour.lenis) Marveltour.lenis.start();
-
-            /* Modüller yeni container'da yeniden kurulur… */
             runPage(data.next.container);
-
-            /* …ve refreshPriority sırasına göre TEK refresh her şeyi hizalar.
-               (window.load bu navigasyonda tekrar ateşlenmez — refresh bizden.) */
             if (ScrollTrigger) ScrollTrigger.refresh();
             refreshOnImages(data.next.container);
+
+            function done() {
+              if (Marveltour.lenis) Marveltour.lenis.start();
+            }
+
+            if (reduced) {
+              gsap.set(cover, { visibility: "hidden", yPercent: 101 });
+              gsap.set(logoWrap, { autoAlpha: 0 });
+              done();
+              return;
+            }
+
+            var tl = gsap.timeline({ onComplete: done });
+            tl.to(logoWrap, {
+                autoAlpha: 0,
+                y: -20,
+                duration: 0.28,
+                ease: "power2.in",
+                delay: 0.18 // marka anı — logo bir nefes ekranda kalır
+              })
+              /* Panel aynı yönde (yukarı) devam eder — tek akış hissi */
+              .to(cover, {
+                yPercent: -101,
+                duration: 0.6,
+                ease: "power3.inOut"
+              }, "-=0.08")
+              .set(cover, { visibility: "hidden", yPercent: 101 })
+              .set(logoWrap, { y: 0, scale: 1 });
+            return tl;
           }
         }
       ]
     });
   };
-})(window);
+})(window, document);
