@@ -3,7 +3,8 @@
  * v1.0.0
  * ------------------------------------------------------------
  * Lenis smooth scroll, tuned defaults + GSAP ScrollTrigger sync.
- * Requires (defer, before this file): lenis, gsap, ScrollTrigger, utils.js
+ * Requires (defer, before this file): lenis, gsap, ScrollTrigger
+ * Creates the global `Marveltour` namespace if missing.
  *
  * Usage (Webflow </body> custom code):
  *   document.addEventListener('DOMContentLoaded', function () {
@@ -28,7 +29,7 @@
       console.warn("[Marveltour] Lenis not loaded — native scroll kept.");
       return null;
     }
-    if (Marveltour.prefersReducedMotion && Marveltour.prefersReducedMotion()) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return null; // respect OS motion setting: keep native scroll
     }
 
