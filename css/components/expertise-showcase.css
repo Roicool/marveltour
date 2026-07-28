@@ -1,0 +1,91 @@
+/*!
+ * expertise-showcase.css v1.0.0
+ * Behavioural CSS for js/components/expertise-showcase.js — kart destesinin
+ * stack konumlandırması, overlay katmanı, sticky pill nav ve no-JS fallback.
+ * Görsel tasarım (cam kart, glow, watermark tipografisi, renkler, breakpoint
+ * düzeni) Webflow Designer'da kalır. State hook'ları: .is-front (öndeki kart),
+ * .is-active (aktif pill).
+ *
+ * NOT: [data-es-media]'ya yüksekliği Designer verir (örn. .aspect-video ya da
+ * sabit height) — kartlar bu kutuyu doldurur.
+ */
+
+[data-expertise-showcase] [data-es-media] {
+  position: relative;
+  touch-action: pan-y; /* yatay swipe JS'e, dikey scroll tarayıcıya */
+}
+
+[data-expertise-showcase] [data-es-slide] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius--2xl);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+[data-expertise-showcase] [data-es-slide] > video,
+[data-expertise-showcase] [data-es-slide] > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Karartma katmanı — opacity'yi derinliğe göre JS sürer.
+   No-JS'te 0 kalır: son kart (ön) zaten en üstte, içerik tam görünür. */
+[data-expertise-showcase] [data-es-overlay] {
+  position: absolute;
+  inset: 0;
+  background-color: var(--neutral--950);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Dekoratif katmanlar etkileşim ve seçim almaz */
+[data-expertise-showcase] [data-es-watermark],
+[data-expertise-showcase] [data-es-glow] {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Sticky alt pill nav — çubuk dışındaki boşluk tıklamayı yutmaz */
+[data-expertise-showcase] [data-es-pillnav] {
+  position: sticky;
+  bottom: var(--spacing--10);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+[data-expertise-showcase] [data-es-pillnav] > * {
+  pointer-events: auto;
+}
+
+[data-expertise-showcase] [data-es-pill] {
+  position: relative;
+}
+
+/* Pill içeriği aktif arka planın üstünde kalır */
+[data-expertise-showcase] [data-es-pill] > :not([data-es-pill-bg]) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Aktif pill arka planı — JS fade/scale ile sürer */
+[data-expertise-showcase] [data-es-pill-bg] {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* No-JS / ilk boyama: markup'ta .is-active verilen pill'in bg'si görünür */
+[data-expertise-showcase] [data-es-pill].is-active [data-es-pill-bg] {
+  opacity: 1;
+}

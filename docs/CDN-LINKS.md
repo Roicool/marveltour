@@ -47,6 +47,9 @@ Her sayfada, bu sırayla:
 <!-- logo-marquee v1.0.0 — merkez spotlight'lı adım adım ilerleyen logo şeridi (gsap gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/logo-marquee.js" defer></script>
 
+<!-- expertise-showcase v1.0.0 — panelli uzmanlık vitrini: GSAP kart destesi + sticky pill nav scroll-spy (gsap gerekir; ScrollTrigger yalnız metin reveal'i için, refreshPriority -1) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/expertise-showcase.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -66,6 +69,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/hero-cinematic.css">
 <!-- logo-marquee -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/logo-marquee.css">
+<!-- expertise-showcase -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/expertise-showcase.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -83,6 +88,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initParallax(container);
         Marveltour.initHeroCinematic(container);
         Marveltour.initLogoMarquee(container);
+        Marveltour.initExpertiseShowcase(container);
       }
     });
   });
