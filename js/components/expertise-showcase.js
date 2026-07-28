@@ -192,7 +192,8 @@
       function prev() { order.push(order.shift()); apply(reduce); }
 
       panel.querySelectorAll("[data-es-arrow]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
+        btn.addEventListener("click", function (e) {
+          e.preventDefault(); // Webflow Button <a href="#"> olarak render olur — zıplamayı engelle
           (btn.getAttribute("data-es-arrow") === "prev" ? prev : next)();
         });
       });
@@ -265,7 +266,8 @@
 
     if (pills.length) {
       pills.forEach(function (pill, i) {
-        pill.addEventListener("click", function () {
+        pill.addEventListener("click", function (e) {
+          e.preventDefault(); // pill'ler Webflow LinkBlock (<a href="#">) — zıplamayı engelle
           var target = panels[i];
           if (!target) return;
           setActivePill(i);
