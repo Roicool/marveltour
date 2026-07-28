@@ -127,6 +127,10 @@
     var spvM     = num(root, "data-hscroll-spv-m", 1.2);
     var priority = num(root, "data-hscroll-priority", 1);
     var drift    = num(root, "data-hscroll-parallax", 8); // kart içi görsel parallax dozu
+    var debug    = root.hasAttribute("data-hscroll-debug");
+    function dlog() {
+      if (debug) console.log.apply(console, ["[HScroll]"].concat(Array.prototype.slice.call(arguments)));
+    }
 
     /**
      * Horizontal overflow in px — how far the track must translate.
@@ -136,13 +140,29 @@
      * can live on the track or on the viewport wrapper — either way the
      * distance lands the last card fully in view, inside the right gutter.
      */
+    var lastD = -1;
     function getDistance() {
       var parent = track.parentElement || root;
       var cs = getComputedStyle(parent);
-      var content = parent.clientWidth
-        - (parseFloat(cs.paddingLeft) || 0)
-        - (parseFloat(cs.paddingRight) || 0);
-      return Math.max(0, track.scrollWidth - content);
+      var padL = parseFloat(cs.paddingLeft) || 0;
+      var padR = parseFloat(cs.paddingRight) || 0;
+      var content = parent.clientWidth - padL - padR;
+      var d = Math.max(0, track.scrollWidth - content);
+      if (debug && Math.abs(d - lastD) > 1) {
+        lastD = d;
+        console.log("[HScroll] distance ölçümü:", {
+          trackScrollWidth: track.scrollWidth,
+          parent: parent.className || parent.tagName,
+          parentClientWidth: parent.clientWidth,
+          parentPadL: padL,
+          parentPadR: padR,
+          content: content,
+          DISTANCE: d,
+          trackPadL: parseFloat(getComputedStyle(track).paddingLeft) || 0,
+          cardWidths: cards.map(function (c) { return Math.round(c.getBoundingClientRect().width); }),
+        });
+      }
+      return d;
     }
 
     /** Toggle .is-active on the card nearest the current progress. */
@@ -165,11 +185,19 @@
       img.setAttribute("loading", "eager");
     });
     var pending = imgs.filter(function (img) { return !img.complete; });
+    dlog("init:", {
+      cards: cards.length,
+      imgs: imgs.length,
+      pendingImgs: pending.length,
+      viewportEl: viewport.className,
+      initialDistance: getDistance(),
+    });
     if (pending.length) {
       var rT;
       var onImg = function () {
         clearTimeout(rT);
         rT = setTimeout(function () {
+          dlog("görsel(ler) yüklendi → refresh; yeni distance:", getDistance());
           ScrollTrigger.refresh();
           if (viewport.swiper) viewport.swiper.update();
         }, 150);
@@ -281,6 +309,7 @@
         }
 
         root.classList.add("is-pinned");
+        dlog("desktop pin modu AÇILDI; distance:", getDistance());
 
         var tween = gsap.to(track, {
           x: function () { return -getDistance(); },
@@ -299,7 +328,17 @@
             // Pin adds pin-spacing to the document — refresh before triggers
             // below this section (see PROJECT.md refreshPriority table).
             refreshPriority: priority,
-            onRefresh: computeSnapPts,
+            markers: debug,
+            onRefresh: function (self) {
+              computeSnapPts();
+              dlog("REFRESH:", {
+                distance: getDistance(),
+                pinStart: Math.round(self.start),
+                pinEnd: Math.round(self.end),
+                pinLength: Math.round(self.end - self.start),
+                snapPts: snapPts.map(function (p) { return +p.toFixed(3); }),
+              });
+            },
             snap: snapOn ? {
               snapTo: snapResolver,
               // min ≥ scrub: scrub lag settles inside the snap window.
