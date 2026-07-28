@@ -1,0 +1,196 @@
+/*!
+ * h-scroll.css v1.0.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * Cinematic pinned horizontal-scroll destination cards — critical/behavioural
+ * styles only. Colours, fonts and exact card design come from the Webflow
+ * Designer + RC tokens. Marveltour ekleri: kart clip + görsel cover (parallax
+ * için) ve isim overlay'inin davranışsal konumu.
+ *
+ * Desktop (≥992px) : JS pins the section and translates .hscroll__track on x.
+ * Tablet & mobile  : h-scroll.js turns the SAME DOM into a Swiper carousel
+ * (≤991px)           (~2.2 cards on tablet, ~1.2 on mobile). The required
+ *                    Swiper core styles ship below under .is-swiper — the
+ *                    Swiper stylesheet is NOT loaded separately.
+ * Fallback         : before JS runs, or if Swiper fails to load, or under
+ *                    reduced motion on desktop → native scroll-snap scroller
+ *                    with the same bleed widths (the :not(.is-swiper) block).
+ * https://github.com/roicool/sestek
+ */
+
+/* ── Section ─────────────────────────────────────────────────── */
+[data-hscroll] {
+  position: relative;
+  width: 100%;
+  /*
+   * PIN RULE (PROJECT.md Kural 3): no transform / filter / perspective /
+   * will-change:transform on this element or ANY ancestor — the pin uses
+   * position:fixed and would anchor to that ancestor instead of the viewport.
+   */
+}
+
+/* Pin target fills the viewport; track sits vertically centred inside it. */
+.hscroll__viewport {
+  display: flex;
+  align-items: center;
+  overflow: hidden;               /* clips the off-screen part of the track */
+}
+
+/* Full-height only where the pin runs — mobile/tablet height is the
+   Designer's call (h-screen vb. utility'ler swiper modunda aynen geçerli). */
+@media (min-width: 992px) {
+  .hscroll__viewport {
+    min-height: 100svh;
+  }
+}
+
+/* ── Track — the row GSAP translates ─────────────────────────── */
+.hscroll__track {
+  display: flex;
+  align-items: stretch;
+  gap: var(--hscroll-gap, var(--spacing--6));
+  width: max-content;             /* row never wraps — real overflow width */
+  /*
+   * Gutter: aligns the first/last card with the site container. The % in
+   * the calc resolves against the viewport wrapper's width; on narrow
+   * screens the token side wins. Site GLOBAL sayfa padding'i --view--px
+   * olarak tanımlıysa ÖNCELİKLİDİR (tablet/mobilde gutter = view-px);
+   * yoksa --spacing--6'ya düşer. Override per instance:
+   *   .hscroll { --hscroll-gutter: max(1.5rem, calc((100% - var(--container--2xl)) / 2)); }
+   * h-scroll.js measures this padding (on the track OR on the viewport):
+   * desktop pin distance ends with the last card fully in view, and the
+   * Swiper reads it as slidesOffsetBefore/After — one token, both modes.
+   */
+  padding-inline: var(--hscroll-gutter,
+    max(var(--view--px, var(--spacing--6)),
+        calc((100% - var(--container--2xl, 96rem)) / 2)));
+  will-change: transform;
+}
+
+/* ── Card ────────────────────────────────────────────────────── */
+.hscroll__card {
+  flex: 0 0 auto;
+  /* Override per instance: .hscroll { --hscroll-card-w: 32rem; } */
+  width: var(--hscroll-card-w, clamp(18rem, 38vw, 30rem));
+  border-radius: var(--radius--lg, 1rem);
+  position: relative;
+  overflow: clip;                 /* parallax'lı görseli kırpar — davranışsal */
+}
+
+/* Kart görseli — JS parallax'ta büyütüp süzdürür; cover şart */
+.hscroll__card [data-hscroll-img],
+.hscroll__card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Destination ismi — görselin üstünde; tipografi/renk Designer'ın */
+.hscroll__card .hscroll__name {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Fallback — native scroll-snap scroller ──────────────────── */
+/*
+ * Applies whenever Swiper is NOT driving (.is-swiper absent): first paint
+ * before JS, Swiper CDN failure, and reduced-motion desktop. Same block for
+ * ≤991px AND reduced-motion at any width.
+ */
+@media (max-width: 991px), (prefers-reduced-motion: reduce) {
+  [data-hscroll]:not(.is-swiper) .hscroll__viewport {
+    min-height: 0;                /* no pin → section is content-height */
+    overflow: visible;
+  }
+
+  [data-hscroll]:not(.is-swiper) .hscroll__track {
+    width: auto;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--hscroll-gutter,
+      max(var(--view--px, var(--spacing--6)),
+          calc((100% - var(--container--2xl, 96rem)) / 2)));
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
+    will-change: auto;
+  }
+
+  [data-hscroll]:not(.is-swiper) .hscroll__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  [data-hscroll]:not(.is-swiper) .hscroll__card {
+    scroll-snap-align: start;     /* bleed reads left→right, next card peeks */
+  }
+}
+
+/*
+ * Fallback bleed widths — mirror Swiper's slidesPerView so the pre-hydration
+ * frame and the no-Swiper fallback look identical: N kart/görünüm →
+ * kart = (içerik − görünür gap'ler) / N. h-scroll.js JS config'ini
+ * --hscroll-spv-t / --hscroll-spv-m olarak buraya yansıtır.
+ */
+@media (max-width: 991px) {
+  [data-hscroll]:not(.is-swiper) .hscroll__card {
+    /* tablet: 2 tam kart + 2 gap + 0.2 bleed */
+    width: calc((100% - 2 * var(--hscroll-gap, var(--spacing--6)))
+                / var(--hscroll-spv-t, 2.2));
+  }
+}
+
+@media (max-width: 767px) {
+  [data-hscroll]:not(.is-swiper) .hscroll__card {
+    /* mobil: 1 tam kart + 1 gap + 0.2 bleed */
+    width: calc((100% - var(--hscroll-gap, var(--spacing--6)))
+                / var(--hscroll-spv-m, 1.2));
+  }
+}
+
+/* ── Swiper mode (≤991px, JS aktif) ──────────────────────────── */
+/*
+ * h-scroll.js adds .is-swiper + the swiper/swiper-wrapper/swiper-slide
+ * classes and instantiates Swiper on the viewport. These are the Swiper CORE
+ * styles it needs (inlined here so swiper-bundle.css is never requested);
+ * spacing moves to Swiper params (spaceBetween + slidesOffsetBefore/After),
+ * so the token gap/padding are zeroed.
+ */
+[data-hscroll].is-swiper .hscroll__viewport {
+  /*
+   * Track, section İÇİNDE DİKEY ORTALANIR (flex + align-items). Yükseklik
+   * ve padding yine Designer'ın: h-screen verdiysen 100vh içinde ortalar,
+   * vermediysen bölüm içerik yüksekliğinde kalır. (Flex'te dikey ortalama
+   * align-items iledir; justify-items grid'e özgüdür — kullanılmaz.)
+   * Swiper flex container'da sorunsuz çalışır (wrapper width:100% item).
+   */
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  z-index: 1;
+  touch-action: pan-y;            /* vertical page scroll stays native */
+}
+
+[data-hscroll].is-swiper .hscroll__track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: auto;                   /* KARTLAR EKRANA UZAMAZ: yükseklik içerikten
+                                     gelir — flex stretch ile hepsi en uzun
+                                     kartın hizasında eşitlenir */
+  gap: 0;                         /* Swiper spaceBetween owns spacing */
+  padding-inline: 0;              /* Swiper slidesOffset owns the gutter */
+  box-sizing: content-box;        /* Swiper translate math expects this */
+  transition-property: transform; /* Swiper sets duration inline */
+  will-change: transform;
+}
+
+[data-hscroll].is-swiper .hscroll__card {
+  flex-shrink: 0;
+  position: relative;
+  height: auto;                   /* equal-height cards via flex stretch */
+  transition-property: transform;
+}

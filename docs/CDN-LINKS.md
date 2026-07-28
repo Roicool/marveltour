@@ -47,8 +47,11 @@ Her sayfada, bu sırayla:
 <!-- marquee v1.0.0 — sonsuz drag/momentum'lu logo marquee, hover'da durur (gsap gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/marquee.js" defer></script>
 
-<!-- step-scroll v1.0.0 — pinli N-adımlı sahne: wipe geçişli bg/video + adım metinleri + tıklanabilir segmentli progress bar (gsap + ScrollTrigger; PIN — data-sscroll-priority ver, tabloya kaydet) -->
+<!-- step-scroll v1.3.0 — pinli N-adımlı sahne: wipe geçişli bg/video + adım metinleri + tıklanabilir segmentli progress bar + bg parallax (gsap + ScrollTrigger; PIN — data-sscroll-priority ver, tabloya kaydet; CMS modu var) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/step-scroll.js" defer></script>
+
+<!-- h-scroll v1.0.0 — sinematik yatay destination kartları: desktop pin + kart içi parallax, tablet/mobil Swiper (CSS snap fallback) (gsap + ScrollTrigger; Swiper opsiyonel; PIN — data-hscroll-priority; CMS: track=List, kart=Item) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/h-scroll.js" defer></script>
 
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
@@ -69,6 +72,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/hero-cinematic.css">
 <!-- marquee -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/marquee.css">
+<!-- h-scroll -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/h-scroll.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -87,6 +92,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initHeroCinematic(container);
         Marveltour.initMarquee(container);
         Marveltour.initStepScroll(container);
+        Marveltour.initHScroll(container);
       }
     });
   });
