@@ -41,8 +41,10 @@ Her sayfada, bu sırayla:
 <!-- stagger-button v1.0.0 — buton hover'ında karakter bazlı text swap (gsap + SplitText gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/stagger-button.js" defer></script>
 
+<!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
+
 <!-- <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/effects/<name>.js" defer></script> -->
-<!-- <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/<name>.js" defer></script> -->
 ```
 
 ## CSS
@@ -52,6 +54,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 ```html
 <!-- stagger-button -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stagger-button.css">
+<!-- parallax -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/animations/parallax.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -66,6 +70,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
       onEach: function (container) {
         // sayfa modüllerinin init'leri buraya — hepsi container-scoped
         Marveltour.initStaggerButton(container);
+        Marveltour.initParallax(container);
       }
     });
   });

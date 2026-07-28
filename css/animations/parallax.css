@@ -1,0 +1,21 @@
+/*!
+ * parallax.css v1.0.0
+ * Behavioural CSS for js/animations/parallax.js — the wrapper clips the
+ * drifting media. The wrapper must get its size from layout (aspect ratio
+ * or explicit height in Webflow Designer); no visual design here.
+ */
+
+[data-parallax] {
+  position: relative;
+  overflow: clip;
+}
+
+[data-parallax] > img,
+[data-parallax] > picture,
+[data-parallax] > picture img,
+[data-parallax] > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
