@@ -1,8 +1,10 @@
 /*!
  * Marveltour — core/barba-init.js
- * v1.1.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
+ * v1.2.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
  *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
  *          pin'li ScrollTrigger'lar için en güvenli kurgu.
+ *          v1.2.0: template otomatik gizlenir, kopyada gizli inline/display
+ *          state temizlenir, logo kaynağı yoksa 'Marveltour' wordmark fallback.
  * ------------------------------------------------------------
  * Barba.js page transitions, Lenis + ScrollTrigger ile güvenli.
  * Requires (defer, before this file): @barba/core, gsap,
@@ -96,10 +98,24 @@
     var logoWrap = document.createElement("div");
     logoWrap.className = "mt-page-cover__logo";
 
-    /* Logo kaynağı: DOM template > SVG string > URL > düz metin */
+    /* Logo kaynağı: DOM template > SVG string > URL > düz metin > wordmark */
     var tpl = document.querySelector("[data-transition-logo]");
     if (tpl) {
       logoWrap.innerHTML = tpl.innerHTML;
+      /* Template'i sayfada gösterme — kullanıcı display:none vermeyi unutsa da */
+      tpl.style.display = "none";
+      tpl.setAttribute("aria-hidden", "true");
+      /* Kopyada gizli gelen state'leri temizle (Webflow'da iç element
+         gizlendiyse logo perdede de görünmez kalıyordu) */
+      Array.prototype.forEach.call(logoWrap.querySelectorAll("*"), function (el) {
+        if (el.style) {
+          if (el.style.display === "none") el.style.display = "";
+          if (el.style.visibility === "hidden") el.style.visibility = "";
+          if (el.style.opacity === "0") el.style.opacity = "";
+        }
+        if (el.hasAttribute && el.hasAttribute("hidden")) el.removeAttribute("hidden");
+        if (el.tagName === "IMG") el.loading = "eager"; // perdede lazy beklenmez
+      });
     } else if (typeof opts.logo === "string" && opts.logo.length) {
       if (opts.logo.charAt(0) === "<") {
         logoWrap.innerHTML = opts.logo; // inline SVG
@@ -112,6 +128,13 @@
         logoWrap.classList.add("mt-page-cover__logo--text");
         logoWrap.textContent = opts.logo; // wordmark
       }
+    }
+
+    /* Hâlâ boşsa (template yok + opts.logo verilmemiş) marka anı bomboş
+       oynamasın — wordmark fallback */
+    if (!logoWrap.childNodes.length) {
+      logoWrap.classList.add("mt-page-cover__logo--text");
+      logoWrap.textContent = "Marveltour";
     }
 
     cover.appendChild(logoWrap);
