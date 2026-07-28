@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/barba-init.js
- * v1.4.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
+ * v1.4.1 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
  *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
  *          pin'li ScrollTrigger'lar için en güvenli kurgu.
  *          v1.2.0: template otomatik gizlenir, kopyada gizli inline/display
@@ -71,8 +71,17 @@
       Array.prototype.forEach.call(vids, function (v) {
         v.muted = true;             // attribute parse'lanmamış olabilir — property garantisi
         v.defaultMuted = true;
-        var p = v.play();
-        if (p && p.catch) p.catch(function () {}); // policy reddi sessizce yutulur
+        var attempt = function () {
+          var p = v.play();
+          if (p && p.catch) p.catch(function () {}); // policy reddi sessizce yutulur
+        };
+        /* Enjekte edilen <source>'lu video bazı tarayıcılarda önce load ister */
+        if (v.readyState === 0) v.load();
+        attempt();
+        /* İlk deneme erken kaldıysa oynatılabilir olduğu anda tekrar dene */
+        v.addEventListener("canplay", function () {
+          if (v.paused) attempt();
+        }, { once: true });
       });
     }
 
