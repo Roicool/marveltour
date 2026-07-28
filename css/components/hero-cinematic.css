@@ -1,0 +1,32 @@
+/*!
+ * hero-cinematic.css v1.0.0
+ * Behavioural CSS for js/components/hero-cinematic.js — positioning context,
+ * media cover and overlay layering. Sizes, colors and typography stay in
+ * Webflow Designer.
+ *
+ * IMPORTANT: no transform/filter on .section_hero-cinematic or any ancestor
+ * of [data-hero-media] — it would break the pin (PROJECT.md Kural 3).
+ */
+
+.section_hero-cinematic {
+  position: relative;
+}
+
+[data-hero-media] {
+  position: relative;
+  overflow: clip;
+}
+
+[data-hero-media] video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-cinematic_overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}

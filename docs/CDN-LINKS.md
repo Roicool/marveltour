@@ -41,6 +41,9 @@ Her sayfada, bu sırayla:
 <!-- stagger-button v1.0.0 — buton hover'ında karakter bazlı text swap (gsap + SplitText gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/stagger-button.js" defer></script>
 
+<!-- hero-cinematic v1.0.0 — home hero: random harf fade-in + pin'lenip küçülen medya (gsap + ScrollTrigger + SplitText; refreshPriority 10) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/hero-cinematic.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -56,6 +59,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stagger-button.css">
 <!-- parallax -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/animations/parallax.css">
+<!-- hero-cinematic -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/hero-cinematic.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -71,6 +76,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         // sayfa modüllerinin init'leri buraya — hepsi container-scoped
         Marveltour.initStaggerButton(container);
         Marveltour.initParallax(container);
+        Marveltour.initHeroCinematic(container);
       }
     });
   });

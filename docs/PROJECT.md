@@ -177,8 +177,8 @@ göre bu tablodan seç (üstteki büyük, alttaki küçük) ve **tabloyu güncel
 
 | Component | Sayfadaki konum | refreshPriority |
 |---|---|---|
-| *(henüz pinli component yok)* | — | — |
-| Pin olmayan reveal-tarzı preset'ler | Her yerde | `-1` |
+| `hero-cinematic` | Home — sayfanın en üstü | `10` |
+| Pin olmayan reveal-tarzı preset'ler (parallax dahil) | Her yerde | `-1` |
 
 Yeni bir pin araya girerse kesirli değer verme; mevcut değerleri yeniden numaralandır
 (örn. hero=2, yeni=1 yerine hero=3, yeni=2, alttaki=1). Pin olmayanlar her zaman en düşük kalsın.
