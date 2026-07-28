@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.3.0
+ * hero-cinematic.js v2.3.1
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -132,7 +132,9 @@
        load, Barba re-init) so the target always matches the live layout. */
     var flip = { x: 0, y: 0, scale: 1 };
     function measure() {
-      gsap.set(media, { clearProps: "transform" });
+      /* Placeholder'ın giriş animasyonu y-offset'i de temizlenir — yoksa
+         hedef kutu kaydırılmış halde ölçülür ve medya yanlış yere iner. */
+      gsap.set([media, placeholder], { clearProps: "transform" });
       var m = media.getBoundingClientRect();
       if (!m.width || !m.height) return;
       /* Kutunun oranını medyanın GERÇEK oranına eşitle (fullscreen medya
@@ -208,13 +210,25 @@
     }
 
     /* Desc/CTA'lar başlıktan DERİN çıkar (index başına hız artar) — sahne-1
-       terk edilirken katmanlar farklı hızda dağılır, parallax hissi budur. */
+       terk edilirken katmanlar farklı hızda dağılır, parallax hissi budur.
+       fromTo + immediateRender:false ŞART: intro bitmeden scroll'a dokunulursa
+       tween başlangıcı "gizli" halden yakalanır ve elemanlar anında yok olur. */
     if (ui.length) {
-      tl.to(ui, {
+      tl.fromTo(ui, { autoAlpha: 1, yPercent: 0 }, {
         autoAlpha: 0,
         yPercent: function (i) { return -26 - i * 10; },
         ease: "power2.out",
+        immediateRender: false,
       }, 0);
+    }
+
+    /* Sahne-1 UI'ı söndükten sonra tıklamayı bloklamasın — pointer-events'i
+       JS yönetir (CSS'te elle verme). Scrub geri sarınca set otomatik geri
+       alınır, butonlar yeniden tıklanabilir olur. */
+    var scene1Els = ui.slice();
+    if (title) scene1Els.push(title);
+    if (scene1Els.length) {
+      tl.set(scene1Els, { pointerEvents: "none" }, 0.6);
     }
 
     if (scene) {
@@ -233,12 +247,17 @@
         },
       });
       sceneTl.set(scene, { autoAlpha: 1 }, 0.2);
-      sceneTl.to(layers, {
-        autoAlpha: 1,
-        y: 0,
-        ease: "power2.out",
-        stagger: 0.12,
-      }, 0.3);
+      /* fromTo + immediateRender:false — başlangıç değerleri refresh anındaki
+         DOM halinden değil, buradan okunur; katman girişi her koşulda çalışır. */
+      sceneTl.fromTo(layers,
+        { autoAlpha: 0, y: function (i) { return 60 + i * 36; } },
+        {
+          autoAlpha: 1,
+          y: 0,
+          ease: "power2.out",
+          stagger: 0.12,
+          immediateRender: false,
+        }, 0.3);
       /* Pin biterken scene tıklanabilir olsun (link vb. içerirse) */
       sceneTl.set(scene, { pointerEvents: "auto" });
     }
