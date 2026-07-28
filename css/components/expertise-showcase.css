@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.css v1.4.0
+ * expertise-showcase.css v1.5.0
  * Behavioural CSS for js/components/expertise-showcase.js — kart destesinin
  * kutu geometrisi (JS'in transform derinliği bu geometriye dayanır), overlay
  * katmanı, pill nav pinleme ve no-JS fallback. Görsel tasarım (cam kart, glow,
@@ -68,7 +68,8 @@
 }
 
 /* Pill nav — sticky, overflow'lu wrapper'larda kırılabildiği için yalnız
-   no-JS fallback'tir; JS section görünürken .is-pinned ile fixed'e alır. */
+   no-JS fallback'tir; JS init'te .is-pinned (fixed) basar ve section aktif
+   aralıktayken fade-in/out ile gösterir (autoAlpha JS'te). */
 [data-expertise-showcase] [data-es-pillnav] {
   position: sticky;
   bottom: var(--spacing--10);

@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.4.0
+ * expertise-showcase.js v1.5.0
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -59,10 +59,11 @@
  * kullanımda slide'a data-es-title / data-es-body attribute'ları verilebilir.
  * Metinsiz slide'da kart son metinde kalır.
  *
- * PILL NAV PIN: position:sticky, Webflow wrapper'larındaki overflow
- * hidden/clip yüzünden kırılabildiği için pillnav, section viewport'tayken
- * ScrollTrigger toggleClass ile .is-pinned (position:fixed) alır. Ancestor'da
- * transform olmaması şarttır (Kural 3 zaten garanti eder).
+ * PILL NAV PIN + FADE: position:sticky, Webflow wrapper'larındaki overflow
+ * hidden/clip yüzünden kırılabildiği için pillnav init'te .is-pinned
+ * (position:fixed) alır ve yalnız section aktif aralıktayken (top 60% →
+ * bottom bottom) fade-in/out ile görünür. Gizliyken autoAlpha etkileşimi de
+ * kapatır. Ancestor'da transform olmaması şarttır (Kural 3 garanti eder).
  *
  * WEBFLOW CMS NOTU (TEK Collection List, Item = SLIDE + metin paketi): Sayfada
  * tek liste ile çalışır; hem görseller hem metinler CMS'ten gelir. Kalıp:
@@ -485,20 +486,37 @@
       setActivePill(initialIdx, true);
     }
 
-    // ── Pill nav pinleme ──
+    // ── Pill nav pinleme + fade ──
     // position:sticky, Webflow wrapper'larındaki overflow hidden/clip yüzünden
-    // kırılabiliyor. Section viewport'tayken .is-pinned ile fixed'e alınır
-    // (CSS'te tanımlı). Ancestor'larda transform olmadığı sürece güvenli
-    // (Kural 3 zaten bunu garanti eder). ScrollTrigger yoksa CSS sticky
-    // fallback olarak kalır. Trigger'ı barba afterLeave merkezi temizler.
+    // kırılabiliyor. Nav init'te .is-pinned ile fixed'e alınır (CSS'te tanımlı)
+    // ve yalnız section aktif aralıktayken fade-in/out ile görünür — autoAlpha
+    // gizliyken visibility:hidden bastığı için etkileşim de kapanır.
+    // Ancestor'larda transform olmadığı sürece fixed güvenli (Kural 3 garanti
+    // eder). ScrollTrigger yoksa CSS sticky fallback olarak kalır. Trigger'ı
+    // barba afterLeave merkezi temizler.
     var pillnav = root.querySelector("[data-es-pillnav]");
     if (pillnav && hasST) {
+      pillnav.classList.add("is-pinned");
+      gsap.set(pillnav, { autoAlpha: 0, y: 16 });
+      var navTween = function (show) {
+        if (reduce) {
+          gsap.set(pillnav, { autoAlpha: show ? 1 : 0, y: 0 });
+          return;
+        }
+        gsap.to(pillnav, {
+          autoAlpha: show ? 1 : 0,
+          y: show ? 0 : 16,
+          duration: 0.35,
+          ease: show ? "power2.out" : "power2.in",
+          overwrite: "auto",
+        });
+      };
       ScrollTrigger.create({
         trigger: root,
-        start: "top bottom",
+        start: "top 60%",
         end: "bottom bottom",
         refreshPriority: -1,
-        toggleClass: { targets: pillnav, className: "is-pinned" },
+        onToggle: function (self) { navTween(self.isActive); },
       });
     }
 
