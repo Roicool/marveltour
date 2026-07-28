@@ -1,5 +1,9 @@
 /*!
- * h-scroll.css v1.1.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.2.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.2.0: kart boyutlandırması tamamen component'te — fluid genişlik +
+ *         3:4 portre oran + svh max-height freni. Designer'a stil gerekmez;
+ *         ince ayar CSS variable'larıyla: --hscroll-card-w /
+ *         --hscroll-card-ratio / --hscroll-card-max-h.
  * v1.1.0: .hscroll__header — kartlarla AYNI gutter'a (container-2xl) hizalı
  *         section başlığı; başlık varken pin yüksekliği flex column ile
  *         doğru dağıtılır (başlık + track birlikte 100svh'ye sığar).
@@ -90,8 +94,11 @@
 /* ── Card ────────────────────────────────────────────────────── */
 .hscroll__card {
   flex: 0 0 auto;
-  /* Override per instance: .hscroll { --hscroll-card-w: 32rem; } */
-  width: var(--hscroll-card-w, clamp(18rem, 38vw, 30rem));
+  /* Responsive boyut — Designer'a stil gerekmez. İnce ayar variable'larla:
+     .section_h-scroll { --hscroll-card-w: 36rem; --hscroll-card-ratio: 2/3; } */
+  width: var(--hscroll-card-w, clamp(18rem, 34vw, 32rem));
+  aspect-ratio: var(--hscroll-card-ratio, 3 / 4);   /* sinematik portre */
+  max-height: var(--hscroll-card-max-h, 74svh);     /* kısa ekran freni */
   border-radius: var(--radius--lg, 1rem);
   position: relative;
   overflow: clip;                 /* parallax'lı görseli kırpar — davranışsal */
