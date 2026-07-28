@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.1.0
+ * hero-cinematic.js v2.0.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — fullscreen media, headline's characters fade in in RANDOM order
  *   Scroll  — the SECTION pins; the media travels and scales INTO a
@@ -51,7 +51,7 @@
   "use strict";
 
   var PIN_PRIORITY = 10;
-  var PIN_DISTANCE = "+=140%"; // travel + a pinned "settle" hold at the end
+  var PIN_DISTANCE = "+=100%"; // one viewport of scroll for the whole move
 
   function initHeroCinematic(container) {
     container = container || global.document;
@@ -168,10 +168,6 @@
       /* Pin biterken scene tıklanabilir olsun (link vb. içerirse) */
       tl.set(scene, { pointerEvents: "auto" });
     }
-
-    /* Settle hold — kutuya oturmuş halde pinli bir nefes anı; timeline'ın
-       son ~%35'i boş geçer, sonra pin bırakır ve section akıp gider. */
-    tl.to({}, { duration: 0.4 });
   }
 
   global.Marveltour = global.Marveltour || {};
