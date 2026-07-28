@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.2.0
+ * expertise-showcase.js v1.3.0
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -47,22 +47,32 @@
  *   data-es-alternate     varsa: data-es-stack verilmemiş panellerde deste yönü
  *                          otomatik zigzag yapar (1., 3., 5. panel sol; 2., 4. sağ)
  *
- * WEBFLOW CMS NOTU (TEK Collection List, Item = SLIDE): Sayfada tek liste ile
- * çalışır. Kalıp:
+ * WEBFLOW CMS NOTU (TEK Collection List, Item = SLIDE + metin paketi): Sayfada
+ * tek liste ile çalışır; hem görseller hem metinler CMS'ten gelir. Kalıp:
  *   [data-expertise-showcase] (+ data-es-alternate)
  *     [data-es-source]                      ← Collection List Wrapper'ı saran div
  *       Collection List Wrapper > List > Item   (araya element girmez)
- *         > Div [data-es-slide] [data-es-group←CMS text field: panel slug'ı]
- *             > Image←CMS image field (+ opsiyonel [data-es-overlay])
- *     3× statik panel [data-es-panel="cultural|faith|educational"] — metinler,
- *       boş [data-es-media], oklar Designer'da statik
- *     statik [data-es-pillnav] (3 pill + CTA)
- * Init'te JS her slide'ı data-es-group == data-es-panel eşleşmesiyle ilgili
- * panelin [data-es-media]'sına taşır ve kaynağı gizler. Liste CMS'te order
- * field'ına göre sıralanır: küçük order = arkadaki kart (son item öne gelir).
- * JS kapalıyken kaynak liste düz, görünür bir görsel listesi olarak kalır.
+ *         > Div [data-es-slide] [data-es-group←Group field]
+ *             > Image←Image field (+ opsiyonel [data-es-overlay])
+ *         > Div [data-es-meta] [data-es-group←Group field]   ← metin paketi
+ *             > [data-es-text="watermark"] ←field   (dev arka plan yazısı)
+ *             > [data-es-text="title"]     ←field
+ *             > [data-es-text="body"]      ←field
+ *             > [data-es-text="caption"]   ←field
+ *             > [data-es-text="label"]     ←field   (pill + aria etiketi)
+ *     3× statik panel iskeleti [data-es-panel="cultural|faith|educational"]:
+ *       [data-es-slot="watermark|title|body|caption"] hedef öğeleri (Designer'da
+ *       stillenir, placeholder metinle durabilir), boş [data-es-media], oklar
+ *     statik [data-es-pillnav]: 3 pill ([data-es-slot="label"] içerir) + CTA
+ * Init'te JS: slide'ları data-es-group == data-es-panel eşleşmesiyle panele
+ * taşır (liste CMS'te Order field'ıyla sıralanır — küçük order = arkadaki kart,
+ * son item öne gelir); her grubun İLK metin paketinden slot'ları doldurur
+ * (textContent kopyalanır — panel iskeletindeki class/stil bozulmaz); kaynağı
+ * gizler. JS kapalıyken kaynak liste düz ve görünür kalır (içerik erişilebilir).
  * Collection Item'ın kendisine attribute verilemez; data-es-* attribute'ları
- * Item İÇİNDEKİ div'e konur (data-es-group değeri CMS field'ından bind'lanır).
+ * Item İÇİNDEKİ div'lere konur (data-es-group değeri CMS field'ından bind).
+ * Aynı grubun item'larında metin field'ları tekrar eder — yalnız ilki okunur,
+ * boş bırakılan slot Designer'daki placeholder metniyle kalır.
  * is-front/is-active initial class'ları gerekmez — JS init'te basar.
  * JS her panele data-es-stack-resolved="left|right" yazar — Designer'da ayna
  * düzeni (metin sağ/sol) bu attribute üzerinden stillenebilir.
@@ -118,29 +128,54 @@
       return null;
     }
 
-    // ── CMS dağıtımı: tek Collection List'ten gelen slide'ları panellere taşı ──
-    // Kaynak [data-es-source] (Collection List Wrapper'ı saran div) içindeki her
-    // [data-es-slide][data-es-group] öğesi, data-es-panel değeri group'la eşleşen
-    // panelin [data-es-media]'sına taşınır. Liste sırası korunur (arka→ön; CMS'te
-    // order field'ı küçükten büyüğe = arkadan öne). İş bitince kaynak gizlenir —
-    // JS yoksa kaynak liste düz ve görünür kalır (no-JS fallback).
+    var pills = Array.prototype.slice.call(root.querySelectorAll("[data-es-pill]"));
+
+    function panelByGroup(group) {
+      for (var i = 0; i < panels.length; i++) {
+        if (panels[i].getAttribute("data-es-panel") === group) return panels[i];
+      }
+      return null;
+    }
+
+    // ── CMS dağıtımı: tek Collection List'ten gelen içerik panellere taşınır ──
+    // Kaynak [data-es-source] (Collection List Wrapper'ı saran div) içinde her
+    // item bir [data-es-slide][data-es-group] + bir [data-es-meta][data-es-group]
+    // (metin paketi) taşır. Slide'lar data-es-panel eşleşmesiyle ilgili panelin
+    // [data-es-media]'sına taşınır (liste sırası korunur: küçük order = arkadaki
+    // kart). Her grubun İLK metin paketi panelin [data-es-slot="…"] öğelerini
+    // doldurur; "label" pill'e ve panelin data-es-label'ına gider. İş bitince
+    // kaynak gizlenir — JS yoksa kaynak liste düz ve görünür kalır (fallback).
     var source = root.querySelector("[data-es-source]");
     if (source) {
-      var flat = Array.prototype.slice.call(source.querySelectorAll("[data-es-slide]"));
       var orphans = 0;
-      flat.forEach(function (slide) {
-        var group = slide.getAttribute("data-es-group");
-        var target = null;
-        panels.some(function (p) {
-          if (p.getAttribute("data-es-panel") === group) {
-            target = p.querySelector("[data-es-media]");
-            return true;
-          }
-          return false;
-        });
+      Array.prototype.slice.call(source.querySelectorAll("[data-es-slide]")).forEach(function (slide) {
+        var panel = panelByGroup(slide.getAttribute("data-es-group"));
+        var target = panel && panel.querySelector("[data-es-media]");
         if (target) target.appendChild(slide); else orphans++;
       });
       if (orphans) console.warn("[Marveltour ExpertiseShowcase] " + orphans + " slide'ın data-es-group'u hiçbir panele eşleşmedi.", root);
+
+      var filled = {};
+      Array.prototype.slice.call(source.querySelectorAll("[data-es-meta]")).forEach(function (meta) {
+        var group = meta.getAttribute("data-es-group");
+        var panel = panelByGroup(group);
+        if (!panel || filled[group]) return;
+        filled[group] = true;
+        Array.prototype.slice.call(meta.querySelectorAll("[data-es-text]")).forEach(function (src) {
+          var key = src.getAttribute("data-es-text");
+          var text = src.textContent;
+          if (key === "label") {
+            panel.setAttribute("data-es-label", text);
+            var pill = pills[panels.indexOf(panel)];
+            var pillLabel = pill && pill.querySelector('[data-es-slot="label"]');
+            if (pillLabel) pillLabel.textContent = text;
+            return;
+          }
+          var slot = panel.querySelector('[data-es-slot="' + key + '"]');
+          if (slot) slot.textContent = text;
+        });
+      });
+
       source.setAttribute("hidden", "hidden");
       source.style.display = "none";
     }
@@ -298,8 +333,7 @@
     function onVisibility() { hidden = global.document.hidden; syncAllVideos(); }
     global.document.addEventListener("visibilitychange", onVisibility);
 
-    // ── Sticky pill nav: tıkla-kaydır + scroll-spy ──
-    var pills = Array.prototype.slice.call(root.querySelectorAll("[data-es-pill]"));
+    // ── Sticky pill nav: tıkla-kaydır + scroll-spy (pills yukarıda tanımlı) ──
     var spyIO = null;
 
     function setActivePill(idx, instant) {
