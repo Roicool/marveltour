@@ -1,5 +1,9 @@
 /*!
- * step-scroll.js v1.1.0  (adapted from Sestek step-scroll v2.5.0)
+ * step-scroll.js v1.2.0  (adapted from Sestek step-scroll v2.5.0)
+ * v1.2.0: [data-sscroll-video] katmanı içinde <video> yoksa ve elementte
+ *         data-sscroll-video-src attribute'u varsa (Webflow'da CMS alanına
+ *         BAĞLANABİLİR) <video> JS'te sentezlenir — Collection Item içinde
+ *         embed/custom-code gerektirmeden CMS'ten video.
  * v1.1.0: CMS MODE — Webflow Collection List ile kurulum. Her Collection
  *         Item bir adımdır ve KENDİ bg + video + metnini taşır; index
  *         numarası YAZILMAZ (DOM sırasından türetilir). JS, item'lardaki
@@ -168,7 +172,17 @@
     var media = videos.map(function (v, i) {
       var m = v.tagName === "VIDEO" ? v : v.querySelector("video");
       if (!m) {
-        console.warn("[Marveltour StepScroll] [data-sscroll-video=\"" + i + "\"] contains no <video> element.");
+        /* CMS attribute modu: bound URL'den <video> sentezle */
+        var srcAttr = v.getAttribute("data-sscroll-video-src");
+        if (srcAttr && /^https?:\/\//.test(srcAttr)) {
+          m = document.createElement("video");
+          m.setAttribute("src", srcAttr);
+          m.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;";
+          v.appendChild(m);
+        }
+      }
+      if (!m) {
+        console.warn("[Marveltour StepScroll] [data-sscroll-video=\"" + i + "\"] contains no <video> element (ve geçerli data-sscroll-video-src yok).");
         return null;
       }
       m.muted = true;
