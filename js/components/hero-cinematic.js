@@ -1,9 +1,10 @@
 /*!
- * hero-cinematic.js v1.0.0
+ * hero-cinematic.js v1.1.0
  * Home hero — the headline's characters fade in in RANDOM order on load;
  * on scroll the hero media pins and shrinks (scrub) while the headline
- * fades out, then the shrunk media returns to normal flow. Under
- * prefers-reduced-motion everything stays static and the video is paused.
+ * fades out and an optional second-scene text ([data-hero-text]) rises in
+ * next to the shrunk media. Under prefers-reduced-motion everything stays
+ * static (second text visible) and the video is paused.
  *
  * Requires: gsap + ScrollTrigger + SplitText (globals)
  * CSS:      css/components/hero-cinematic.css
@@ -18,6 +19,9 @@
  *         <div class="hero-cinematic_overlay"></div>          ← opsiyonel filtre
  *         <video autoplay loop muted playsinline>…</video>
  *       </div>
+ *     </div>
+ *     <div data-hero-text class="hero-cinematic_text-wrap">  ← opsiyonel 2. sahne
+ *       <p class="hero-cinematic_text">…</p>                    metni (scroll'la belirir)
  *     </div>
  *   </section>
  *
@@ -49,6 +53,7 @@
 
     var title = section.querySelector("[data-hero-title]");
     var media = section.querySelector("[data-hero-media]");
+    var text = section.querySelector("[data-hero-text]");
     var video = media && media.querySelector("video");
 
     var reduce = global.matchMedia &&
@@ -111,6 +116,14 @@
 
       if (title) {
         shrinkTl.to(title, { opacity: 0, ease: "power2.out" }, "<");
+      }
+
+      /* Second scene: the intro text rises in beside the shrinking media.
+         Initial state is set here (not in CSS) so the text stays visible
+         when JS is off or reduced-motion returned early above. */
+      if (text) {
+        gsap.set(text, { autoAlpha: 0, y: 40 });
+        shrinkTl.to(text, { autoAlpha: 1, y: 0, ease: "power2.out" }, "<0.25");
       }
     }
   }
