@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/barba-init.js
- * v1.2.1 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
+ * v1.3.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
  *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
  *          pin'li ScrollTrigger'lar için en güvenli kurgu.
  *          v1.2.0: template otomatik gizlenir, kopyada gizli inline/display
@@ -89,9 +89,13 @@
 
     var style = document.createElement("style");
     style.textContent =
+      /* DİKKAT: CSS'te transform YOK — GSAP CSS translateY(101%)'i piksele
+         çevirip ayrı `y` kanalında saklıyordu; yPercent animasyonu o offset'i
+         temizlemediği için perde hiç ekrana girmiyordu. Başlangıç konumunu
+         aşağıda GSAP set'i verir. */
       ".mt-page-cover{position:fixed;inset:0;z-index:9999;display:flex;" +
       "align-items:center;justify-content:center;background:" + COVER_BG + ";" +
-      "transform:translateY(101%);will-change:transform;pointer-events:none;visibility:hidden}" +
+      "will-change:transform;pointer-events:none;visibility:hidden}" +
       ".mt-page-cover__logo{opacity:0;color:var(--color-text--inverted,#fff);" +
       "max-width:min(40vw,16rem)}" +
       ".mt-page-cover__logo img,.mt-page-cover__logo svg{display:block;width:100%;height:auto}" +
@@ -147,6 +151,8 @@
 
     cover.appendChild(logoWrap);
     document.body.appendChild(cover);
+    /* Başlangıç konumu tek kanaldan (yPercent) — px offset sıfır */
+    gsap.set(cover, { y: 0, yPercent: 101 });
 
     /* ============================================================
        Yardımcılar
@@ -218,8 +224,8 @@
             var tl = gsap.timeline();
             tl.set(cover, { visibility: "visible" })
               .fromTo(cover,
-                { yPercent: 101 },
-                { yPercent: 0, duration: 0.55, ease: "power3.inOut" }
+                { y: 0, yPercent: 101 },
+                { y: 0, yPercent: 0, duration: 0.55, ease: "power3.inOut" }
               )
               .fromTo(logoWrap,
                 { autoAlpha: 0, y: 24, scale: 0.92 },
@@ -272,7 +278,7 @@
                 duration: 0.6,
                 ease: "power3.inOut"
               }, "-=0.08")
-              .set(cover, { visibility: "hidden", yPercent: 101 })
+              .set(cover, { visibility: "hidden", y: 0, yPercent: 101 })
               .set(logoWrap, { y: 0, scale: 1 });
             return tl;
           }

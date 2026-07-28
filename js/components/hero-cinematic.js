@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.4.3
+ * hero-cinematic.js v2.5.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -126,9 +126,21 @@
       }
     }
 
-    /* Pointer takası — timeline set'i DEĞİL, progress eşiği: her onUpdate/
-       onRefresh'te mutlak durumdan hesaplanır; scrub yönü, F5, Barba
-       geçişi fark etmez, asla "set atlanmış" kalmaz. */
+    /* Pointer mimarisi — overlay kalıbı:
+       Full-screen WRAPPER'lar (title-wrap, media-wrap) kalıcı pointer-none:
+       hangi z-index'te olurlarsa olsunlar tıklama yutamazlar (kullanıcı
+       z-10/z-20 combo'ları kullanıyor; scene'in üstünde kalsalar bile artık
+       zararsız). Etkileşim yalnız içerik elemanlarında yaşar: sahne-1'de
+       desc/CTA'lar, sahne-2'de scene. */
+    if (title && title.parentElement) title.parentElement.style.pointerEvents = "none";
+    if (title) title.style.pointerEvents = "none";
+    if (media) {
+      media.style.pointerEvents = "none";
+      if (media.parentElement) media.parentElement.style.pointerEvents = "none";
+    }
+
+    /* Takas — timeline set'i DEĞİL, progress eşiği: her onUpdate/onRefresh'te
+       mutlak durumdan hesaplanır; yön, F5, Barba geçişi fark etmez. */
     var POINTER_SWAP = 0.55;
     var pointerState = null;
     function syncPointers(progress) {
@@ -136,8 +148,8 @@
       if (inScene2 === pointerState) return;
       pointerState = inScene2;
       if (scene) scene.style.pointerEvents = inScene2 ? "auto" : "none";
-      ui.forEach(function (el) { el.style.pointerEvents = inScene2 ? "none" : ""; });
-      if (title) title.style.pointerEvents = inScene2 ? "none" : "";
+      /* Wrapper pointer-none olduğundan sahne-1 etkileşimleri explicit auto ister */
+      ui.forEach(function (el) { el.style.pointerEvents = inScene2 ? "none" : "auto"; });
     }
 
     /* ---------- 2) Pinned scene change — media FLIPs into the box ---------- */
