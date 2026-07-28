@@ -1,0 +1,92 @@
+/*!
+ * marquee.css v1.0.0  (adapted from Sestek marquee.css v1.0.0)
+ * Infinite drag/momentum logo marquee — behavioural CSS.
+ * Logo boyutu, gap ve renk/filtre yorumu Webflow Designer'da override edilebilir.
+ */
+
+/* ── Root ────────────────────────────────────────────────────── */
+/*
+ * overflow:hidden clips the scrolling track.
+ * mask-image fades both edges for a premium "infinite" illusion.
+ * cursor:grab signals draggability before the user tries.
+ */
+.marquee {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent  0%,
+    black        12%,
+    black        88%,
+    transparent  100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent  0%,
+    black        12%,
+    black        88%,
+    transparent  100%
+  );
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  padding-block: var(--spacing--6, 1.5rem);
+}
+
+/* Grabbing state — JS adds / removes this class */
+.marquee.is-dragging {
+  cursor: grabbing;
+}
+
+/* ── Track (the moving row) ──────────────────────────────────── */
+.marquee__track {
+  display: inline-flex;
+  align-items: center;
+  column-gap: var(--spacing--20, 5rem);
+  white-space: nowrap;
+  will-change: transform;
+}
+
+/* ── Item ────────────────────────────────────────────────────── */
+.marquee__item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marquee.is-dragging .marquee__item {
+  pointer-events: none;
+}
+
+/* ── Logo image ──────────────────────────────────────────────── */
+.marquee__logo {
+  display: block;
+  width: 6.25rem;
+  height: 6.25rem;
+  object-fit: contain;
+  filter: grayscale(1) opacity(0.45);
+  transition:
+    filter    0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.40s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;   /* hit-test lives on .marquee__item */
+}
+
+.marquee__item:hover .marquee__logo {
+  filter: none;
+  transform: scale(1.07);
+  pointer-events: auto;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .marquee__track {
+    will-change: auto;
+    transform: none !important;
+  }
+
+  .marquee__logo {
+    transition: none;
+  }
+}
