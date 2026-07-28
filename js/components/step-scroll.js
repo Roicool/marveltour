@@ -1,5 +1,10 @@
 /*!
- * step-scroll.js v1.0.0  (adapted from Sestek step-scroll v2.5.0)
+ * step-scroll.js v1.1.0  (adapted from Sestek step-scroll v2.5.0)
+ * v1.1.0: CMS MODE — Webflow Collection List ile kurulum. Her Collection
+ *         Item bir adımdır ve KENDİ bg + video + metnini taşır; index
+ *         numarası YAZILMAZ (DOM sırasından türetilir). JS, item'lardaki
+ *         bg/video elementlerini kendi stack'lerine taşıyıp klasik indexed
+ *         kontrata çevirir. Bkz. "CMS DOM contract" aşağıda.
  * Pinned, scroll-driven N-step section:
  *   1. Section pins for the whole scroll distance
  *   2. Scroll splits into N equal dwell windows, one per step
@@ -16,7 +21,18 @@
  * Requires : gsap + ScrollTrigger (globals)
  * CSS      : yok — kritik stiller JS'ten basılır; layout/renk Designer'da
  *
- * DOM contract — root [data-step-scroll], children:
+ * CMS DOM contract (tercih edilen — Webflow Collection List):
+ *   [data-step-scroll]                    root section
+ *     [data-sscroll-bg-wrap]              BOŞ div — bg katmanları buraya taşınır
+ *     [data-sscroll-video-wrap]           video çerçevesi — layer'lar buraya taşınır
+ *     [data-sscroll-progress]             BOŞ div — progress bar
+ *     Collection List Wrapper > List
+ *       Collection Item  [data-sscroll-item]      ← index YOK, sıra DOM'dan
+ *         [data-sscroll-bg]                  item'ın background'ı (img/div)
+ *         [data-sscroll-video]               item'ın videosu (embed wrapper olabilir)
+ *         [data-sscroll-title] / [data-sscroll-text]   metinler
+ *
+ * Classic DOM contract (indexed) — root [data-step-scroll], children:
  *   [data-sscroll-bg-item="i"]   background layer for step i (0-based)
  *   [data-sscroll-step="i"]      title+text block for step i
  *     [data-sscroll-title]         heading inside the step (staggered)
@@ -90,6 +106,35 @@
   function setupInstance(root) {
     if (root._stepScrollInit) return;                      // idempotent — no duplicate triggers
     root._stepScrollInit = true;
+
+    /* ── CMS MODE — Collection Item'ları klasik indexed kontrata çevir ──
+       Her [data-sscroll-item] bir adımdır; içindeki bg/video elementleri
+       kendi stack'lerine TAŞINIR (bg → bg-wrap, video → video-wrap) ve
+       index'leri DOM sırasından atanır. Item'ın kendisi step (metin) olur;
+       parent'ı (Collection List) adım takası için konumlanma bağlamıdır. */
+    var cmsItems = Array.prototype.slice.call(root.querySelectorAll("[data-sscroll-item]"));
+    if (cmsItems.length) {
+      var bgWrap  = root.querySelector("[data-sscroll-bg-wrap]");
+      var vidWrap = root.querySelector("[data-sscroll-video-wrap]");
+      cmsItems.forEach(function (item, i) {
+        var bg = item.querySelector("[data-sscroll-bg]");
+        if (bg) {
+          bg.setAttribute("data-sscroll-bg-item", i);
+          if (bgWrap) bgWrap.appendChild(bg);
+        }
+        var vid = item.querySelector("[data-sscroll-video]");
+        if (vid) {
+          vid.setAttribute("data-sscroll-video", i);
+          if (vidWrap) vidWrap.appendChild(vid);
+        }
+        item.setAttribute("data-sscroll-step", i);
+      });
+      /* Collection List = adım bloklarının ortak konumlanma bağlamı */
+      var list = cmsItems[0].parentElement;
+      if (list && getComputedStyle(list).position === "static") {
+        list.style.position = "relative";
+      }
+    }
 
     var bgItems = Array.prototype.slice.call(root.querySelectorAll("[data-sscroll-bg-item]"));
     var steps   = Array.prototype.slice.call(root.querySelectorAll("[data-sscroll-step]"));
