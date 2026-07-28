@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.3.1
+ * expertise-showcase.js v1.4.0
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -39,13 +39,30 @@
  *         [data-es-pill-bg]                   aktif arka planı (aria-hidden ver)
  *
  * Root attributes (hepsi opsiyonel):
- *   data-es-duration      kart geçiş süresi, sn            (default 0.6)
- *   data-es-ease          GSAP ease                        (default "power3.out")
- *   data-es-offset-step   derinlik başına xPercent kayması (default 7)
- *   data-es-scale-step    derinlik başına scale düşüşü     (default 0.07)
- *   data-es-dim-step      derinlik başına overlay opacity  (default 0.4)
- *   data-es-alternate     varsa: data-es-stack verilmemiş panellerde deste yönü
- *                          otomatik zigzag yapar (1., 3., 5. panel sol; 2., 4. sağ)
+ *   data-es-duration      kart geçiş süresi, sn                    (default 0.6)
+ *   data-es-ease          GSAP ease                                (default "power3.out")
+ *   data-es-offset-step   derinlik başına yana taşma, konteyner %  (default 6 → 6/12%)
+ *   data-es-height-step   derinlik başına yükseklik daralması      (default 0.14 → 86/72%)
+ *   data-es-dim-step      derinlik başına overlay opacity          (default 0.4)
+ *   data-es-alternate     varsa: data-es-stack verilmemiş panellerde düzen
+ *                          otomatik zigzag yapar (2., 4. panel aynalanır)
+ *
+ * DERİNLİK GÖRÜNÜMÜ: Orijinal kalıptaki "sabit genişlik + azalan yükseklik +
+ * yana taşan deste" görünümü yalnız transform'la verilir — kutu scaleY ile
+ * daralır, kutunun DOĞRUDAN çocukları (görsel + overlay) karşı-scale alır,
+ * içerik bozulmaz. Slide'ın içine ekstra sarmalayıcı ekleme; kartın kutu
+ * geometrisi (width %88, sol/sağ yaslama) CSS'te tanımlıdır.
+ *
+ * SLIDE BAŞINA METİN: Her kart değişiminde cam karttaki başlık + paragraf öne
+ * gelen slide'ın metniyle değişir (alttan yumuşak reveal). Kaynak: CMS'te
+ * item'ın Title/Body field'ları (dağıtımda slide'a kopyalanır); statik
+ * kullanımda slide'a data-es-title / data-es-body attribute'ları verilebilir.
+ * Metinsiz slide'da kart son metinde kalır.
+ *
+ * PILL NAV PIN: position:sticky, Webflow wrapper'larındaki overflow
+ * hidden/clip yüzünden kırılabildiği için pillnav, section viewport'tayken
+ * ScrollTrigger toggleClass ile .is-pinned (position:fixed) alır. Ancestor'da
+ * transform olmaması şarttır (Kural 3 zaten garanti eder).
  *
  * WEBFLOW CMS NOTU (TEK Collection List, Item = SLIDE + metin paketi): Sayfada
  * tek liste ile çalışır; hem görseller hem metinler CMS'ten gelir. Kalıp:
@@ -69,9 +86,11 @@
  *     statik [data-es-pillnav]: 3 pill ([data-es-slot="label"] içerir) + CTA
  * Init'te JS: slide'ları data-es-group == data-es-panel eşleşmesiyle panele
  * taşır (liste CMS'te Order field'ıyla sıralanır — küçük order = arkadaki kart,
- * son item öne gelir); her grubun İLK metin paketinden slot'ları doldurur
- * (textContent kopyalanır — panel iskeletindeki class/stil bozulmaz); kaynağı
- * gizler. JS kapalıyken kaynak liste düz ve görünür kalır (içerik erişilebilir).
+ * son item öne gelir; taşımadan önce item'ın Title/Body'si slide'a kopyalanır).
+ * Panel düzeyi slotlar (watermark, caption, label) her grubun İLK metin
+ * paketinden doldurulur; title/body ise HER kart değişiminde öne gelen
+ * slide'ınkiyle güncellenir. Kaynak gizlenir; JS kapalıyken düz ve görünür
+ * kalır (içerik erişilebilir).
  * Collection Item'ın kendisine attribute verilemez; data-es-* attribute'ları
  * Item İÇİNDEKİ div'lere konur (data-es-group değeri CMS field'ından bind).
  * Aynı grubun item'larında metin field'ları tekrar eder — yalnız ilki okunur,
@@ -166,6 +185,18 @@
       Array.prototype.slice.call(source.querySelectorAll("[data-es-slide]")).forEach(function (slide) {
         var panel = panelByGroup(groupOf(slide));
         var target = panel && panel.querySelector("[data-es-media]");
+        // Slide'a özel metinler taşınmadan ÖNCE item'ındaki paketten kopyalanır —
+        // ön karta gelince cam karta bu metinler yazılır.
+        var item = slide.parentElement;
+        var meta = item && item.querySelector("[data-es-meta]");
+        if (meta) {
+          var t = meta.querySelector('[data-es-text="title"]');
+          var b = meta.querySelector('[data-es-text="body"]');
+          slide._esText = {
+            title: t ? t.textContent.trim() : "",
+            body: b ? b.textContent.trim() : "",
+          };
+        }
         if (target) target.appendChild(slide); else orphans++;
       });
       if (orphans) console.warn("[Marveltour ExpertiseShowcase] " + orphans + " slide'ın data-es-group'u hiçbir panele eşleşmedi.", root);
@@ -200,8 +231,8 @@
     var hasST = hasGsap && typeof ScrollTrigger !== "undefined";
     var duration = attrNum(root, "data-es-duration", 0.6);
     var ease = root.getAttribute("data-es-ease") || "power3.out";
-    var offsetStep = attrNum(root, "data-es-offset-step", 7);
-    var scaleStep = attrNum(root, "data-es-scale-step", 0.07);
+    var offsetStep = attrNum(root, "data-es-offset-step", 6);    // konteyner %'si / derinlik (orijinal: 6/12)
+    var heightStep = attrNum(root, "data-es-height-step", 0.14); // yükseklik daralması / derinlik (orijinal: 86/72%)
     var dimStep = attrNum(root, "data-es-dim-step", 0.4);
 
     var visible = true;  // root viewport'ta mı (IO)
@@ -224,14 +255,15 @@
 
       if (!media || slides.length < 2) return null; // desteye yetecek kart yok — statik panel
 
-      // Deste yönü: media/panel attribute'u > root'ta data-es-alternate varsa
-      // tek indexli paneller sağa (CMS'te item'lar aynı markup'ı bastığı için
-      // per-item attribute yerine otomatik zigzag) > default sol.
+      // Ayna düzeni: data-es-stack="right" → metin sağda/medya solda, deste SOLA
+      // taşar. Attribute yoksa data-es-alternate'li root'ta tek indexli paneller
+      // otomatik aynalanır (CMS item'ları aynı markup'ı bastığı için zigzag JS'te).
       var stackAttr = media.getAttribute("data-es-stack") || panel.getAttribute("data-es-stack");
-      var dir = stackAttr === "right" ? 1 :
-        stackAttr === "left" ? -1 :
-        (root.hasAttribute("data-es-alternate") && index % 2 === 1) ? 1 : -1;
-      panel.setAttribute("data-es-stack-resolved", dir === 1 ? "right" : "left"); // CSS ayna hook'u
+      var mirrored = stackAttr === "right" ? true :
+        stackAttr === "left" ? false :
+        (root.hasAttribute("data-es-alternate") && index % 2 === 1);
+      var dir = mirrored ? -1 : 1; // arka kartların taştığı yön: +1 sağ / -1 sol
+      panel.setAttribute("data-es-stack-resolved", mirrored ? "right" : "left"); // CSS ayna hook'u
       var order = slides.slice(); // arka→ön; son eleman ön karttır
 
       var status = panel.querySelector("[data-es-status]");
@@ -268,31 +300,74 @@
         if (!reduce && visible && !hidden) playVideo(front.querySelector("video"));
       }
 
+      // Ön karta gelen slide'ın metni cam kartta gösterilir. Kaynak: CMS
+      // dağıtımında item'ından kopyalanan _esText, yoksa slide attribute'ları.
+      function slideText(slide) {
+        return slide._esText || {
+          title: slide.getAttribute("data-es-title") || "",
+          body: slide.getAttribute("data-es-body") || "",
+        };
+      }
+
+      function syncTextCard(instant) {
+        var t = slideText(frontSlide());
+        var slots = [];
+        var titleSlot = panel.querySelector('[data-es-slot="title"]');
+        var bodySlot = panel.querySelector('[data-es-slot="body"]');
+        if (titleSlot && t.title) { titleSlot.textContent = t.title; slots.push(titleSlot); }
+        if (bodySlot && t.body) { bodySlot.textContent = t.body; slots.push(bodySlot); }
+        if (slots.length && hasGsap && !instant && !reduce) {
+          gsap.fromTo(slots,
+            { autoAlpha: 0, y: 24 },
+            { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out", stagger: 0.08,
+              overwrite: "auto", clearProps: "transform" });
+        }
+      }
+
+      /* Orijinal kalıptaki "sabit genişlik + azalan yükseklik + yana taşma"
+         görünümü transform-only verilir: kutu scaleY ile daralır, DOĞRUDAN
+         çocukları (görsel + overlay) 1/s karşı-scale alır → içerik bozulmadan
+         ortadan kırpılmış görünür; layout/paint thrash yok. Bu yüzden slide'ın
+         içine ekstra sarmalayıcı EKLEME — çocuklar counter-scale hedefidir. */
       function apply(instant) {
         var n = order.length;
+        var mediaW = media.offsetWidth; // tek okuma; ardından yalnız yazım
         order.forEach(function (slide, i) {
-          var depth = n - 1 - i; // 0 = ön kart
+          var depth = Math.min(n - 1 - i, 2); // 0 = ön; 2'de doyar (orijinalde 3 durum)
           var ov = slide.querySelector("[data-es-overlay]");
-          var x = dir * offsetStep * depth;
-          var s = Math.max(1 - scaleStep * depth, 0.5);
+          var parts = Array.prototype.slice.call(slide.children);
+          var x = dir * mediaW * (offsetStep / 100) * depth;
+          var s = Math.max(1 - heightStep * depth, 0.4);
           var dim = Math.min(dimStep * depth, 0.85);
           slide.style.zIndex = String(i + 1); // derinlik anlık değişir (orijinaldeki class swap gibi)
           slide.classList.toggle("is-front", depth === 0);
           slide.setAttribute("aria-hidden", depth === 0 ? "false" : "true");
           if (hasGsap && !instant) {
-            gsap.to(slide, { xPercent: x, scale: s, duration: duration, ease: ease, overwrite: "auto" });
+            gsap.to(slide, { x: x, scaleY: s, duration: duration, ease: ease, overwrite: "auto" });
+            gsap.to(parts, { scaleY: 1 / s, duration: duration, ease: ease, overwrite: "auto" });
             if (ov) gsap.to(ov, { opacity: dim, duration: duration, ease: ease, overwrite: "auto" });
           } else if (hasGsap) {
-            gsap.set(slide, { xPercent: x, scale: s });
+            gsap.set(slide, { x: x, scaleY: s });
+            gsap.set(parts, { scaleY: 1 / s });
             if (ov) gsap.set(ov, { opacity: dim });
           } else {
-            slide.style.transform = "translateX(" + x + "%) scale(" + s + ")";
+            slide.style.transform = "translateX(" + x + "px) scaleY(" + s + ")";
+            parts.forEach(function (p) { p.style.transform = "scaleY(" + (1 / s) + ")"; });
             if (ov) ov.style.opacity = String(dim);
           }
         });
+        syncTextCard(instant);
         announce();
         syncVideos();
       }
+
+      // x offset'i px hesaplandığı için resize'da duruşu tazele
+      var rTimer;
+      function onResize() {
+        clearTimeout(rTimer);
+        rTimer = setTimeout(function () { apply(true); }, 150);
+      }
+      global.addEventListener("resize", onResize);
 
       function next() { order.unshift(order.pop()); apply(reduce); }
       function prev() { order.push(order.shift()); apply(reduce); }
@@ -320,6 +395,10 @@
         syncVideos: syncVideos,
         pauseAll: function () {
           slides.forEach(function (s) { pauseVideo(s.querySelector("video")); });
+        },
+        destroy: function () {
+          clearTimeout(rTimer);
+          global.removeEventListener("resize", onResize);
         },
       };
     }
@@ -406,13 +485,30 @@
       setActivePill(initialIdx, true);
     }
 
+    // ── Pill nav pinleme ──
+    // position:sticky, Webflow wrapper'larındaki overflow hidden/clip yüzünden
+    // kırılabiliyor. Section viewport'tayken .is-pinned ile fixed'e alınır
+    // (CSS'te tanımlı). Ancestor'larda transform olmadığı sürece güvenli
+    // (Kural 3 zaten bunu garanti eder). ScrollTrigger yoksa CSS sticky
+    // fallback olarak kalır. Trigger'ı barba afterLeave merkezi temizler.
+    var pillnav = root.querySelector("[data-es-pillnav]");
+    if (pillnav && hasST) {
+      ScrollTrigger.create({
+        trigger: root,
+        start: "top bottom",
+        end: "bottom bottom",
+        refreshPriority: -1,
+        toggleClass: { targets: pillnav, className: "is-pinned" },
+      });
+    }
+
     return {
       root: root,
       destroy: function () {
         if (rootIO) rootIO.disconnect();
         if (spyIO) spyIO.disconnect();
         global.document.removeEventListener("visibilitychange", onVisibility);
-        panelApis.forEach(function (p) { p.pauseAll(); });
+        panelApis.forEach(function (p) { p.pauseAll(); if (p.destroy) p.destroy(); });
       },
     };
   }

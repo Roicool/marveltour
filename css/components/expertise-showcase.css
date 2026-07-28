@@ -1,13 +1,14 @@
 /*!
- * expertise-showcase.css v1.0.0
+ * expertise-showcase.css v1.4.0
  * Behavioural CSS for js/components/expertise-showcase.js — kart destesinin
- * stack konumlandırması, overlay katmanı, sticky pill nav ve no-JS fallback.
- * Görsel tasarım (cam kart, glow, watermark tipografisi, renkler, breakpoint
- * düzeni) Webflow Designer'da kalır. State hook'ları: .is-front (öndeki kart),
- * .is-active (aktif pill).
+ * kutu geometrisi (JS'in transform derinliği bu geometriye dayanır), overlay
+ * katmanı, pill nav pinleme ve no-JS fallback. Görsel tasarım (cam kart, glow,
+ * watermark tipografisi, renkler, breakpoint düzeni) Webflow Designer'da kalır.
+ * State hook'ları: .is-front (öndeki kart), .is-active (pill),
+ * .is-pinned (JS'in bastığı fixed pill nav), [data-es-stack-resolved] (ayna).
  *
- * NOT: [data-es-media]'ya yüksekliği Designer verir (örn. .aspect-video ya da
- * sabit height) — kartlar bu kutuyu doldurur.
+ * NOT: [data-es-media]'ya yüksekliği Designer verir — kartlar bu kutuya göre
+ * konumlanır.
  */
 
 [data-expertise-showcase] [data-es-media] {
@@ -15,13 +16,28 @@
   touch-action: pan-y; /* yatay swipe JS'e, dikey scroll tarayıcıya */
 }
 
-[data-expertise-showcase] [data-es-slide] {
+/* Kart kutusu: sabit genişlik (%88), tam yükseklik, öndeki kenara yaslı.
+   Derinlik (yükseklik daralması + yana taşma) JS'te yalnız transform'la
+   verilir. Yalnız [data-es-media] İÇİNDE absolute — CMS kaynak listesinde
+   dururken akışta kalır (no-JS fallback). */
+[data-expertise-showcase] [data-es-media] [data-es-slide] {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 88%;
+  height: 100%;
   overflow: hidden;
   border-radius: var(--radius--2xl);
   will-change: transform;
   backface-visibility: hidden;
+}
+
+/* Aynalı panel (JS data-es-stack-resolved yazar): kart sağa yaslanır,
+   deste sola taşar */
+[data-expertise-showcase] [data-es-panel][data-es-stack-resolved="right"] [data-es-media] [data-es-slide] {
+  left: auto;
+  right: 0;
 }
 
 [data-expertise-showcase] [data-es-slide] > video,
@@ -35,7 +51,7 @@
 }
 
 /* Karartma katmanı — opacity'yi derinliğe göre JS sürer.
-   No-JS'te 0 kalır: son kart (ön) zaten en üstte, içerik tam görünür. */
+   No-JS'te 0 kalır: ön kart zaten en üstte, içerik tam görünür. */
 [data-expertise-showcase] [data-es-overlay] {
   position: absolute;
   inset: 0;
@@ -51,14 +67,22 @@
   user-select: none;
 }
 
-/* Sticky alt pill nav — çubuk dışındaki boşluk tıklamayı yutmaz */
+/* Pill nav — sticky, overflow'lu wrapper'larda kırılabildiği için yalnız
+   no-JS fallback'tir; JS section görünürken .is-pinned ile fixed'e alır. */
 [data-expertise-showcase] [data-es-pillnav] {
   position: sticky;
   bottom: var(--spacing--10);
   z-index: 10;
   display: flex;
   justify-content: center;
-  pointer-events: none;
+  pointer-events: none; /* çubuk dışı boşluk tıklama yutmasın */
+}
+
+[data-expertise-showcase] [data-es-pillnav].is-pinned {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--spacing--10);
 }
 
 [data-expertise-showcase] [data-es-pillnav] > * {

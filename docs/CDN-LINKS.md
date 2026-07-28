@@ -47,7 +47,7 @@ Her sayfada, bu sırayla:
 <!-- logo-marquee v1.0.0 — merkez spotlight'lı adım adım ilerleyen logo şeridi (gsap gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/logo-marquee.js" defer></script>
 
-<!-- expertise-showcase v1.3.0 — panelli uzmanlık vitrini: GSAP kart destesi + sticky pill nav scroll-spy; tek Webflow CMS listesinden slide + metin dağıtımı (gsap gerekir; ScrollTrigger yalnız metin reveal'i için, refreshPriority -1) -->
+<!-- expertise-showcase v1.4.0 — panelli uzmanlık vitrini: GSAP kart destesi (slide başına değişen metin kartı) + pinli pill nav scroll-spy; tek Webflow CMS listesinden slide + metin dağıtımı (gsap + ScrollTrigger gerekir; refreshPriority -1) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/expertise-showcase.js" defer></script>
 
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
