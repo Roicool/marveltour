@@ -370,6 +370,45 @@ Barba `<body>` class'larını değiştirmez. Sayfaya özel stil gerekiyorsa body
 değil, container'ın `data-barba-namespace` değerine bağla:
 `[data-barba-namespace="about"] .foo { … }`.
 
+## Barba Saha Notları (yaşanmış bug'lardan çıkan kurallar)
+
+Bu bölümdeki her madde gerçek bir debug seansından çıktı; core'da çözülüdür ama
+NEDEN'i bilinmezse aynı çukurlara başka biçimde düşülür.
+
+| Tuzak | Belirti | Core'daki çözüm |
+|---|---|---|
+| CSS'te `transform` + GSAP `yPercent` aynı elementte | Perde hiç ekrana girmedi — çıplak sayfa takası, logosuz geçiş | Perde konumu yalnız GSAP'ten, tek kanaldan (`y:0` sabit + `yPercent`) verilir. Kural: GSAP'in anime edeceği elemente CSS'ten transform yazma |
+| Barba cache'i mutasyonlu DOM'u snapshot'lar | Geri tuşunda SplitText char'ları, inline transform'lar üstüne tekrar init → enkaz | `cacheIgnore: true` — her navigasyon temiz HTML çeker (Webflow HTML'i küçük, fetch perde animasyonuyla paralel → algılanan maliyet sıfır) |
+| bfcache donmuş sayfa restore eder | Barba dışı tam-sayfa geçiş sonrası geri tuşu → GSAP/Lenis ölü | `pageshow` guard: `e.persisted` ise temiz reload |
+| Enjekte edilen `<video autoplay>` başlamaz | Geçişle gelinen sayfada video duruyor | `runPage` her kurulumda `video[autoplay]`'e muted + `load()` + `play()` + canplay retry uygular |
+| `[data-transition-logo]` template'i | Sayfada görünür kalıyor / iç eleman gizliyse perdede logo yok | JS template'i kopyalayıp kendisi gizler; kopyadaki gizli inline state'leri temizler; kaynak yoksa wordmark fallback |
+
+**ALTIN KURAL — kod yerleşimi:** Barba'lı sitede Page Settings custom code'una
+HİÇBİR ŞEY konmaz — `<script>` de `<style>` da. Barba geçişte yalnız container
+HTML'ini getirir; page-level kod (stil dahil) o sayfaya Barba ile gelindiğinde
+ASLA yüklenmez. Her şey Site Settings'te yaşar; stiller Designer class'larında
+(global stylesheet) yaşar. Bu maratondaki sorunların çoğunun kökü buydu.
+
+**İnit disiplini:** Sitede TEK init bloğu olur (site-wide footer,
+`DOMContentLoaded` içinde `initLenis` + `initBarba({onEach})`). Component
+init'leri YALNIZ `onEach` içinden çağrılır — `DOMContentLoaded` Barba geçişinde
+bir daha ateşlenmez; dışarıda kalan her init ikinci sayfadan itibaren ölüdür.
+
+**Component tarafı gereksinimleri** (hepsi mevcut modüllerde uygulanmış):
+- ScrollTrigger dışı kalıcı kaynak tutan modül (gsap.ticker, setInterval,
+  window/document listener'ları, IntersectionObserver) kendi instance
+  registry'sini tutar ve her init'te `isConnected` olmayanları destroy eder
+  (`marquee.js` referans implementasyon).
+- Scrub timeline'larında başlangıç state'i DOM'dan yakalatılmaz:
+  `fromTo(...) + immediateRender:false` (F5/scroll-restore/Barba'da kirli
+  state yakalama bug'ının panzehiri).
+- Sayfa-başı intro animasyonları viewport tespitine değil, ilgili pin
+  timeline'ının progress'ine bağlanır (mid-scroll reload'da hayalet intro
+  önlenir — `hero-cinematic.js` `maybeIntro` kalıbı).
+- Overlay pointer kalıbı: full-screen wrapper'lar kalıcı `pointer-events:none`
+  (JS basar), etkileşim yalnız içerik elemanlarında; sahneler arası takas
+  timeline set'iyle değil progress eşiğiyle yapılır (`syncPointers`).
+
 ## Yeni Modül Ekleme Checklist'i
 
 1. Dosyayı doğru kategoriye koy: `core` (temel altyapı) / `components` (UI parçası) / `effects` (görsel süs) / `animations` (yeniden kullanılabilir preset).
