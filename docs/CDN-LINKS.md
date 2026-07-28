@@ -47,6 +47,9 @@ Her sayfada, bu sırayla:
 <!-- marquee v1.0.0 — sonsuz drag/momentum'lu logo marquee, hover'da durur (gsap gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/marquee.js" defer></script>
 
+<!-- step-scroll v1.0.0 — pinli N-adımlı sahne: wipe geçişli bg/video + adım metinleri + tıklanabilir segmentli progress bar (gsap + ScrollTrigger; PIN — data-sscroll-priority ver, tabloya kaydet) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/step-scroll.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -83,6 +86,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initParallax(container);
         Marveltour.initHeroCinematic(container);
         Marveltour.initMarquee(container);
+        Marveltour.initStepScroll(container);
       }
     });
   });
