@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.css v1.0.0
+ * hero-cinematic.css v1.1.0
  * Behavioural CSS for js/components/hero-cinematic.js — positioning context,
  * media cover and overlay layering. Sizes, colors and typography stay in
  * Webflow Designer.
@@ -29,4 +29,19 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
+}
+
+/* Scene-2 layer — overlays the pinned viewport while animating; falls back
+   to normal document flow under prefers-reduced-motion so the content stays
+   readable without the scripted scene change. */
+[data-hero-scene] {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-hero-scene] {
+    position: static;
+  }
 }
