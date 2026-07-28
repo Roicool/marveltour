@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.3.0
+ * expertise-showcase.js v1.3.1
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -52,9 +52,12 @@
  *   [data-expertise-showcase] (+ data-es-alternate)
  *     [data-es-source]                      ← Collection List Wrapper'ı saran div
  *       Collection List Wrapper > List > Item   (araya element girmez)
- *         > Div [data-es-slide] [data-es-group←Group field]
+ *         > Div [data-es-slide]  (grup: data-es-group attr VEYA item içindeki
+ *                                 [data-es-group-src] text'i — bkz. aşağı)
  *             > Image←Image field (+ opsiyonel [data-es-overlay])
- *         > Div [data-es-meta] [data-es-group←Group field]   ← metin paketi
+ *         > Div [data-es-meta]                              ← metin paketi
+ *             > [data-es-group-src] ←Group field  (grup değeri text-bind;
+ *                Designer'dan attribute bind yapılırsa buna gerek kalmaz)
  *             > [data-es-text="watermark"] ←field   (dev arka plan yazısı)
  *             > [data-es-text="title"]     ←field
  *             > [data-es-text="body"]      ←field
@@ -131,10 +134,22 @@
     var pills = Array.prototype.slice.call(root.querySelectorAll("[data-es-pill]"));
 
     function panelByGroup(group) {
+      if (!group) return null;
       for (var i = 0; i < panels.length; i++) {
         if (panels[i].getAttribute("data-es-panel") === group) return panels[i];
       }
       return null;
+    }
+
+    // Grup çözümü: data-es-group attribute'u (Designer'da field'a bind'lanabilir)
+    // yoksa aynı Collection Item içindeki [data-es-group-src] öğesinin metni
+    // (Webflow API attribute-bind desteklemediğinde kullanılan text-bind yolu).
+    function groupOf(el) {
+      var v = el.getAttribute("data-es-group");
+      if (v && v !== "true") return v;
+      var scope = el.parentElement;
+      var src = scope && scope.querySelector("[data-es-group-src]");
+      return src ? src.textContent.trim() : "";
     }
 
     // ── CMS dağıtımı: tek Collection List'ten gelen içerik panellere taşınır ──
@@ -149,7 +164,7 @@
     if (source) {
       var orphans = 0;
       Array.prototype.slice.call(source.querySelectorAll("[data-es-slide]")).forEach(function (slide) {
-        var panel = panelByGroup(slide.getAttribute("data-es-group"));
+        var panel = panelByGroup(groupOf(slide));
         var target = panel && panel.querySelector("[data-es-media]");
         if (target) target.appendChild(slide); else orphans++;
       });
@@ -157,7 +172,7 @@
 
       var filled = {};
       Array.prototype.slice.call(source.querySelectorAll("[data-es-meta]")).forEach(function (meta) {
-        var group = meta.getAttribute("data-es-group");
+        var group = groupOf(meta);
         var panel = panelByGroup(group);
         if (!panel || filled[group]) return;
         filled[group] = true;
