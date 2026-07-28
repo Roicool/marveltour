@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.5.0
+ * expertise-showcase.js v1.5.1
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -514,7 +514,7 @@
       ScrollTrigger.create({
         trigger: root,
         start: "top 60%",
-        end: "bottom bottom",
+        end: "bottom 85%", // section biterken erken ve yumuşak çıkış — nav hiç "oturmaz"
         refreshPriority: -1,
         onToggle: function (self) { navTween(self.isActive); },
       });
