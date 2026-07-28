@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.1.0
+ * expertise-showcase.js v1.2.0
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -47,17 +47,23 @@
  *   data-es-alternate     varsa: data-es-stack verilmemiş panellerde deste yönü
  *                          otomatik zigzag yapar (1., 3., 5. panel sol; 2., 4. sağ)
  *
- * WEBFLOW CMS NOTU: Tüm seçiciler descendant-tabanlı — panel'ler bir Collection
- * List'ten gelebilir (Wrapper > List > Item araya girer, sorun olmaz). Kalıp:
+ * WEBFLOW CMS NOTU (TEK Collection List, Item = SLIDE): Sayfada tek liste ile
+ * çalışır. Kalıp:
  *   [data-expertise-showcase] (+ data-es-alternate)
- *     Collection List Wrapper > List > Item
- *       > Div [data-es-panel] (attribute değerleri CMS field'ından bind'lanır)
- *         ... (panel içeriği aynı; slide görselleri media-1/2/3 field'ları)
- *   [data-es-pillnav] içinde AYNI koleksiyona bağlı ikinci bir Collection List
- *     > Item > [data-es-pill] (sıralama iki listede aynı olmalı — index eşleşir)
- * Collection Item'a attribute verilemez; [data-es-panel] Item İÇİNDEKİ div'e
- * konur. is-front/is-active initial class'ları CMS'te gerekmez — JS init'te
- * basar (no-JS'te son slide DOM sırası gereği zaten üsttedir).
+ *     [data-es-source]                      ← Collection List Wrapper'ı saran div
+ *       Collection List Wrapper > List > Item   (araya element girmez)
+ *         > Div [data-es-slide] [data-es-group←CMS text field: panel slug'ı]
+ *             > Image←CMS image field (+ opsiyonel [data-es-overlay])
+ *     3× statik panel [data-es-panel="cultural|faith|educational"] — metinler,
+ *       boş [data-es-media], oklar Designer'da statik
+ *     statik [data-es-pillnav] (3 pill + CTA)
+ * Init'te JS her slide'ı data-es-group == data-es-panel eşleşmesiyle ilgili
+ * panelin [data-es-media]'sına taşır ve kaynağı gizler. Liste CMS'te order
+ * field'ına göre sıralanır: küçük order = arkadaki kart (son item öne gelir).
+ * JS kapalıyken kaynak liste düz, görünür bir görsel listesi olarak kalır.
+ * Collection Item'ın kendisine attribute verilemez; data-es-* attribute'ları
+ * Item İÇİNDEKİ div'e konur (data-es-group değeri CMS field'ından bind'lanır).
+ * is-front/is-active initial class'ları gerekmez — JS init'te basar.
  * JS her panele data-es-stack-resolved="left|right" yazar — Designer'da ayna
  * düzeni (metin sağ/sol) bu attribute üzerinden stillenebilir.
  *
@@ -110,6 +116,33 @@
     if (!panels.length) {
       console.warn("[Marveltour ExpertiseShowcase] En az bir [data-es-panel] gerekir.", root);
       return null;
+    }
+
+    // ── CMS dağıtımı: tek Collection List'ten gelen slide'ları panellere taşı ──
+    // Kaynak [data-es-source] (Collection List Wrapper'ı saran div) içindeki her
+    // [data-es-slide][data-es-group] öğesi, data-es-panel değeri group'la eşleşen
+    // panelin [data-es-media]'sına taşınır. Liste sırası korunur (arka→ön; CMS'te
+    // order field'ı küçükten büyüğe = arkadan öne). İş bitince kaynak gizlenir —
+    // JS yoksa kaynak liste düz ve görünür kalır (no-JS fallback).
+    var source = root.querySelector("[data-es-source]");
+    if (source) {
+      var flat = Array.prototype.slice.call(source.querySelectorAll("[data-es-slide]"));
+      var orphans = 0;
+      flat.forEach(function (slide) {
+        var group = slide.getAttribute("data-es-group");
+        var target = null;
+        panels.some(function (p) {
+          if (p.getAttribute("data-es-panel") === group) {
+            target = p.querySelector("[data-es-media]");
+            return true;
+          }
+          return false;
+        });
+        if (target) target.appendChild(slide); else orphans++;
+      });
+      if (orphans) console.warn("[Marveltour ExpertiseShowcase] " + orphans + " slide'ın data-es-group'u hiçbir panele eşleşmedi.", root);
+      source.setAttribute("hidden", "hidden");
+      source.style.display = "none";
     }
 
     var reduce = prefersReducedMotion();
