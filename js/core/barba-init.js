@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/barba-init.js
- * v1.3.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
+ * v1.3.1 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
  *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
  *          pin'li ScrollTrigger'lar için en güvenli kurgu.
  *          v1.2.0: template otomatik gizlenir, kopyada gizli inline/display
@@ -196,6 +196,12 @@
     window.barba.init({
       timeout: 7000,
       preventRunning: true, // geçiş sürerken ikinci tıklama kuyruklanmaz
+      /* Cache KAPALI: Barba cache'i, modüllerin mutasyona uğrattığı DOM'u
+         (SplitText char'ları, inline transform/opacity'ler) snapshot'layıp
+         geri tuşunda onu geri getiriyordu — init'ler kirli DOM üstünde
+         tekrar çalışınca animasyonlar bozuluyordu. Her navigasyon temiz
+         HTML çeker; Webflow sayfaları hafif, maliyet ihmal edilebilir. */
+      cacheIgnore: true,
       prevent: function (data) {
         var href = (data.el && data.el.getAttribute("href")) || "";
         /* Aynı sayfa anchor'ları Barba'ya girmez — lenis-init smooth kaydırır */
