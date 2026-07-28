@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.1.0
+ * hero-cinematic.js v2.2.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -129,14 +129,30 @@
       flip.y = (p.top + p.height / 2) - (m.top + m.height / 2);
     }
 
-    if (scene) gsap.set(scene, { autoAlpha: 0, pointerEvents: "none" });
+    /* Sahne-2 katmanları: scene'in DOĞRUDAN çocukları (placeholder, text,
+       marquee…) farklı mesafe + gecikmeyle girer → scroll'a bağlı parallax. */
+    var layers = [];
+    if (scene) {
+      gsap.set(scene, { autoAlpha: 0, pointerEvents: "none" });
+      layers = Array.prototype.slice.call(scene.children);
+      gsap.set(layers, {
+        autoAlpha: 0,
+        y: function (i) { return 60 + i * 36; }, // her katman biraz daha derinden
+      });
+    }
+
+    /* Yuvarlak köşe — dock'ta görünecek radius (px). Scale küçülttüğü için
+       element radius'u scale'e bölünerek verilir; görsel sonuç sabit kalır.
+       İstersen section'a data-hero-radius="24" ile özelleştir. */
+    var radius = parseFloat(section.getAttribute("data-hero-radius"));
+    if (isNaN(radius)) radius = 16;
 
     var tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: "top top",
         end: PIN_DISTANCE,
-        scrub: true,
+        scrub: 0.8,               // yumuşatılmış scrub — akışkan takip
         pin: true,
         pinSpacing: true,
         refreshPriority: PIN_PRIORITY,
@@ -150,6 +166,13 @@
       y: function () { return flip.y; },
       scale: function () { return flip.scale; },
       transformOrigin: "center center",
+      ease: "power2.inOut",
+    }, 0);
+
+    /* Köşeler yolculuk boyunca yuvarlanır; scale'e bölündüğü için dock'ta
+       tam `radius` px görünür (fullscreen'de 0'dan başlar). */
+    tl.fromTo(media, { borderRadius: 0 }, {
+      borderRadius: function () { return radius / (flip.scale || 1) + "px"; },
       ease: "power2.inOut",
     }, 0);
 
@@ -168,9 +191,15 @@
     }
 
     if (scene) {
-      tl.fromTo(scene,
-        { autoAlpha: 0, y: 40 },
-        { autoAlpha: 1, y: 0, ease: "power2.out" }, 0.25);
+      /* Katman katman parallax giriş: her çocuk farklı derinlikten, hafif
+         kayarak gelir (placeholder → text → marquee sırasıyla). */
+      tl.set(scene, { autoAlpha: 1 }, 0.2);
+      tl.to(layers, {
+        autoAlpha: 1,
+        y: 0,
+        ease: "power2.out",
+        stagger: 0.12,
+      }, 0.3);
       /* Pin biterken scene tıklanabilir olsun (link vb. içerirse) */
       tl.set(scene, { pointerEvents: "auto" });
     }
