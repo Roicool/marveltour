@@ -72,6 +72,86 @@ header comment'te durur ve her release'te bump'lanır.
 6. **CDN-first** — Her dosya build step'siz jsDelivr üzerinden tüketilebilir (bkz. `docs/CDN-LINKS.md`).
 7. **RC Structure first** — Custom CSS'ten önce daima RC-STRUCTURE-REFERENCE.css class ve variable'larına uzan.
 
+## Animasyon Dili — Parallax Ana Efekttir (KARAR)
+
+Bu sitenin ana animasyon dili **parallax / katmanlı derinlik**tir. Müşteri bu tarzı
+seviyor; her yeni component bu dile uyacak şekilde tasarlanır. Somut kurallar:
+
+### Dil 1 — Katmanlı hız farkı (derinlik böyle üretilir)
+
+Derinlik hissi tek bir elementin hareketinden değil, **aynı scroll'da farklı hızda
+hareket eden katmanların kontrastından** doğar. Bir sahnede 2–3 hız katmanından
+fazlası olmaz (fazlası deniz tutması). Örnek (hero):
+video kadraj içi yerleşme (1.12→1) · başlık -18% · desc -26% · CTA -36%.
+
+### Dil 2 — Çift scrub (momentum hissi)
+
+"Scroll'u bıraksam da yazı bir nefes devam etsin" hissi **iki ayrı scrub değeriyle**
+kurulur — GSAP `scrub` sayısal verildiğinde scroll'u o kadar saniyelik yumuşatmayla
+takip eder:
+
+| Katman | scrub | His |
+|---|---|---|
+| Ana medya / pin timeline'ı | `0.8` | Diri, kontrollü takip |
+| Metin / dekoratif katmanlar | `1.4` | Rüya gibi, scroll durunca kısa süre süzülmeye devam |
+
+Aynı trigger aralığına iki timeline kurulur: pin YALNIZ ana timeline'da, gevşek
+timeline pin'siz aynı start/end'i paylaşır (`refreshPriority` pin'inkinden 1 küçük).
+Bu kalıp hero'da uygulanmıştır (`hero-cinematic.js`) ve yeni sahne-tarzı
+component'lerde tekrarlanır.
+
+### Dil 3 — FLIP-to-placeholder (magic number yasak)
+
+Bir element scroll'la başka bir yere "yerleşecekse" hedef, kod içindeki sabit bir
+boyut DEĞİL, **Designer'ın koyduğu gerçek bir placeholder elementi**dir
+(`data-hero-placeholder` kalıbı). JS her `ScrollTrigger.refresh()`'te
+(`onRefreshInit`) transform'u temizleyip iki rect'i ölçer, center-to-center delta +
+uniform scale uygular. Kazanımlar: responsive bedava (kutu breakpoint'te taşınırsa
+animasyon takip eder), transform-origin kararı gerekmez, tasarımcı kodu ellemeden
+sahneyi değiştirir. Oran uyumu için JS placeholder'ın `aspect-ratio`'sunu medyanın
+gerçek oranından kendisi basar — Designer yalnız genişlik verir.
+
+### Dil 4 — Scale telafili köşe yuvarlama
+
+Küçülen medyanın köşesi `borderRadius = hedefRadius / scale` olarak anime edilir —
+scale görsel radius'u da küçülttüğü için telafi edilmezse köşeler dock'ta büzüşük
+görünür. Hedef radius `data-hero-radius` (default 16px). Bu, "yalnız
+transform/opacity" prensibinin bilinçli tek istisnasıdır (küçük, kompozit
+katmanda ucuz paint).
+
+### Dil 5 — Sahne katmanları otomatik parallax girer
+
+Bir sahne katmanı (`[data-hero-scene]` gibi) görünür olurken içindeki **doğrudan
+çocuklar** tek blok halinde değil, index'e göre artan derinlikten (`60 + i*36 px`)
+ve `stagger: 0.12` gecikmeyle girer. Yeni bir çocuk eklemek otomatik olarak sıradaki
+derinliği alır — kod değişmez.
+
+### Dil 6 — Serbest akan bölümlerde tek attribute parallax
+
+Pin'siz bölümlerde görsel parallax'ı component'ler kendisi yazmaz;
+`animations/parallax.js` preset'i kullanılır: wrapper'a `data-parallax`
+(`soft|medium|strong|sayı`). Görsele evet, metne hayır. Pinli bölümün İÇİNDE
+`data-parallax` KULLANILMAZ — pinli component kendi iç hareketini kendi
+timeline'ında kurar (Dil 1–2).
+
+### Hero attribute API'si (hero-cinematic v2.3+)
+
+| Attribute | Nerede | Ne yapar |
+|---|---|---|
+| `data-hero-cinematic` | section | Component kökü; ops. `data-hero-radius="24"` |
+| `data-hero-title` | h1 | Harfler random sırayla belirir; scroll'da -18% süzülerek söner |
+| `data-hero-desc` | p | Intro'da başlıktan sonra süzülür; çıkışta -26% |
+| `data-hero-cta` | buton grubu | Intro'da en son gelir; çıkışta -36% (en derin) |
+| `data-hero-media` | medya kutusu | Fullscreen background başlar, placeholder'a FLIP'ler |
+| `data-hero-scene` | sahne-2 katmanı | Çocukları Dil 5'e göre katmanlı girer (gevşek scrub) |
+| `data-hero-placeholder` | boş kutu | Medyanın ineceği hedef; yalnız genişlik ver, oranı JS basar |
+
+### Kalibrasyon düğmeleri
+
+Hepsi `hero-cinematic.js` içinde tek yerde: `scrub 0.8 / 1.4`, `PIN_DISTANCE
+(+=100%)`, stagger `0.12`, derinlik `60 + i*36`, çıkış yüzdeleri, `data-hero-radius`.
+His ayarı istendiğinde önce bu değerler oynanır, yapı değişmez.
+
 ## Getting Started (Webflow)
 
 Webflow'da yerel dosya yolu (`/js/init.js`) yoktur. Init kodu Webflow'un **Custom Code**
