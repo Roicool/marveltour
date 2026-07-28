@@ -1,5 +1,8 @@
 /*!
- * h-scroll.css v1.0.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.1.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.1.0: .hscroll__header — kartlarla AYNI gutter'a (container-2xl) hizalı
+ *         section başlığı; başlık varken pin yüksekliği flex column ile
+ *         doğru dağıtılır (başlık + track birlikte 100svh'ye sığar).
  * Cinematic pinned horizontal-scroll destination cards — critical/behavioural
  * styles only. Colours, fonts and exact card design come from the Webflow
  * Designer + RC tokens. Marveltour ekleri: kart clip + görsel cover (parallax
@@ -40,6 +43,25 @@
   .hscroll__viewport {
     min-height: 100svh;
   }
+
+  /* Başlık varsa: section 100svh'lik flex column olur, viewport kalan alanı
+     doldurur — başlık + kartlar birlikte pinli ekrana sığar, taşma olmaz. */
+  [data-hscroll]:has(.hscroll__header) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+  }
+  [data-hscroll]:has(.hscroll__header) .hscroll__viewport {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+}
+
+/* ── Section başlığı — kartlarla AYNI gutter'a hizalı ────────── */
+.hscroll__header {
+  padding-inline: var(--hscroll-gutter,
+    max(var(--view--px, var(--spacing--6)),
+        calc((100% - var(--container--2xl, 86rem)) / 2)));
 }
 
 /* ── Track — the row GSAP translates ─────────────────────────── */
@@ -61,7 +83,7 @@
    */
   padding-inline: var(--hscroll-gutter,
     max(var(--view--px, var(--spacing--6)),
-        calc((100% - var(--container--2xl, 96rem)) / 2)));
+        calc((100% - var(--container--2xl, 86rem)) / 2)));
   will-change: transform;
 }
 
@@ -113,7 +135,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--hscroll-gutter,
       max(var(--view--px, var(--spacing--6)),
-          calc((100% - var(--container--2xl, 96rem)) / 2)));
+          calc((100% - var(--container--2xl, 86rem)) / 2)));
     scrollbar-width: none;        /* Firefox */
     -ms-overflow-style: none;     /* IE/Edge */
     will-change: auto;
