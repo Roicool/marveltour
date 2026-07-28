@@ -1,9 +1,10 @@
 /*!
- * h-scroll.css v1.2.0  (adapted from Sestek h-scroll.css v2.2.1)
- * v1.2.0: kart boyutlandırması tamamen component'te — fluid genişlik +
- *         3:4 portre oran + svh max-height freni. Designer'a stil gerekmez;
- *         ince ayar CSS variable'larıyla: --hscroll-card-w /
- *         --hscroll-card-ratio / --hscroll-card-max-h.
+ * h-scroll.css v1.3.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.3.0: FİLM ŞERİDİ boyutlandırma — kart genişliği GÖRSELİN DOĞAL
+ *         ORANINDAN gelir (yatay/dikey/kare karışık olabilir); tek kısıt
+ *         ortak yükseklik: --hscroll-card-h (desktop 70svh, tablet 58svh,
+ *         mobil 50svh). Swiper modu slidesPerView:"auto" ile karışık
+ *         genişlikleri destekler. Designer'a stil gerekmez.
  * v1.1.0: .hscroll__header — kartlarla AYNI gutter'a (container-2xl) hizalı
  *         section başlığı; başlık varken pin yüksekliği flex column ile
  *         doğru dağıtılır (başlık + track birlikte 100svh'ye sığar).
@@ -94,23 +95,28 @@
 /* ── Card ────────────────────────────────────────────────────── */
 .hscroll__card {
   flex: 0 0 auto;
-  /* Responsive boyut — Designer'a stil gerekmez. İnce ayar variable'larla:
-     .section_h-scroll { --hscroll-card-w: 36rem; --hscroll-card-ratio: 2/3; } */
-  width: var(--hscroll-card-w, clamp(18rem, 34vw, 32rem));
-  aspect-ratio: var(--hscroll-card-ratio, 3 / 4);   /* sinematik portre */
-  max-height: var(--hscroll-card-max-h, 74svh);     /* kısa ekran freni */
+  width: auto;                    /* genişlik görselden gelir — film şeridi */
   border-radius: var(--radius--lg, 1rem);
   position: relative;
   overflow: clip;                 /* parallax'lı görseli kırpar — davranışsal */
 }
 
-/* Kart görseli — JS parallax'ta büyütüp süzdürür; cover şart */
+/* Kart görseli — ortak yükseklik, doğal oran: yatay foto geniş kart,
+   dikey foto dar kart üretir. JS parallax'ta büyütüp süzdürür. */
 .hscroll__card [data-hscroll-img],
 .hscroll__card img {
   display: block;
-  width: 100%;
-  height: 100%;
+  height: var(--hscroll-card-h, 70svh);
+  width: auto;
+  max-width: none;                /* Webflow'un img{max-width:100%}'ünü ezer — şart */
   object-fit: cover;
+}
+
+@media (max-width: 991px) {
+  [data-hscroll] { --hscroll-card-h: 58svh; }
+}
+@media (max-width: 767px) {
+  [data-hscroll] { --hscroll-card-h: 50svh; }
 }
 
 /* Destination ismi — görselin üstünde; tipografi/renk Designer'ın */
@@ -157,27 +163,8 @@
   }
 }
 
-/*
- * Fallback bleed widths — mirror Swiper's slidesPerView so the pre-hydration
- * frame and the no-Swiper fallback look identical: N kart/görünüm →
- * kart = (içerik − görünür gap'ler) / N. h-scroll.js JS config'ini
- * --hscroll-spv-t / --hscroll-spv-m olarak buraya yansıtır.
- */
-@media (max-width: 991px) {
-  [data-hscroll]:not(.is-swiper) .hscroll__card {
-    /* tablet: 2 tam kart + 2 gap + 0.2 bleed */
-    width: calc((100% - 2 * var(--hscroll-gap, var(--spacing--6)))
-                / var(--hscroll-spv-t, 2.2));
-  }
-}
-
-@media (max-width: 767px) {
-  [data-hscroll]:not(.is-swiper) .hscroll__card {
-    /* mobil: 1 tam kart + 1 gap + 0.2 bleed */
-    width: calc((100% - var(--hscroll-gap, var(--spacing--6)))
-                / var(--hscroll-spv-m, 1.2));
-  }
-}
+/* Fallback kart genişlikleri: film şeridi modunda genişlik görselden gelir —
+   spv tabanlı zorlama YOK; scroll-snap karışık genişliklerle sorunsuz. */
 
 /* ── Swiper mode (≤991px, JS aktif) ──────────────────────────── */
 /*

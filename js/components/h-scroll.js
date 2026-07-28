@@ -1,5 +1,8 @@
 /*!
- * h-scroll.js v1.0.0  (adapted from Sestek h-scroll v2.0.0)
+ * h-scroll.js v1.1.0  (adapted from Sestek h-scroll v2.0.0)
+ * v1.1.0: film şeridi modu — Swiper slidesPerView:"auto" (kart genişlikleri
+ *         görselin doğal oranından, karışık olabilir; spv attribute'ları
+ *         artık kullanılmıyor).
  * Cinematic pinned horizontal-scroll destination cards:
  *   Desktop (≥992px) — section pins, vertical scroll drives the card track to
  *   the LEFT (content moves right-to-left, reading direction feels "scroll
@@ -152,11 +155,6 @@
 
     // ── Tablet & mobile (≤bp) — Swiper carousel ───────────────────
     mm.add("(max-width: " + bp + "px)", function () {
-      // Mirror the configured slidesPerView into the CSS fallback widths so
-      // the no-Swiper scroll-snap fallback shows the same bleed.
-      root.style.setProperty("--hscroll-spv-t", String(spvT));
-      root.style.setProperty("--hscroll-spv-m", String(spvM));
-
       if (typeof Swiper === "undefined") {
         console.warn("[Marveltour HScroll] Swiper not found — CSS scroll-snap fallback active.");
         return;
@@ -185,15 +183,11 @@
 
       var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      var breakpoints = {};
-      breakpoints[bpM] = { slidesPerView: spvT };         // ≥bpM → tablet spv
-
       var sw = new Swiper(viewport, {
-        slidesPerView: spvM,                              // <bpM → mobile spv
+        slidesPerView: "auto",                            // film şeridi: karışık genişlikler
         spaceBetween: m.gap,
         slidesOffsetBefore: m.gutter,
         slidesOffsetAfter: m.gutter,
-        breakpoints: breakpoints,
         speed: reduced ? 0 : 400,
         grabCursor: true,
         watchOverflow: true,
