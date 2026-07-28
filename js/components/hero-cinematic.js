@@ -1,7 +1,8 @@
 /*!
- * hero-cinematic.js v2.0.0
+ * hero-cinematic.js v2.1.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
- *   Scene 1 — fullscreen media, headline's characters fade in in RANDOM order
+ *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
+ *             characters fade in in RANDOM order
  *   Scroll  — the SECTION pins; the media travels and scales INTO a
  *             designer-placed placeholder box while the headline fades out
  *             and the scene-2 layer (placeholder + text) rises in
@@ -116,8 +117,13 @@
     function measure() {
       gsap.set(media, { clearProps: "transform" });
       var m = media.getBoundingClientRect();
+      if (!m.width || !m.height) return;
+      /* Kutunun oranını medyanın GERÇEK oranına eşitle (fullscreen medya
+         viewport oranındadır) — böylece uniform scale kutuya daima tam
+         oturur; Designer'da placeholder'a yalnız genişlik vermek yeter. */
+      placeholder.style.aspectRatio = (m.width / m.height).toFixed(4);
       var p = placeholder.getBoundingClientRect();
-      if (!m.width || !p.width) return;
+      if (!p.width) return;
       flip.scale = p.width / m.width;
       flip.x = (p.left + p.width / 2) - (m.left + m.width / 2);
       flip.y = (p.top + p.height / 2) - (m.top + m.height / 2);
