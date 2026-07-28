@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.3.1
+ * hero-cinematic.js v2.4.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -177,6 +177,7 @@
         refreshPriority: PIN_PRIORITY,
         invalidateOnRefresh: true,
         onRefreshInit: measure,
+        markers: section.hasAttribute("data-hero-debug"), // canlı teşhis için
       },
     });
 
@@ -232,34 +233,26 @@
     }
 
     if (scene) {
-      /* Sahne-2 katmanları AYRI, daha gevşek scrub'lı timeline'da (1.4):
-         scroll durduğunda yazılar bir nefes daha süzülür — istenen "bıraksam
-         da hafif devam etsin" momentum hissi. Pin YOK (pin ana trigger'da);
-         refreshPriority pin'den hemen sonra. */
-      var sceneTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: PIN_DISTANCE,
-          scrub: 1.4,
-          refreshPriority: PIN_PRIORITY - 1,
-          invalidateOnRefresh: true,
-        },
-      });
-      sceneTl.set(scene, { autoAlpha: 1 }, 0.2);
+      /* Sahne-2 katmanları ANA timeline'da (ayrı trigger sahada senkron
+         tutarsızlığı çıkardı — v2.3 dersi). Momentum hissi scrub 0.8 +
+         power3.out'un uzun kuyruğundan gelir: katman hedefine yaklaşırken
+         yavaşlayarak süzülür. Zamanlama: %15'te scene görünür olur,
+         katmanlar %30'dan itibaren girer ve pin bitmeden yerleşir. */
+      tl.set(scene, { autoAlpha: 1 }, 0.15);
       /* fromTo + immediateRender:false — başlangıç değerleri refresh anındaki
          DOM halinden değil, buradan okunur; katman girişi her koşulda çalışır. */
-      sceneTl.fromTo(layers,
+      tl.fromTo(layers,
         { autoAlpha: 0, y: function (i) { return 60 + i * 36; } },
         {
           autoAlpha: 1,
           y: 0,
-          ease: "power2.out",
-          stagger: 0.12,
+          duration: 0.5,
+          ease: "power3.out",
+          stagger: 0.08,
           immediateRender: false,
         }, 0.3);
       /* Pin biterken scene tıklanabilir olsun (link vb. içerirse) */
-      sceneTl.set(scene, { pointerEvents: "auto" });
+      tl.set(scene, { pointerEvents: "auto" });
     }
   }
 
