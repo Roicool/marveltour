@@ -54,7 +54,7 @@
   "use strict";
 
   var PIN_PRIORITY = 10;
-  var PIN_DISTANCE = "+=100%"; // one viewport of scroll for the whole move
+  var PIN_DISTANCE = "+=160%"; // heavier: 1.6 viewport of scroll for the whole move
 
   function initHeroCinematic(container) {
     container = container || global.document;
