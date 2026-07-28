@@ -1,5 +1,9 @@
 /*!
- * h-scroll.css v1.3.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.3.1  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.3.1: Webflow Collection List Wrapper fix — CMS, viewport ile track
+ *         arasına .w-dyn-list sarmalayıcısı sokar; flex item olarak
+ *         İÇERİĞE göre boyutlanıp % gutter'ı ve mesafe ölçümünü bozuyordu
+ *         (2000px hayalet sol boşluk + kısa pin). Tam genişliğe sabitlendi.
  * v1.3.0: FİLM ŞERİDİ boyutlandırma — kart genişliği GÖRSELİN DOĞAL
  *         ORANINDAN gelir (yatay/dikey/kare karışık olabilir); tek kısıt
  *         ortak yükseklik: --hscroll-card-h (desktop 70svh, tablet 58svh,
@@ -40,6 +44,16 @@
   display: flex;
   align-items: center;
   overflow: hidden;               /* clips the off-screen part of the track */
+}
+
+/* Webflow Collection List Wrapper (viewport ile track arasındaki .w-dyn-list):
+   flex item olarak içeriğe göre boyutlanmasın — track'in % gutter'ı ve
+   h-scroll.js'in mesafe ölçümü BUNUN genişliğine göre çözülür. Tam genişlik ŞART. */
+.hscroll__viewport > .w-dyn-list,
+.hscroll__viewport > div:has(> .hscroll__track) {
+  width: 100%;
+  flex: 0 0 100%;
+  min-width: 0;
 }
 
 /* Full-height only where the pin runs — mobile/tablet height is the
