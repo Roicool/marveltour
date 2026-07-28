@@ -1,5 +1,10 @@
 /*!
- * h-scroll.js v1.1.0  (adapted from Sestek h-scroll v2.0.0)
+ * h-scroll.js v1.1.1  (adapted from Sestek h-scroll v2.0.0)
+ * v1.1.1: lazy-load fix — film şeridinde kart genişliği görselden geldiği
+ *         için lazy görseller 0 genişlik ölçtürüyordu (kısa pin mesafesi,
+ *         boş başlangıç). Track görselleri eager'a çevrilir; her yüklenen
+ *         görselde debounce'lu refresh + Swiper update. Erken "distance≤0"
+ *         çıkışı kaldırıldı (tween function-based, refresh'te düzelir).
  * v1.1.0: film şeridi modu — Swiper slidesPerView:"auto" (kart genişlikleri
  *         görselin doğal oranından, karışık olabilir; spv attribute'ları
  *         artık kullanılmıyor).
@@ -150,6 +155,31 @@
       }
     }
 
+    /* ── Lazy görsel koruması ─────────────────────────────────────
+       Film şeridinde kart genişliği görselin DOĞAL ölçüsünden gelir;
+       yüklenmemiş lazy görsel 0 genişlik ölçtürür → track kısa sanılır.
+       Eager'a çevir + her yüklenen görselde debounce'lu yeniden ölçüm. */
+    var imgs = Array.prototype.slice.call(track.querySelectorAll("img"));
+    imgs.forEach(function (img) {
+      img.loading = "eager";
+      img.setAttribute("loading", "eager");
+    });
+    var pending = imgs.filter(function (img) { return !img.complete; });
+    if (pending.length) {
+      var rT;
+      var onImg = function () {
+        clearTimeout(rT);
+        rT = setTimeout(function () {
+          ScrollTrigger.refresh();
+          if (viewport.swiper) viewport.swiper.update();
+        }, 150);
+      };
+      pending.forEach(function (img) {
+        img.addEventListener("load", onImg, { once: true });
+        img.addEventListener("error", onImg, { once: true });
+      });
+    }
+
     var mm = gsap.matchMedia();
     instances.push({ root: root, destroy: function () { mm.revert(); } });
 
@@ -224,7 +254,9 @@
     mm.add(
       "(min-width: " + (bp + 1) + "px) and (prefers-reduced-motion: no-preference)",
       function () {
-        if (getDistance() <= 0) return;                   // track fits — nothing to scroll
+        /* NOT: "distance ≤ 0 → return" erken çıkışı KALDIRILDI — görseller
+           henüz yüklenmemişken mesafe 0 ölçülür ve pin sonsuza dek
+           kurulmazdı. Tween/end function-based: refresh'te kendini düzeltir. */
 
         // Snap targets = each card's left edge as progress 0..1, measured
         // RELATIVE to the first card so the gutter/padding cancels out.
