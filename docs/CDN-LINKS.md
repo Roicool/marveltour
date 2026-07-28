@@ -53,6 +53,9 @@ Her sayfada, bu sırayla:
 <!-- h-scroll v1.0.0 — sinematik yatay destination kartları: desktop pin + kart içi parallax, tablet/mobil Swiper (CSS snap fallback) (gsap + ScrollTrigger; Swiper opsiyonel; PIN — data-hscroll-priority; CMS: track=List, kart=Item) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/h-scroll.js" defer></script>
 
+<!-- expertise-showcase v1.5.1 — panelli uzmanlık vitrini: GSAP kart destesi (slide başına değişen metin kartı) + fade'li pinli pill nav scroll-spy; tek Webflow CMS listesinden slide + metin dağıtımı (gsap + ScrollTrigger gerekir; refreshPriority -1) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/expertise-showcase.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -74,6 +77,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/marquee.css">
 <!-- h-scroll -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/h-scroll.css">
+<!-- expertise-showcase -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/expertise-showcase.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -93,6 +98,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initMarquee(container);
         Marveltour.initStepScroll(container);
         Marveltour.initHScroll(container);
+        Marveltour.initExpertiseShowcase(container);
       }
     });
   });

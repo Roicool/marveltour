@@ -188,6 +188,7 @@ Dosya adları `PROJECT.md` konvansiyonuna göre: `js/<kategori>/<ad>.js` ↔
 | `text-reveal` | animations | Çok sayfa | ❌ | Satır/kelime bazlı reveal preset, `refreshPriority: -1` |
 | `stat-counter` | components | Home, HWW, Rotalar | ❌ | Sayı count-up; `prefers-reduced-motion`'da direkt final değer |
 | `editorial-cards` | components | Home, hub'lar | ❌ | Dergi düzeni — **klasik kart grid'i DEĞİL**; asimetrik, bol boşluklu |
+| `expertise-showcase` | components | Home, Rotalar hub | ❌ | ✅ repoda. Panel başına GSAP medya kart destesi (prev/next/swipe) + sticky pill nav scroll-spy; Cultural/Faith/Educational vitrini. Reveal `refreshPriority: -1` |
 | `image-strip` | effects | Home, Destinations, Tailor-made | olası | Yatay scroll/parallax görsel şeridi; pin'liyse tabloya kayıt zorunlu |
 | `split-media` | components | Çok sayfa | ❌ | Görsel + metin dönüşümlü hizalama, scroll reveal |
 | `destination-index` | components | Türkiye hub | ❌ | Liste hover'ında büyük görsel önizleme (Black Tomato tarzı); touch'ta fallback |
