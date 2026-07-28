@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.4.0
+ * hero-cinematic.js v2.4.1
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -84,18 +84,27 @@
       return;                   // companion CSS scene-2'yi normal akışa alır
     }
 
-    /* ---------- 1) Headline — random-order letter fade-in ---------- */
-    if (title) {
-      var split = new SplitText(title, { type: "words, chars" });
-      gsap.set(split.chars, { opacity: 0 });
+    /* ---------- 1) Intro — headline chars + desc/CTA rise ---------- */
+    /* Intro viewport tespitine DEĞİL, pin timeline'ının progress'ine bağlı:
+       yalnız sahnenin başındayken (progress < %3) oynar. Böylece scene-2
+       ortasında F5 atılırsa (tarayıcı scroll'u restore eder) intro atlanır
+       ve butonlar/başlık scene-2'nin üstünde hayalet gibi belirmez; başa
+       scroll'lanınca intro kendiliğinden bir kez oynar. */
+    var introTl = null;
+    var introPlayed = false;
+    if (title || ui.length) {
+      introTl = gsap.timeline({ paused: true });
 
-      var introTl = gsap.timeline({ paused: true });
-      introTl.to(split.chars, {
-        opacity: 1,
-        duration: 0.05,
-        ease: "power1.out",
-        stagger: { amount: 0.4, from: "random" },
-      });
+      if (title) {
+        var split = new SplitText(title, { type: "words, chars" });
+        gsap.set(split.chars, { opacity: 0 });
+        introTl.to(split.chars, {
+          opacity: 1,
+          duration: 0.05,
+          ease: "power1.out",
+          stagger: { amount: 0.4, from: "random" },
+        });
+      }
 
       /* Başlık otururken desc + CTA'lar alttan yumuşak süzülür (parallax dili) */
       if (ui.length) {
@@ -106,21 +115,15 @@
           duration: 0.7,
           ease: "power3.out",
           stagger: 0.1,
-        }, "-=0.1");
+        }, title ? "-=0.1" : 0);
       }
+    }
 
-      ScrollTrigger.create({
-        trigger: title,
-        start: "top bottom",
-        refreshPriority: -1,
-        onLeaveBack: function () { introTl.progress(0).pause(); },
-      });
-      ScrollTrigger.create({
-        trigger: title,
-        start: "top 90%",
-        refreshPriority: -1,
-        onEnter: function () { introTl.play(); },
-      });
+    function maybeIntro(progress) {
+      if (introTl && !introPlayed && progress < 0.03) {
+        introPlayed = true;
+        introTl.play();
+      }
     }
 
     /* ---------- 2) Pinned scene change — media FLIPs into the box ---------- */
@@ -178,6 +181,9 @@
         invalidateOnRefresh: true,
         onRefreshInit: measure,
         markers: section.hasAttribute("data-hero-debug"), // canlı teşhis için
+        /* Intro kapısı: sayfa başında (yükleme VEYA geri dönüş) bir kez oynar */
+        onRefresh: function (self) { maybeIntro(self.progress); },
+        onUpdate: function (self) { maybeIntro(self.progress); },
       },
     });
 
