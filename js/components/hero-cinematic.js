@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.4.1
+ * hero-cinematic.js v2.4.2
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -257,8 +257,10 @@
           stagger: 0.08,
           immediateRender: false,
         }, 0.3);
-      /* Pin biterken scene tıklanabilir olsun (link vb. içerirse) */
-      tl.set(scene, { pointerEvents: "auto" });
+      /* Pointer takası sahne-1 ile AYNI anda (0.6): sahne-1 kapanırken
+         sahne-2 açılır — timeline sonunu beklemez, geri scrub'da otomatik
+         geri döner. (Önceden en sondaydı; pin bitmeden scene hep ölüydü.) */
+      tl.set(scene, { pointerEvents: "auto" }, 0.6);
     }
   }
 
