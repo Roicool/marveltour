@@ -1,5 +1,11 @@
 /*!
- * step-scroll.js v1.2.0  (adapted from Sestek step-scroll v2.5.0)
+ * step-scroll.js v1.3.0  (adapted from Sestek step-scroll v2.5.0)
+ * v1.3.0: BG PARALLAX — her adımın background GÖRSELİ (layer'ın içindeki
+ *         img/child), adımın dwell penceresi boyunca scroll'a kilitli
+ *         yavaşça süzülür (yPercent ±drift). Wipe hızlı katman, bg içi
+ *         süzülme yavaş katman → sitenin parallax dili (PROJECT.md Dil 1).
+ *         Doz: data-sscroll-parallax (default 7, 0 = kapalı). Taşma payı
+ *         otomatik (iç görsel drift'i karşılayacak kadar büyütülür).
  * v1.2.0: [data-sscroll-video] katmanı içinde <video> yoksa ve elementte
  *         data-sscroll-video-src attribute'u varsa (Webflow'da CMS alanına
  *         BAĞLANABİLİR) <video> JS'te sentezlenir — Collection Item içinde
@@ -161,6 +167,7 @@
     var priority  = num(root, "data-sscroll-priority", 0);
     var barW      = num(root, "data-sscroll-bar-width", 2);
     var barGap    = num(root, "data-sscroll-bar-gap", 12);
+    var drift     = num(root, "data-sscroll-parallax", 7); // bg içi parallax dozu (yPercent)
 
     var reduce = global.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -411,6 +418,24 @@
         for (var f = 0; f < n; f++) {
           tl.fromTo(fills[f], { height: "0%" }, { height: "100%", duration: dwell }, f * dwell);
         }
+      }
+
+      // ── BG parallax (Dil 1): adımın background GÖRSELİ, dwell penceresi
+      // boyunca yavaşça süzülür. Layer'a DEĞİL içindeki görsele uygulanır —
+      // layer'ın clip-path wipe'ı ve scale'i bozulmaz; iç görsel drift'i
+      // karşılayacak kadar büyütülür, kenar sızması matematiksel olarak yok.
+      if (drift > 0) {
+        bgItems.forEach(function (layer, bi) {
+          var inner = layer.querySelector("img, video") || layer.firstElementChild;
+          if (!inner || inner === layer) return;
+          gsap.set(inner, {
+            scale: 1 + (drift * 2) / 100,
+            transformOrigin: "center center",
+          });
+          tl.fromTo(inner,
+            { yPercent: -drift },
+            { yPercent: drift, ease: "none", duration: dwell }, bi * dwell);
+        });
       }
 
       // ── Step boundaries: directional wipe + zoom-settle + staggered copy ──
