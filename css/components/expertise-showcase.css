@@ -1,0 +1,116 @@
+/*!
+ * expertise-showcase.css v1.5.0
+ * Behavioural CSS for js/components/expertise-showcase.js — kart destesinin
+ * kutu geometrisi (JS'in transform derinliği bu geometriye dayanır), overlay
+ * katmanı, pill nav pinleme ve no-JS fallback. Görsel tasarım (cam kart, glow,
+ * watermark tipografisi, renkler, breakpoint düzeni) Webflow Designer'da kalır.
+ * State hook'ları: .is-front (öndeki kart), .is-active (pill),
+ * .is-pinned (JS'in bastığı fixed pill nav), [data-es-stack-resolved] (ayna).
+ *
+ * NOT: [data-es-media]'ya yüksekliği Designer verir — kartlar bu kutuya göre
+ * konumlanır.
+ */
+
+[data-expertise-showcase] [data-es-media] {
+  position: relative;
+  touch-action: pan-y; /* yatay swipe JS'e, dikey scroll tarayıcıya */
+}
+
+/* Kart kutusu: sabit genişlik (%88), tam yükseklik, öndeki kenara yaslı.
+   Derinlik (yükseklik daralması + yana taşma) JS'te yalnız transform'la
+   verilir. Yalnız [data-es-media] İÇİNDE absolute — CMS kaynak listesinde
+   dururken akışta kalır (no-JS fallback). */
+[data-expertise-showcase] [data-es-media] [data-es-slide] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 88%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius--2xl);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Aynalı panel (JS data-es-stack-resolved yazar): kart sağa yaslanır,
+   deste sola taşar */
+[data-expertise-showcase] [data-es-panel][data-es-stack-resolved="right"] [data-es-media] [data-es-slide] {
+  left: auto;
+  right: 0;
+}
+
+[data-expertise-showcase] [data-es-slide] > video,
+[data-expertise-showcase] [data-es-slide] > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Karartma katmanı — opacity'yi derinliğe göre JS sürer.
+   No-JS'te 0 kalır: ön kart zaten en üstte, içerik tam görünür. */
+[data-expertise-showcase] [data-es-overlay] {
+  position: absolute;
+  inset: 0;
+  background-color: var(--neutral--950);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Dekoratif katmanlar etkileşim ve seçim almaz */
+[data-expertise-showcase] [data-es-watermark],
+[data-expertise-showcase] [data-es-glow] {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Pill nav — sticky, overflow'lu wrapper'larda kırılabildiği için yalnız
+   no-JS fallback'tir; JS init'te .is-pinned (fixed) basar ve section aktif
+   aralıktayken fade-in/out ile gösterir (autoAlpha JS'te). */
+[data-expertise-showcase] [data-es-pillnav] {
+  position: sticky;
+  bottom: var(--spacing--10);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* çubuk dışı boşluk tıklama yutmasın */
+}
+
+[data-expertise-showcase] [data-es-pillnav].is-pinned {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--spacing--10);
+}
+
+[data-expertise-showcase] [data-es-pillnav] > * {
+  pointer-events: auto;
+}
+
+[data-expertise-showcase] [data-es-pill] {
+  position: relative;
+}
+
+/* Pill içeriği aktif arka planın üstünde kalır */
+[data-expertise-showcase] [data-es-pill] > :not([data-es-pill-bg]) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Aktif pill arka planı — JS fade/scale ile sürer */
+[data-expertise-showcase] [data-es-pill-bg] {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* No-JS / ilk boyama: markup'ta .is-active verilen pill'in bg'si görünür */
+[data-expertise-showcase] [data-es-pill].is-active [data-es-pill-bg] {
+  opacity: 1;
+}
