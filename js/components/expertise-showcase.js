@@ -1,5 +1,5 @@
 /*!
- * expertise-showcase.js v1.0.0
+ * expertise-showcase.js v1.1.0
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -44,6 +44,22 @@
  *   data-es-offset-step   derinlik başına xPercent kayması (default 7)
  *   data-es-scale-step    derinlik başına scale düşüşü     (default 0.07)
  *   data-es-dim-step      derinlik başına overlay opacity  (default 0.4)
+ *   data-es-alternate     varsa: data-es-stack verilmemiş panellerde deste yönü
+ *                          otomatik zigzag yapar (1., 3., 5. panel sol; 2., 4. sağ)
+ *
+ * WEBFLOW CMS NOTU: Tüm seçiciler descendant-tabanlı — panel'ler bir Collection
+ * List'ten gelebilir (Wrapper > List > Item araya girer, sorun olmaz). Kalıp:
+ *   [data-expertise-showcase] (+ data-es-alternate)
+ *     Collection List Wrapper > List > Item
+ *       > Div [data-es-panel] (attribute değerleri CMS field'ından bind'lanır)
+ *         ... (panel içeriği aynı; slide görselleri media-1/2/3 field'ları)
+ *   [data-es-pillnav] içinde AYNI koleksiyona bağlı ikinci bir Collection List
+ *     > Item > [data-es-pill] (sıralama iki listede aynı olmalı — index eşleşir)
+ * Collection Item'a attribute verilemez; [data-es-panel] Item İÇİNDEKİ div'e
+ * konur. is-front/is-active initial class'ları CMS'te gerekmez — JS init'te
+ * basar (no-JS'te son slide DOM sırası gereği zaten üsttedir).
+ * JS her panele data-es-stack-resolved="left|right" yazar — Designer'da ayna
+ * düzeni (metin sağ/sol) bu attribute üzerinden stillenebilir.
  *
  * State hook'ları (Designer'da stillenebilir): .is-front (öndeki kart),
  * .is-active (aktif pill).
@@ -109,7 +125,7 @@
     var hidden = false;  // sekme gizli mi
     var panelApis = [];
 
-    function setupPanel(panel) {
+    function setupPanel(panel, index) {
       var media = panel.querySelector("[data-es-media]");
       var slides = media ? Array.prototype.slice.call(media.querySelectorAll("[data-es-slide]")) : [];
 
@@ -125,7 +141,14 @@
 
       if (!media || slides.length < 2) return null; // desteye yetecek kart yok — statik panel
 
-      var dir = (media.getAttribute("data-es-stack") === "right") ? 1 : -1;
+      // Deste yönü: media/panel attribute'u > root'ta data-es-alternate varsa
+      // tek indexli paneller sağa (CMS'te item'lar aynı markup'ı bastığı için
+      // per-item attribute yerine otomatik zigzag) > default sol.
+      var stackAttr = media.getAttribute("data-es-stack") || panel.getAttribute("data-es-stack");
+      var dir = stackAttr === "right" ? 1 :
+        stackAttr === "left" ? -1 :
+        (root.hasAttribute("data-es-alternate") && index % 2 === 1) ? 1 : -1;
+      panel.setAttribute("data-es-stack-resolved", dir === 1 ? "right" : "left"); // CSS ayna hook'u
       var order = slides.slice(); // arka→ön; son eleman ön karttır
 
       var status = panel.querySelector("[data-es-status]");
@@ -218,8 +241,8 @@
       };
     }
 
-    panels.forEach(function (p) {
-      var api = setupPanel(p);
+    panels.forEach(function (p, i) {
+      var api = setupPanel(p, i);
       if (api) panelApis.push(api);
     });
 
