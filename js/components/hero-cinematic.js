@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.2.0
+ * hero-cinematic.js v2.3.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -24,6 +24,8 @@
  *   <section data-hero-cinematic class="section_hero-cinematic">
  *     <div class="hero-cinematic_title-wrap">
  *       <h1 data-hero-title class="heading-h1">…</h1>
+ *       <p data-hero-desc>…</p>              ← ops. description (intro'da süzülür)
+ *       <div data-hero-cta>…butonlar…</div>  ← ops. CTA grubu (desc'ten sonra)
  *     </div>
  *     <div class="hero-cinematic_media-wrap">
  *       <div data-hero-media class="hero-cinematic_media">   ← kutuya yolculuk eden
@@ -71,6 +73,9 @@
     var scene = section.querySelector("[data-hero-scene]");
     var placeholder = section.querySelector("[data-hero-placeholder]");
     var video = media && media.querySelector("video");
+    /* Sahne-1 UI katmanları: description + CTA'lar (DOM sırasıyla derinleşir) */
+    var ui = Array.prototype.slice.call(
+      section.querySelectorAll("[data-hero-desc], [data-hero-cta]"));
 
     var reduce = global.matchMedia &&
       global.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -91,6 +96,18 @@
         ease: "power1.out",
         stagger: { amount: 0.4, from: "random" },
       });
+
+      /* Başlık otururken desc + CTA'lar alttan yumuşak süzülür (parallax dili) */
+      if (ui.length) {
+        gsap.set(ui, { autoAlpha: 0, y: 28 });
+        introTl.to(ui, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power3.out",
+          stagger: 0.1,
+        }, "-=0.1");
+      }
 
       ScrollTrigger.create({
         trigger: title,
@@ -190,18 +207,40 @@
       tl.to(title, { opacity: 0, yPercent: -18, ease: "power2.out" }, 0);
     }
 
+    /* Desc/CTA'lar başlıktan DERİN çıkar (index başına hız artar) — sahne-1
+       terk edilirken katmanlar farklı hızda dağılır, parallax hissi budur. */
+    if (ui.length) {
+      tl.to(ui, {
+        autoAlpha: 0,
+        yPercent: function (i) { return -26 - i * 10; },
+        ease: "power2.out",
+      }, 0);
+    }
+
     if (scene) {
-      /* Katman katman parallax giriş: her çocuk farklı derinlikten, hafif
-         kayarak gelir (placeholder → text → marquee sırasıyla). */
-      tl.set(scene, { autoAlpha: 1 }, 0.2);
-      tl.to(layers, {
+      /* Sahne-2 katmanları AYRI, daha gevşek scrub'lı timeline'da (1.4):
+         scroll durduğunda yazılar bir nefes daha süzülür — istenen "bıraksam
+         da hafif devam etsin" momentum hissi. Pin YOK (pin ana trigger'da);
+         refreshPriority pin'den hemen sonra. */
+      var sceneTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: PIN_DISTANCE,
+          scrub: 1.4,
+          refreshPriority: PIN_PRIORITY - 1,
+          invalidateOnRefresh: true,
+        },
+      });
+      sceneTl.set(scene, { autoAlpha: 1 }, 0.2);
+      sceneTl.to(layers, {
         autoAlpha: 1,
         y: 0,
         ease: "power2.out",
         stagger: 0.12,
       }, 0.3);
       /* Pin biterken scene tıklanabilir olsun (link vb. içerirse) */
-      tl.set(scene, { pointerEvents: "auto" });
+      sceneTl.set(scene, { pointerEvents: "auto" });
     }
   }
 
