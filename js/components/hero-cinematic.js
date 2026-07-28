@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.4.2
+ * hero-cinematic.js v2.4.3
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -126,6 +126,20 @@
       }
     }
 
+    /* Pointer takası — timeline set'i DEĞİL, progress eşiği: her onUpdate/
+       onRefresh'te mutlak durumdan hesaplanır; scrub yönü, F5, Barba
+       geçişi fark etmez, asla "set atlanmış" kalmaz. */
+    var POINTER_SWAP = 0.55;
+    var pointerState = null;
+    function syncPointers(progress) {
+      var inScene2 = progress >= POINTER_SWAP;
+      if (inScene2 === pointerState) return;
+      pointerState = inScene2;
+      if (scene) scene.style.pointerEvents = inScene2 ? "auto" : "none";
+      ui.forEach(function (el) { el.style.pointerEvents = inScene2 ? "none" : ""; });
+      if (title) title.style.pointerEvents = inScene2 ? "none" : "";
+    }
+
     /* ---------- 2) Pinned scene change — media FLIPs into the box ---------- */
     if (!media || !placeholder) return; // scene 2 kurulmadıysa hero statik kalır
 
@@ -181,9 +195,9 @@
         invalidateOnRefresh: true,
         onRefreshInit: measure,
         markers: section.hasAttribute("data-hero-debug"), // canlı teşhis için
-        /* Intro kapısı: sayfa başında (yükleme VEYA geri dönüş) bir kez oynar */
-        onRefresh: function (self) { maybeIntro(self.progress); },
-        onUpdate: function (self) { maybeIntro(self.progress); },
+        /* Intro kapısı + pointer takası her update'te mutlak durumdan */
+        onRefresh: function (self) { maybeIntro(self.progress); syncPointers(self.progress); },
+        onUpdate: function (self) { maybeIntro(self.progress); syncPointers(self.progress); },
       },
     });
 
@@ -229,14 +243,7 @@
       }, 0);
     }
 
-    /* Sahne-1 UI'ı söndükten sonra tıklamayı bloklamasın — pointer-events'i
-       JS yönetir (CSS'te elle verme). Scrub geri sarınca set otomatik geri
-       alınır, butonlar yeniden tıklanabilir olur. */
-    var scene1Els = ui.slice();
-    if (title) scene1Els.push(title);
-    if (scene1Els.length) {
-      tl.set(scene1Els, { pointerEvents: "none" }, 0.6);
-    }
+    /* (pointer-events takası syncPointers'ta — trigger onUpdate/onRefresh) */
 
     if (scene) {
       /* Sahne-2 katmanları ANA timeline'da (ayrı trigger sahada senkron
@@ -257,10 +264,7 @@
           stagger: 0.08,
           immediateRender: false,
         }, 0.3);
-      /* Pointer takası sahne-1 ile AYNI anda (0.6): sahne-1 kapanırken
-         sahne-2 açılır — timeline sonunu beklemez, geri scrub'da otomatik
-         geri döner. (Önceden en sondaydı; pin bitmeden scene hep ölüydü.) */
-      tl.set(scene, { pointerEvents: "auto" }, 0.6);
+      /* (pointer-events takası syncPointers'ta) */
     }
   }
 

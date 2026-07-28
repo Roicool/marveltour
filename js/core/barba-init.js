@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/barba-init.js
- * v1.2.0 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
+ * v1.2.1 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
  *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
  *          pin'li ScrollTrigger'lar için en güvenli kurgu.
  *          v1.2.0: template otomatik gizlenir, kopyada gizli inline/display
@@ -60,6 +60,14 @@
     function runPage(container) {
       onEach(container || document);
     }
+
+    /* bfcache guard: tarayıcı geri/ileri tuşunda sayfayı back-forward
+       cache'ten DONMUŞ haliyle getirirse (Barba devrede olmayan tam sayfa
+       geçişlerinde olur) GSAP/Lenis/ScrollTrigger state'i güvenilmezdir —
+       temiz yükleme yap. Barba'nın kendi popstate akışını etkilemez. */
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) window.location.reload();
+    });
 
     /* --- Fallback: Barba yoksa ya da wrapper markup'ı eksikse --- */
     if (!window.barba || !document.querySelector('[data-barba="wrapper"]')) {
