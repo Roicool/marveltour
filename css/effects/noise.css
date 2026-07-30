@@ -1,9 +1,16 @@
 /*!
- * noise.css v1.0.0
+ * noise.css v1.1.0
  * CSS-only film grain overlay — [data-noise] verilen elemanın üzerine
  * animasyonlu doku bindirir. JS gerekmez, init yok.
+ * v1.1.0: boş-div kullanımı — İÇİ BOŞ bir [data-noise] div'i, konumlu
+ *         parent'ını kaplayan overlay katmanına dönüşür (Webflow'da kartın
+ *         içine boş div bırakmak yeterli).
  *
- * DOM (Webflow): host elemana attribute vermek yeterli:
+ * DOM (Webflow) — iki kullanım:
+ *   1) Boyutu olan elemana attribute:  <section data-noise>…</section>
+ *   2) Konumlu parent içine BOŞ div:   <div data-noise></div>
+ *      (parent'ın position'ı static olmamalı — kart/section genelde relative)
+ * Doz her iki kullanımda da:
  *   data-noise             → default doz (opacity 0.5)
  *   data-noise="soft"      → 0.25 (hero medya, görsel üstü ince doku)
  *   data-noise="strong"    → 0.75 (koyu sinematik zeminler)
@@ -20,6 +27,15 @@
 :where([data-noise]) {
   position: relative;
   overflow: clip;
+}
+
+/* Boş [data-noise] div'i = overlay katmanı: konumlu parent'ını kaplar.
+   (::after boyutunu host'tan alır — boş div'in 0 yüksekliği bu kuralla
+   parent boyutuna açılır.) */
+:where([data-noise]:empty) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 [data-noise]::after {
