@@ -1,11 +1,20 @@
 /*!
  * Marveltour — core/utils.css
- * v1.0.0
+ * v1.1.0  (adapted from sestek search.css v1.7.1 + pagination.css v1.3.0 +
+ *          dropdown.css v1.3.0 + blog-slider-pro.css v1.0.0 + TOC/marker
+ *          inline styles)
  * ------------------------------------------------------------
- * utils.js'in sayfa yardımcıları için davranışsal + marka stilleri:
- * rich-text liste marker'ı ve TOC ([data-toc]) görünümü. Tipografi ve
- * yerleşimin geri kalanı Webflow Designer'da; buradaki renkler RC token'ları
- * üzerinden gelir (fallback: bordo #470e2d).
+ * utils.js'in TÜM parçaları için davranışsal + marka stilleri tek dosyada:
+ *   1. rich-text liste marker'ı
+ *   2. TOC ([data-toc]) görünümü
+ *   3. Search overlay ([data-search-*], .search__result)
+ *   4. Pagination (.pagination-*, native Webflow pagination gizleme)
+ *   5. Dropdown ([data-dropdown-*], .dropdown__item)
+ *   6. Blog Slider Pro ([data-blog-slider-pro] — Swiper CSS'i AYRICA gerekir)
+ *
+ * Renkler RC token'ları üzerinden: --brand-primary--* (bordo #470e2d ailesi),
+ * --neutral--*, --surface--*; hepsi fallback'li — token yoksa da çalışır.
+ * Tipografi/yerleşimin geri kalanı Webflow Designer'da.
  *
  * Read-progress çubuğunun stili GEREKMEZ — utils.js scaleX'i inline sürer;
  * sadece çubuğun kendisini (yükseklik/renk/konum) Designer'da çiz.
@@ -81,4 +90,630 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-toc] [data-toc-item] { transition: none; }
+}
+
+/* ══ Search — tam saha arama overlay'i ═══════════════════════════ */
+
+/* Overlay açıkken CSS-only scroll kilidi fallback'i (JS Lenis'i durdurur) */
+html.search-lock { overflow: hidden; }
+
+/* ── Trigger (ikon buton — nav'da, sayfanın herhangi bir yerinde) ── */
+[data-search-trigger] {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius--lg, 0.75rem);
+  background: var(--surface--base, #fff);
+  color: var(--neutral--950, #1a1a1a);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-search-trigger] svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+}
+
+[data-search-trigger]:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+[data-search-trigger]:focus-visible {
+  outline: 2px solid var(--brand-primary--500, #470e2d);
+  outline-offset: 2px;
+}
+
+[data-search-trigger][aria-expanded="true"] {
+  border-color: var(--brand-primary--500, #470e2d);
+  color: var(--brand-primary--500, #470e2d);
+}
+
+/* ── Overlay (tüm sitenin üstünde buzlu scrim) ───────────────────── */
+[data-search-overlay] {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  padding: var(--spacing--6, 1.5rem) var(--spacing--4, 1rem);
+  background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  backdrop-filter: blur(20px) saturate(1.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+[data-search-overlay].is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Panel ───────────────────────────────────────────────────────── */
+[data-search-panel] {
+  width: 100%;
+  max-width: 48rem;
+  margin-top: clamp(1.5rem, 6vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(-0.75rem);
+  transition: transform 0.3s ease;
+}
+
+[data-search-overlay].is-open [data-search-panel] {
+  transform: translateY(0);
+}
+
+/* ── Arama çubuğu ────────────────────────────────────────────────── */
+[data-search-bar] {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing--3, 0.75rem);
+  padding: var(--spacing--2, 0.5rem);
+  padding-left: var(--spacing--6, 1.5rem);
+  border-radius: var(--radius--xl, 0.75rem);
+  background: var(--surface--base, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.12);
+  margin-bottom: var(--spacing--4, 1rem);
+}
+
+[data-search-input] {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--text--lg, 1.125rem);
+  letter-spacing: -0.01em;
+  color: var(--neutral--950, #1a1a1a);
+}
+
+[data-search-input]::placeholder {
+  color: var(--neutral--600, rgba(26, 26, 26, 0.45));
+}
+
+[data-search-close] {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius--lg, 0.75rem);
+  background: transparent;
+  color: var(--neutral--600, rgba(26, 26, 26, 0.45));
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+[data-search-close]:hover {
+  background: var(--brand-primary--100, #f6ebf1);
+  color: var(--brand-primary--500, #470e2d);
+  transform: scale(1.06);
+}
+
+[data-search-close]:focus-visible {
+  outline: 2px solid var(--brand-primary--500, #470e2d);
+  outline-offset: 2px;
+}
+
+/* ── Sonuç kartı — label + grid TEK ortak zeminde ────────────────── */
+[data-search-results-label] {
+  margin: 0;
+  font-size: var(--text--sm, 0.875rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--neutral--600, rgba(26, 26, 26, 0.45));
+}
+
+[data-search-results] {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing--8, 2rem) var(--spacing--6, 1.5rem);
+  overflow-y: auto;
+  /* Bar + üst marjlara yer bırakır; panel taşmaz, sonuçlar içinde kayar */
+  max-height: min(34rem, calc(100vh - 13rem));
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+[data-search-results]::-webkit-scrollbar {
+  width: 6px;
+}
+[data-search-results]::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius--full, 9999px);
+}
+[data-search-results]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Beyaz kart zemini: label ve grid ayrı ayrı alır, bitişiklik kuralı
+   ikisini tek kesintisiz karta diker */
+[data-search-results-label]:not([hidden]),
+[data-search-results]:not(:empty) {
+  background: var(--surface--base, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 28px -14px rgba(0, 0, 0, 0.14);
+}
+[data-search-results-label]:not([hidden]) {
+  padding: var(--spacing--5, 1.25rem) var(--spacing--5, 1.25rem) var(--spacing--4, 1rem);
+  border-radius: var(--radius--xl, 0.75rem) var(--radius--xl, 0.75rem) 0 0;
+  border-bottom: 0;
+}
+[data-search-results]:not(:empty) {
+  padding: var(--spacing--5, 1.25rem);
+  border-radius: var(--radius--xl, 0.75rem);
+}
+/* Görünür label gridin hemen üstündeyse ikisini tek karta birleştir */
+[data-search-results-label]:not([hidden]) + [data-search-results]:not(:empty) {
+  padding-top: 0;
+  border-top: 0;
+  border-radius: 0 0 var(--radius--xl, 0.75rem) var(--radius--xl, 0.75rem);
+}
+
+[data-search-results]:empty {
+  display: none;
+}
+
+[data-search-results-label][hidden] {
+  display: none;
+}
+
+.search__result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing--2, 0.5rem);
+  text-decoration: none;
+  color: var(--neutral--950, #1a1a1a);
+  transition: transform 0.25s ease;
+}
+
+.search__result:hover,
+.search__result.is-active {
+  transform: translateY(-0.2rem);
+}
+
+/* Klavye ile seçili sonuç (↑/↓) */
+.search__result.is-active .search__result-media {
+  outline: 2px solid var(--brand-primary--500, #470e2d);
+  outline-offset: 2px;
+}
+
+.search__result-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius--xl, 0.75rem);
+  overflow: hidden;
+  background: var(--surface--muted, #f5f5f6);
+}
+
+.search__result-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.search__result-title {
+  font-size: var(--text--sm, 0.9375rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--neutral--950, #1a1a1a);
+}
+
+/* Eşleşen metin — aynı renk, sadece daha ağır; chip/zemin yok */
+.search__result-title mark {
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ── Boş durum ───────────────────────────────────────────────────── */
+[data-search-empty] {
+  padding: var(--spacing--8, 2rem) 0;
+  text-align: center;
+  color: var(--neutral--600, rgba(26, 26, 26, 0.5));
+}
+
+[data-search-empty][hidden] {
+  display: none;
+}
+
+/* ── Responsive grid ─────────────────────────────────────────────── */
+@media (max-width: 991px) {
+  [data-search-results] { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 599px) {
+  [data-search-panel] { margin-top: var(--spacing--8, 2rem); }
+  [data-search-results] {
+    grid-template-columns: 1fr;
+    max-height: min(28rem, calc(100vh - 11rem));
+  }
+  [data-search-bar] { padding-left: var(--spacing--4, 1rem); }
+}
+
+/* ══ Pagination — numaralı AJAX pagination ═══════════════════════ */
+
+/* Native Webflow pagination — DOM'da kalır (no-JS fallback + crawlable),
+   görsel olarak gizli; yerine utils.js'in .pagination-numbers bar'ı gelir. */
+.w-pagination-wrapper {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.w-page-count {
+  display: none !important;
+}
+
+/* ── Yükleme durumu ──────────────────────────────────────────────── */
+/* Fetch süresince .w-dyn-items'a basılır. Eski item'lar gizlenir (ama
+   silinmez — kutuları skeleton boyutu için ölçülür), üzerlerine aynı
+   boyutta shimmer placeholder gelir; içerik inince hiçbir şey zıplamaz. */
+.w-dyn-items.is-loading {
+  position: relative;
+  min-height: 6rem;
+  pointer-events: none;
+}
+
+.w-dyn-items.is-loading > :not(.pagination-skeleton-card) {
+  visibility: hidden;
+}
+
+.pagination-skeleton-card {
+  border-radius: var(--radius--xl, 0.75rem);
+  background: linear-gradient(
+    100deg,
+    var(--surface--muted, #f5f5f6) 30%,
+    var(--surface--base, #fff) 50%,
+    var(--surface--muted, #f5f5f6) 70%
+  );
+  background-size: 200% 100%;
+  animation: pagination-shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes pagination-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Swap oturunca yeni item'lar fade-in — .is-entering bir frame sonra kalkar */
+.w-dyn-items > * {
+  transition: opacity 0.25s ease;
+}
+
+.w-dyn-items.is-entering > * {
+  opacity: 0;
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing--1, 0.25rem);
+  margin-top: var(--spacing--8, 2rem);
+  font-family: var(--font--primary, inherit);
+  font-size: var(--text--sm, 0.9375rem);
+  line-height: 1;
+}
+
+.pagination-number,
+.pagination-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius--full, 9999px);
+  color: var(--neutral--950, #1a1a1a);
+  text-decoration: none;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pagination-number:hover,
+.pagination-arrow:hover {
+  background: var(--surface--muted, #f5f5f6);
+}
+
+.pagination-number:focus-visible,
+.pagination-arrow:focus-visible {
+  outline: 2px solid var(--brand-primary--500, #470e2d);
+  outline-offset: 2px;
+}
+
+.pagination-number.is-active {
+  background: var(--brand-primary--500, #470e2d);
+  color: var(--surface--base, #fff);
+}
+
+/* Kısaltılmış aralık işareti (1 … 5 6 7 … 27) — sayı hücresiyle aynı
+   ayak izi, ama inert (hover/tık yok) */
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  color: var(--neutral--600, rgba(26, 26, 26, 0.5));
+  user-select: none;
+  pointer-events: none;
+}
+
+.pagination-arrow--prev::before {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='12' viewBox='0 0 7 12' fill='none'%3E%3Cpath d='M6 1L1 6L6 11' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  display: flex;
+  align-items: center;
+}
+
+.pagination-arrow--next::before {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='12' viewBox='0 0 7 12' fill='none'%3E%3Cpath d='M1 1L6 6L1 11' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  display: flex;
+  align-items: center;
+}
+
+.pagination-arrow.is-disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+@media (max-width: 599px) {
+  .pagination-numbers {
+    gap: 0;
+  }
+
+  .pagination-number,
+  .pagination-arrow,
+  .pagination-ellipsis {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: var(--text--xs, 0.8125rem);
+  }
+}
+
+/* ══ Dropdown — disclosure dropdown ══════════════════════════════ */
+
+[data-dropdown] {
+  position: relative;
+  display: inline-block;
+}
+
+/* ── Trigger ─────────────────────────────────────────────────────── */
+[data-dropdown-trigger] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing--2, 0.5rem);
+  padding: var(--spacing--3, 0.75rem) var(--spacing--5, 1.25rem);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius--xl, 0.75rem);
+  background: var(--surface--base, #fff);
+  color: var(--neutral--950, #1a1a1a);
+  font: inherit;
+  font-size: var(--text--base, 1rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-dropdown-trigger]:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+[data-dropdown-trigger][aria-expanded="true"] {
+  border-color: var(--brand-primary--500, #470e2d);
+  color: var(--brand-primary--500, #470e2d);
+}
+
+[data-dropdown-trigger]:focus-visible {
+  outline: 2px solid var(--brand-primary--500, #470e2d);
+  outline-offset: 2px;
+}
+
+[data-dropdown-trigger] svg {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s ease;
+}
+
+[data-dropdown-trigger][aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+/* ── Panel ───────────────────────────────────────────────────────── */
+[data-dropdown-panel] {
+  position: absolute;
+  top: calc(100% + var(--spacing--2, 0.5rem));
+  left: 0;
+  z-index: 50;
+  /* Trigger genişliğinde — utils.js trigger'a min-width verip en geniş
+     item'a sığdırır; burası o genişliği aynalar */
+  width: 100%;
+  max-width: 22rem;
+  max-height: 24rem;
+  overflow-y: auto;
+  padding: var(--spacing--2, 0.5rem);
+  border-radius: var(--radius--xl, 0.75rem);
+  background: var(--surface--base, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.5rem);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+[data-dropdown-panel].is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Viewport'tan taşacaksa trigger'ın sağ kenarına hizala (JS basar) */
+[data-dropdown].is-align-right [data-dropdown-panel] {
+  left: auto;
+  right: 0;
+}
+
+[data-dropdown-panel]::-webkit-scrollbar {
+  width: 6px;
+}
+[data-dropdown-panel]::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius--full, 9999px);
+}
+[data-dropdown-panel]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Item'lar ────────────────────────────────────────────────────── */
+.dropdown__item {
+  display: block;
+  padding: var(--spacing--3, 0.75rem) var(--spacing--4, 1rem);
+  border-radius: var(--radius--lg, 0.5rem);
+  font-size: var(--text--base, 1rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--neutral--600, rgba(26, 26, 26, 0.6));
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dropdown__item:hover,
+.dropdown__item:focus-visible,
+.dropdown__item.is-active {
+  background: var(--brand-primary--100, #f6ebf1);
+  color: var(--brand-primary--500, #470e2d);
+  outline: 0;
+}
+
+/* Seçili item — [data-dropdown-label] ile trigger'a da yansır */
+.dropdown__item.is-selected {
+  color: var(--brand-primary--500, #470e2d);
+  font-weight: 600;
+}
+
+@media (max-width: 599px) {
+  [data-dropdown-panel] {
+    max-width: calc(100vw - var(--spacing--8, 2rem));
+  }
+
+  /* Uzun kategori adları paneli viewport'tan geniş yapmak yerine sarsın */
+  .dropdown__item {
+    white-space: normal;
+  }
+}
+
+/* ══ Blog Slider Pro — Swiper kart carousel ══════════════════════ */
+/* Swiper'ın kendi CSS'i (swiper-bundle.min.css) AYRICA yüklenmeli. */
+
+[data-blog-slider-pro] {
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+[data-blog-slider-pro].swiper-grabbing { cursor: grabbing; }
+
+[data-blog-slider-pro] .swiper-slide {
+  height: auto;
+}
+
+/* Edge mask/fade — JS data-bs-fade > 0 iken .bs-faded + --bs-fade basar.
+   SAĞ (trailing) kenar yumuşak erir; sol kenar net kalır. */
+[data-blog-slider-pro].bs-faded {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - var(--bs-fade, 48px)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - var(--bs-fade, 48px)),
+    transparent 100%
+  );
+}
+
+/* Pre-init koruması: Swiper kurulmadan önce slaytlar dikey yığın olarak
+   parlamasın — basit kırpılmış satır olarak dursun */
+[data-blog-slider-pro]:not(.swiper-initialized) [data-bs-wrapper] {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--bs-gap, 1rem);
+  overflow: hidden;
+}
+[data-blog-slider-pro]:not(.swiper-initialized) [data-bs-slide] {
+  flex: 0 0 auto;
+}
+
+/* ── Reduced motion — hepsi ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [data-search-trigger],
+  [data-search-overlay],
+  [data-search-panel],
+  [data-search-close],
+  .search__result,
+  .pagination-number,
+  .pagination-arrow,
+  .w-dyn-items > *,
+  [data-dropdown-trigger],
+  [data-dropdown-trigger] svg,
+  [data-dropdown-panel],
+  .dropdown__item {
+    transition: none;
+  }
+
+  .pagination-skeleton-card {
+    animation: none;
+    background-position: 0 0;
+  }
 }

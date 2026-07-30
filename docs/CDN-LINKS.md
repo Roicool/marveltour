@@ -29,7 +29,7 @@ Her sayfada, bu sırayla:
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/core/lenis-init.js" defer></script>
-<!-- utils v1.0.0 — Marveltour.util.* çekirdek helper'ları + 5 sayfa yardımcısı (AI summarize, share, TOC, read time, read progress); component'lerden ÖNCE (bkz. docs/UTILS.md) -->
+<!-- utils v1.1.0 — Marveltour.util.* çekirdek helper'ları + 9 sayfa yardımcısı/component'i (AI summarize, share, TOC, read time, read progress, search, pagination, dropdown, blog-slider-pro); component'lerden ÖNCE; blog-slider-pro için Swiper 11 bundle utils'ten önce (bkz. docs/UTILS.md) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/core/utils.js" defer></script>
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/core/barba-init.js" defer></script>
 ```
@@ -69,7 +69,7 @@ Her sayfada, bu sırayla:
 Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 
 ```html
-<!-- utils v1.0.0 — rich-text liste marker'ı + TOC görünümü (core; utils.js'in sayfa yardımcılarıyla birlikte) -->
+<!-- utils v1.1.0 — rich-text marker, TOC, search, pagination, dropdown, blog-slider-pro görünümleri (core; utils.js ile birlikte; blog-slider-pro için swiper-bundle.min.css de gerekli) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/core/utils.css">
 <!-- stagger-button -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stagger-button.css">
