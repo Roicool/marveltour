@@ -1,5 +1,7 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.5.2 — introOnLoad sahne girişi: logo statik basılmak yerine belirip
+ *          yerleşir (0.45s) → marka anı → söner → perde süpürülür.
  * v1.5.1 — perde asla takılı kalmaz: modül init hataları yakalanır (perde
  *          yine de açılır, hata console'a düşer) + 4sn watchdog her koşulda
  *          perdeyi açar. once VE geçişler için geçerli.
@@ -282,9 +284,10 @@
               return;
             }
 
-            /* Perde ANINDA kapalı konuma */
+            /* Perde ANINDA kapalı konuma; logo GİZLİ başlar — sahne girişini
+               timeline yapar (statik "pat diye logolu ekran" hissi olmasın) */
             gsap.set(cover, { visibility: "visible", y: 0, yPercent: 0 });
-            gsap.set(logoWrap, { autoAlpha: 1, y: 0, scale: 1 });
+            gsap.set(logoWrap, { autoAlpha: 0, y: 24, scale: 0.92 });
             document.documentElement.classList.add("mt-ready"); // pre-cover devri
             if (Marveltour.lenis) Marveltour.lenis.stop();
 
@@ -301,12 +304,22 @@
                 if (Marveltour.lenis) Marveltour.lenis.start();
               },
             });
+            /* Sahne girişi: logo belirip yerleşir → marka anı → söner → perde
+               yukarı süpürülür (geçişlerin diliyle birebir aynı koreografi) */
             tl.to(logoWrap, {
+                autoAlpha: 1,
+                y: 0,
+                scale: 1,
+                duration: 0.45,
+                ease: "power3.out",
+                delay: 0.1
+              })
+              .to(logoWrap, {
                 autoAlpha: 0,
                 y: -20,
                 duration: 0.28,
                 ease: "power2.in",
-                delay: 0.45 // marka anı — ilk karşılamada bir nefes uzun
+                delay: 0.5 // marka anı — ilk karşılamada bir nefes uzun
               })
               .to(cover, {
                 yPercent: -101,
