@@ -1,0 +1,84 @@
+/*!
+ * Marveltour — core/utils.css
+ * v1.0.0
+ * ------------------------------------------------------------
+ * utils.js'in sayfa yardımcıları için davranışsal + marka stilleri:
+ * rich-text liste marker'ı ve TOC ([data-toc]) görünümü. Tipografi ve
+ * yerleşimin geri kalanı Webflow Designer'da; buradaki renkler RC token'ları
+ * üzerinden gelir (fallback: bordo #470e2d).
+ *
+ * Read-progress çubuğunun stili GEREKMEZ — utils.js scaleX'i inline sürer;
+ * sadece çubuğun kendisini (yükseklik/renk/konum) Designer'da çiz.
+ */
+
+/* ── Rich text — liste marker'ları ───────────────────────────── */
+.w-richtext li::marker {
+  content: "›  ";
+  color: var(--brand-primary--500, #470e2d);
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.w-richtext li {
+  padding-left: 0.2rem;
+}
+
+/* ── TOC — utils.js'in ürettiği <ul data-toc-ul> listesi ─────── */
+[data-toc] [data-toc-ul] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing--2, 0.5rem);
+}
+
+[data-toc] [data-toc-ul] li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+[data-toc] [data-toc-ul] li::marker { content: ""; }
+
+/* TOC linki — JS hem üretilen <a>'ya hem şablon klonuna data-toc-item basar,
+   bu blok iki modu da kapsar. .is-active scroll-spy'dan gelir. */
+[data-toc] [data-toc-item] {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing--2, 0.5rem);
+  padding: var(--spacing--2, 0.5rem) var(--spacing--3, 0.75rem);
+  border-radius: var(--radius--base, 0.5rem);
+  color: var(--neutral--600, rgba(26, 26, 26, 0.6));
+  font-weight: 500;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+[data-toc] [data-toc-item]::before {
+  content: "›";
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  color: inherit;
+}
+
+[data-toc] [data-toc-item]:hover {
+  color: var(--neutral--950, #0a0a0a);
+  background: var(--brand-primary--100, rgba(71, 14, 45, 0.06));
+}
+[data-toc] [data-toc-item].is-active {
+  color: var(--brand-primary--600, var(--brand-primary--500, #470e2d));
+  border-left-color: var(--brand-primary--500, #470e2d);
+  background: var(--brand-primary--100, rgba(71, 14, 45, 0.06));
+}
+
+/* Başlıksız içerik: JS container'a data-toc-empty basar — bloğu gizle */
+[data-toc][data-toc-empty] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-toc] [data-toc-item] { transition: none; }
+}
