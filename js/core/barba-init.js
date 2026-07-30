@@ -1,5 +1,11 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.5.4 — ScrollTrigger refresh'i hafızadaki eski scroll'u restore edip
+ *          yeni sayfayı dibe clamp'liyordu (scroll kilitli hissi). Memory
+ *          'manual' ile temizlenir + refresh SONRASI scroll zorla 0'lanır.
+ * v1.5.3 — Lenis resize fix: Barba DOM swap sonrası bayat yükseklik
+ *          cache'i scroll'u eski limite clamp'liyordu (kilitli scroll).
+ *          Her sayfa açılışında + geç yüklenen görsellerde lenis.resize().
  * v1.5.2 — introOnLoad sahne girişi: logo statik basılmak yerine belirip
  *          yerleşir (0.45s) → marka anı → söner → perde süpürülür.
  * v1.5.1 — perde asla takılı kalmaz: modül init hataları yakalanır (perde
@@ -83,6 +89,16 @@
       }
     }
 
+    /* Lenis, Barba DOM degisiminden haberdar degildir — bayat yukseklik
+       cache'i scroll'u eski limite CLAMP'ler (kilitli scroll bug'i).
+       Her sayfa acilisinda boyutlar yeniden olculur, sonra start. */
+    function lenisResizeAndStart() {
+      var l = Marveltour.lenis;
+      if (!l) return;
+      if (l.resize) { try { l.resize(); } catch (e) {} }
+      l.start();
+    }
+
     /* Watchdog: timeline'a NE OLURSA OLSUN perde en geç `ms` sonra açılır.
        Timeline normal biterse watchdog sessizce iptal olur. */
     function armCoverWatchdog(ms) {
@@ -92,7 +108,7 @@
         console.warn("[Marveltour] Cover watchdog: perde zorla açıldı (timeline tamamlanmadı).");
         gsap.set(cover, { visibility: "hidden", y: 0, yPercent: 101 });
         gsap.set(logoWrap, { autoAlpha: 0, y: 0, scale: 1 });
-        if (Marveltour.lenis) Marveltour.lenis.start();
+        lenisResizeAndStart();
       }, ms);
       return function disarm() {
         if (!fired) clearTimeout(t);
@@ -223,7 +239,7 @@
     function killAllTriggers() {
       if (!ScrollTrigger) return;
       ScrollTrigger.getAll().forEach(function (t) { t.kill(); });
-      if (ScrollTrigger.clearScrollMemory) ScrollTrigger.clearScrollMemory();
+      if (ScrollTrigger.clearScrollMemory) ScrollTrigger.clearScrollMemory("manual");
     }
 
     function resetScroll() {
@@ -245,7 +261,10 @@
       var t;
       var refresh = function () {
         clearTimeout(t);
-        t = setTimeout(function () { ScrollTrigger.refresh(); }, 200);
+        t = setTimeout(function () {
+          if (Marveltour.lenis && Marveltour.lenis.resize) { try { Marveltour.lenis.resize(); } catch (e) {} }
+          ScrollTrigger.refresh();
+        }, 200);
       };
       imgs.forEach(function (img) {
         img.addEventListener("load", refresh, { once: true });
@@ -301,7 +320,7 @@
             var tl = gsap.timeline({
               onComplete: function () {
                 disarm();
-                if (Marveltour.lenis) Marveltour.lenis.start();
+                lenisResizeAndStart();
               },
             });
             /* Sahne girişi: logo belirip yerleşir → marka anı → söner → perde
@@ -371,22 +390,31 @@
              sonra logo söner, panel yukarı devam ederek açılır */
           after: function (data) {
             runPage(data.next.container);
-            try { if (ScrollTrigger) ScrollTrigger.refresh(); } catch (e) {
+            try {
+              if (ScrollTrigger) {
+                if (ScrollTrigger.clearScrollMemory) ScrollTrigger.clearScrollMemory("manual");
+                ScrollTrigger.refresh();
+              }
+            } catch (e) {
               console.error("[Marveltour] refresh hatası:", e);
             }
+            /* ScrollTrigger.refresh() hafızadaki ESKİ scroll'u restore edebiliyor
+               (yeni kısa sayfada dibe clamp'lenir → "scroll kilitli" bug'ı).
+               Refresh SONRASI pozisyonu zorla sıfırla. */
+            resetScroll();
             refreshOnImages(data.next.container);
 
             if (reduced) {
               gsap.set(cover, { visibility: "hidden", yPercent: 101 });
               gsap.set(logoWrap, { autoAlpha: 0 });
-              if (Marveltour.lenis) Marveltour.lenis.start();
+              lenisResizeAndStart();
               return;
             }
 
             var disarm = armCoverWatchdog(4000);
             function done() {
               disarm();
-              if (Marveltour.lenis) Marveltour.lenis.start();
+              lenisResizeAndStart();
             }
 
             var tl = gsap.timeline({ onComplete: done });
