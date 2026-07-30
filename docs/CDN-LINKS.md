@@ -79,6 +79,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/h-scroll.css">
 <!-- expertise-showcase -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/expertise-showcase.css">
+<!-- noise v1.0.0 — CSS-only film grain overlay; host'a data-noise (="soft|strong") ver, JS/init gerekmez -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/effects/noise.css">
 ```
 
 ## Init (Webflow `</body>` custom code)

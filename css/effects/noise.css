@@ -1,0 +1,69 @@
+/*!
+ * noise.css v1.0.0
+ * CSS-only film grain overlay — [data-noise] verilen elemanın üzerine
+ * animasyonlu doku bindirir. JS gerekmez, init yok.
+ *
+ * DOM (Webflow): host elemana attribute vermek yeterli:
+ *   data-noise             → default doz (opacity 0.5)
+ *   data-noise="soft"      → 0.25 (hero medya, görsel üstü ince doku)
+ *   data-noise="strong"    → 0.75 (koyu sinematik zeminler)
+ *
+ * Host'un konumu :where() ile relative'e alınır ve taşma clip'lenir —
+ * sıfır specificity: Designer'da host'a verilen position/overflow her
+ * zaman kazanır. Doku ::after katmanında, z-index 100 — host içindeki
+ * içerik bunun altında kalır; etkileşimi engellemez (pointer-events none).
+ *
+ * Yalnız transform anime edilir (steps ile grain jitter'ı);
+ * prefers-reduced-motion'da animasyon durur, statik grain kalır.
+ */
+
+:where([data-noise]) {
+  position: relative;
+  overflow: clip;
+}
+
+[data-noise]::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: transparent
+    url("https://cdn.prod.website-files.com/6a53798fd6a2c564bebb94eb/6a6b89d4829a6af612eee823_bg-noise.png")
+    repeat 0 0;
+  background-size: 750px 750px;
+  animation: mt-noise 0.3s steps(5) infinite;
+  opacity: 0.5;
+  will-change: transform;
+  z-index: 100;
+  pointer-events: none;
+}
+
+[data-noise="soft"]::after {
+  opacity: 0.25;
+}
+
+[data-noise="strong"]::after {
+  opacity: 0.75;
+}
+
+@keyframes mt-noise {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -3%); }
+  20%  { transform: translate(-4%, 2%); }
+  30%  { transform: translate(2%, -4%); }
+  40%  { transform: translate(-2%, 5%); }
+  50%  { transform: translate(-4%, 2%); }
+  60%  { transform: translate(3%, 0); }
+  70%  { transform: translate(0, 3%); }
+  80%  { transform: translate(-3%, 0); }
+  90%  { transform: translate(2%, 2%); }
+  100% { transform: translate(1%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-noise]::after {
+    animation: none;
+  }
+}
