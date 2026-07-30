@@ -1,5 +1,9 @@
 /*!
- * h-scroll.css v1.3.1  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.3.2  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.3.2: --hscroll-name-inset — isim overlay'ini kart kenarından içeri
+ *         çeken tek değişken (absolute konum kartın padding'ini dikkate
+ *         almaz; boşluk bu değişkenle ya da .hscroll__name'in KENDİ
+ *         padding'iyle verilir, kart padding'iyle DEĞİL).
  * v1.3.1: Webflow Collection List Wrapper fix — CMS, viewport ile track
  *         arasına .w-dyn-list sarmalayıcısı sokar; flex item olarak
  *         İÇERİĞE göre boyutlanıp % gutter'ı ve mesafe ölçümünü bozuyordu
@@ -133,11 +137,14 @@
   [data-hscroll] { --hscroll-card-h: 50svh; }
 }
 
-/* Destination ismi — görselin üstünde; tipografi/renk Designer'ın */
+/* Destination ismi — görselin üstünde; tipografi/renk Designer'ın.
+   Kenardan boşluk: karta --hscroll-name-inset ver (custom property) YA DA
+   .hscroll__name'in kendi padding'ini kullan — kartın padding'i absolute
+   overlay'i ETKİLEMEZ. */
 .hscroll__card .hscroll__name {
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  inset-inline: var(--hscroll-name-inset, 0);
+  bottom: var(--hscroll-name-inset, 0);
   z-index: 1;
   pointer-events: none;
 }
