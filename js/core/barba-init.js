@@ -1,5 +1,10 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.5.0 — introOnLoad: true ile İLK YÜKLEMEDE de (F5 dahil) aynı perde +
+ *          logo anı oynar: sayfa perde kapalıyken kurulur (modüller +
+ *          refresh perde altında), logo söner, perde yukarı açılır.
+ *          Flash'ı tamamen kesmek için opsiyonel head pre-cover snippet'i
+ *          (bkz. kullanım notu) — JS hazır olunca html.mt-ready ile kalkar.
  * v1.4.1 — "Cover + Logo Flash" geçişi: panel ekranı kapatır, ortada
  *          kısa marka anı, panel açılır. Container HİÇ transform almaz →
  *          pin'li ScrollTrigger'lar için en güvenli kurgu.
@@ -95,9 +100,12 @@
 
     /* --- Fallback: Barba yoksa ya da wrapper markup'ı eksikse --- */
     if (!window.barba || !document.querySelector('[data-barba="wrapper"]')) {
+      document.documentElement.classList.add("mt-ready"); // pre-cover varsa kaldır
       runPage(document);
       return;
     }
+
+    var introOnLoad = opts.introOnLoad === true;
 
     var gsap = window.gsap;
     var ScrollTrigger = window.ScrollTrigger;
@@ -235,9 +243,46 @@
         {
           name: "mt-cover-logo",
 
-          /* İlk yükleme — perde yok, modüller kurulur */
+          /* İlk yükleme (F5 dahil). introOnLoad: true ise geçişlerdeki
+             perde + logo anı burada da oynar: modüller ve refresh perde
+             ALTINDA kurulur, sonra logo söner ve perde yukarı açılır. */
           once: function (data) {
+            if (!introOnLoad || reduced) {
+              document.documentElement.classList.add("mt-ready");
+              runPage(data.next.container);
+              return;
+            }
+
+            /* Perde ANINDA kapalı konuma */
+            gsap.set(cover, { visibility: "visible", y: 0, yPercent: 0 });
+            gsap.set(logoWrap, { autoAlpha: 1, y: 0, scale: 1 });
+            document.documentElement.classList.add("mt-ready"); // pre-cover devri
+            if (Marveltour.lenis) Marveltour.lenis.stop();
+
             runPage(data.next.container);
+            if (ScrollTrigger) ScrollTrigger.refresh();
+            refreshOnImages(data.next.container);
+
+            var tl = gsap.timeline({
+              onComplete: function () {
+                if (Marveltour.lenis) Marveltour.lenis.start();
+              },
+            });
+            tl.to(logoWrap, {
+                autoAlpha: 0,
+                y: -20,
+                duration: 0.28,
+                ease: "power2.in",
+                delay: 0.45 // marka anı — ilk karşılamada bir nefes uzun
+              })
+              .to(cover, {
+                yPercent: -101,
+                duration: 0.6,
+                ease: "power3.inOut"
+              }, "-=0.08")
+              .set(cover, { visibility: "hidden", y: 0, yPercent: 101 })
+              .set(logoWrap, { autoAlpha: 0, y: 0, scale: 1 });
+            return tl;
           },
 
           /* Perde kapanır: panel alttan yukarı, logo hafif gecikmeli belirir */
