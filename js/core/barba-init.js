@@ -1,5 +1,7 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.5.5 — perde rengi --surface--page-transition variable'ından okunur
+ *          (yoksa --surface--inverted, o da yoksa koyu fallback).
  * v1.5.4 — ScrollTrigger refresh'i hafızadaki eski scroll'u restore edip
  *          yeni sayfayı dibe clamp'liyordu (scroll kilitli hissi). Memory
  *          'manual' ile temizlenir + refresh SONRASI scroll zorla 0'lanır.
@@ -164,7 +166,10 @@
     /* ============================================================
        Cover (perde) — JS kurar, Webflow markup'ı gerekmez
        ============================================================ */
-    var COVER_BG = opts.coverColor || "var(--surface--inverted, oklch(14% 0 0))";
+    /* Perde rengi kaynak sırası: opts.coverColor > --surface--page-transition
+       (Webflow Variables) > --surface--inverted > koyu fallback */
+    var COVER_BG = opts.coverColor ||
+      "var(--surface--page-transition, var(--surface--inverted, oklch(14% 0 0)))";
 
     var style = document.createElement("style");
     style.textContent =
