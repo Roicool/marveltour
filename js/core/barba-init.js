@@ -1,5 +1,8 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.5.1 — perde asla takılı kalmaz: modül init hataları yakalanır (perde
+ *          yine de açılır, hata console'a düşer) + 4sn watchdog her koşulda
+ *          perdeyi açar. once VE geçişler için geçerli.
  * v1.5.0 — introOnLoad: true ile İLK YÜKLEMEDE de (F5 dahil) aynı perde +
  *          logo anı oynar: sayfa perde kapalıyken kurulur (modüller +
  *          refresh perde altında), logo söner, perde yukarı açılır.
@@ -64,8 +67,34 @@
 
     function runPage(container) {
       var root = container || document;
-      onEach(root);
-      playAutoplayVideos(root);
+      /* Modül init hatası PERDEYİ REHİN ALMASIN: hata yakalanır, console'a
+         düşer, akış (perdenin açılışı) devam eder. */
+      try {
+        onEach(root);
+      } catch (e) {
+        console.error("[Marveltour] Modül init hatası — perde yine de açılacak:", e);
+      }
+      try {
+        playAutoplayVideos(root);
+      } catch (e2) {
+        console.error("[Marveltour] Video başlatma hatası:", e2);
+      }
+    }
+
+    /* Watchdog: timeline'a NE OLURSA OLSUN perde en geç `ms` sonra açılır.
+       Timeline normal biterse watchdog sessizce iptal olur. */
+    function armCoverWatchdog(ms) {
+      var fired = false;
+      var t = setTimeout(function () {
+        fired = true;
+        console.warn("[Marveltour] Cover watchdog: perde zorla açıldı (timeline tamamlanmadı).");
+        gsap.set(cover, { visibility: "hidden", y: 0, yPercent: 101 });
+        gsap.set(logoWrap, { autoAlpha: 0, y: 0, scale: 1 });
+        if (Marveltour.lenis) Marveltour.lenis.start();
+      }, ms);
+      return function disarm() {
+        if (!fired) clearTimeout(t);
+      };
     }
 
     /* Tarayıcılar autoplay'i sayfa PARSE edilirken işler; Barba'nın sonradan
@@ -260,11 +289,15 @@
             if (Marveltour.lenis) Marveltour.lenis.stop();
 
             runPage(data.next.container);
-            if (ScrollTrigger) ScrollTrigger.refresh();
+            try { if (ScrollTrigger) ScrollTrigger.refresh(); } catch (e) {
+              console.error("[Marveltour] refresh hatası:", e);
+            }
             refreshOnImages(data.next.container);
 
+            var disarm = armCoverWatchdog(4000);
             var tl = gsap.timeline({
               onComplete: function () {
+                disarm();
                 if (Marveltour.lenis) Marveltour.lenis.start();
               },
             });
@@ -325,18 +358,22 @@
              sonra logo söner, panel yukarı devam ederek açılır */
           after: function (data) {
             runPage(data.next.container);
-            if (ScrollTrigger) ScrollTrigger.refresh();
-            refreshOnImages(data.next.container);
-
-            function done() {
-              if (Marveltour.lenis) Marveltour.lenis.start();
+            try { if (ScrollTrigger) ScrollTrigger.refresh(); } catch (e) {
+              console.error("[Marveltour] refresh hatası:", e);
             }
+            refreshOnImages(data.next.container);
 
             if (reduced) {
               gsap.set(cover, { visibility: "hidden", yPercent: 101 });
               gsap.set(logoWrap, { autoAlpha: 0 });
-              done();
+              if (Marveltour.lenis) Marveltour.lenis.start();
               return;
+            }
+
+            var disarm = armCoverWatchdog(4000);
+            function done() {
+              disarm();
+              if (Marveltour.lenis) Marveltour.lenis.start();
             }
 
             var tl = gsap.timeline({ onComplete: done });
