@@ -1,5 +1,5 @@
 /*!
- * manifesto.js v1.0.0
+ * manifesto.js v1.1.0
  * "Experience Manifesto" — pinli, scrub'lı üç vuruşluk sinematik bölüm.
  * Split düzenli bir section'dan (etiket + intro metni solda, medya sağda)
  * marka anına dönüşür:
@@ -31,9 +31,12 @@
  *
  * Root attributes (hepsi opsiyonel):
  *   data-mf-distance   pin mesafesi, viewport katı           (default 2.5 → +=250%)
+ *   data-mf-hold       sahne başlamadan önceki boş scrub payı (default 0.15 —
+ *                      section oturur, kullanıcı split'i okur, sonra başlar)
  *   data-mf-dim        fullbleed'de overlay opacity           (default 0.55)
  *   data-mf-priority   ScrollTrigger refreshPriority          (default 8 —
- *                      PROJECT.md tablosuna kayıtlı; hero=10'un altında)
+ *                      PROJECT.md tablosuna kayıtlı; hero=10'un altında;
+ *                      sayfa haritası markup'tan okunsun diye açıkça ver)
  *
  * Sinematik mod yalnız JS aktifken kurulur (.is-cinema class'ı JS basar):
  * manifesto katmanı o zaman merkezde absolute konumlanır. JS/GSAP yokken ya
@@ -114,22 +117,40 @@
       return { x: x + el.offsetWidth / 2, y: y + el.offsetHeight / 2 };
     }
 
-    var tl = null, split = null;
+    var tl = null, split = null, masks = null;
 
     function build() {
-      // Manifesto katmanının başlangıç durumu (yalnız sinemada gizli)
-      var revealTargets;
+      /* Manifesto satırları: SplitText varsa her satır overflow clip'li bir
+         maskeye sarılır ve maskeden YÜKSELEREK gelir (premium editorial
+         reveal). SplitText yoksa tek blok fade+rise fallback'i. */
+      var revealTargets, maskedReveal = false;
       if (typeof SplitText !== "undefined") {
         split = new SplitText(text, { type: "lines", linesClass: "mf-line" });
         revealTargets = split.lines;
+        masks = revealTargets.map(function (line) {
+          var m = global.document.createElement("div");
+          m.className = "mf-line-mask";
+          line.parentNode.insertBefore(m, line);
+          m.appendChild(line);
+          return m;
+        });
+        maskedReveal = true;
+        gsap.set(revealTargets, { yPercent: 110 });
       } else {
         revealTargets = [text];
+        gsap.set(revealTargets, { autoAlpha: 0, y: 32 });
       }
-      gsap.set(revealTargets, { autoAlpha: 0, y: 32 });
       if (cta) gsap.set(cta, { autoAlpha: 0, y: 24 });
 
+      /* Koreografi: scrub'ın ilk data-mf-hold kadarı BOŞ — section oturur,
+         kullanıcı split düzeni okur, sahne ondan sonra başlar. Kalan aralık
+         (son %5 nefes hariç) vuruşlara normalize dağıtılır. */
+      var H = Math.min(Math.max(attrNum(root, "data-mf-hold", 0.15), 0), 0.5);
+      var avail = 0.95 - H;
+      function at(f) { return H + f * avail; }
+      function dur(f) { return f * avail; }
+
       tl = gsap.timeline({
-        defaults: { ease: "none" },
         scrollTrigger: {
           trigger: root,
           start: "top top",
@@ -142,7 +163,7 @@
         },
       });
 
-      /* Vuruş 1 (0 → .35) — medya fullbleed zemine açılır + kararır.
+      /* Vuruş 1 — medya yumuşak ivmeyle fullbleed zemine açılır + kararır.
          scale-to-cover: çerçeve merkezi viewport merkezine taşınır, kısa
          kenar viewport'u kaplayana kadar büyür; oran ne olursa olsun çalışır. */
       tl.to(media, {
@@ -154,31 +175,36 @@
             global.innerHeight / Math.max(media.offsetHeight, 1)
           );
         },
-        duration: 0.35,
-      }, 0);
-      tl.to(overlay, { opacity: dim, duration: 0.35 }, 0);
+        ease: "power2.inOut",
+        duration: dur(0.4),
+      }, at(0));
+      tl.to(overlay, { opacity: dim, ease: "power1.inOut", duration: dur(0.4) }, at(0.05));
 
-      /* Vuruş 2 (0.25 → 0.8) — intro merkeze süzülüp söner (yolun sonuna
-         varmadan kaybolur: yeni metne "erime" hissi), manifesto satırları
-         merkezde scrub reveal alır. */
+      /* Vuruş 2 — intro merkeze süzülürken hafifçe küçülür ve yolun sonuna
+         varmadan erir; manifesto satırları maskeden yükselir. */
       if (intro) {
         tl.to(intro, {
           x: function () { return global.innerWidth / 2 - centerOf(intro).x; },
           y: function () { return global.innerHeight / 2 - centerOf(intro).y; },
-          duration: 0.3,
-        }, 0.25);
-        tl.to(intro, { autoAlpha: 0, duration: 0.2 }, 0.28);
+          scale: 0.96,
+          ease: "power2.inOut",
+          duration: dur(0.3),
+        }, at(0.22));
+        tl.to(intro, { autoAlpha: 0, ease: "power1.in", duration: dur(0.18) }, at(0.26));
       }
-      tl.to(revealTargets, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.28,
-        stagger: revealTargets.length > 1 ? 0.07 : 0,
-      }, 0.45);
+      if (maskedReveal) {
+        tl.to(revealTargets, {
+          yPercent: 0,
+          ease: "power3.out",
+          duration: dur(0.3),
+          stagger: revealTargets.length > 1 ? dur(0.06) : 0,
+        }, at(0.5));
+      } else {
+        tl.to(revealTargets, { autoAlpha: 1, y: 0, ease: "power2.out", duration: dur(0.3) }, at(0.5));
+      }
 
-      /* Vuruş 3 (0.82 → 0.95) — CTA yükselir; pin bitmeden tam görünür,
-         son %5 kullanıcıya nefes olarak kalır. */
-      if (cta) tl.to(cta, { autoAlpha: 1, y: 0, duration: 0.13 }, 0.82);
+      /* Vuruş 3 — CTA yükselir; pin bitmeden tam görünür, son %5 nefes. */
+      if (cta) tl.to(cta, { autoAlpha: 1, y: 0, ease: "power2.out", duration: dur(0.12) }, at(0.88));
     }
 
     function teardown() {
@@ -186,6 +212,14 @@
         if (tl.scrollTrigger) tl.scrollTrigger.kill();
         tl.kill();
         tl = null;
+      }
+      if (masks) {
+        // Maske sarmalayıcıları SplitText'in değil bizim — revert'ten önce çöz
+        masks.forEach(function (m) {
+          while (m.firstChild) m.parentNode.insertBefore(m.firstChild, m);
+          m.remove();
+        });
+        masks = null;
       }
       if (split) { split.revert(); split = null; }
       gsap.set([media, overlay, intro, text, cta].filter(Boolean), {
