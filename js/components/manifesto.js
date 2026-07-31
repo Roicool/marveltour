@@ -1,5 +1,5 @@
 /*!
- * manifesto.js v1.1.0
+ * manifesto.js v1.2.0
  * "Experience Manifesto" — pinli, scrub'lı üç vuruşluk sinematik bölüm.
  * Split düzenli bir section'dan (etiket + intro metni solda, medya sağda)
  * marka anına dönüşür:
@@ -34,6 +34,9 @@
  *   data-mf-hold       sahne başlamadan önceki boş scrub payı (default 0.15 —
  *                      section oturur, kullanıcı split'i okur, sonra başlar)
  *   data-mf-dim        fullbleed'de overlay opacity           (default 0.55)
+ *   data-mf-immerse    görsel altına girerken intro metin rengi
+ *                      (default var(--color-text--inverted); "false" kapatır;
+ *                      herhangi bir CSS rengi / var(--token) verilebilir)
  *   data-mf-priority   ScrollTrigger refreshPriority          (default 8 —
  *                      PROJECT.md tablosuna kayıtlı; hero=10'un altında;
  *                      sayfa haritası markup'tan okunsun diye açıkça ver)
@@ -110,6 +113,20 @@
 
     root.classList.add("is-cinema");
 
+    /* Immerse rengi: koyu görsel intro'nun altına girdiğinde metin bu renge
+       döner (scrub'la geri sarılabilir tween). data-mf-immerse="false" kapatır;
+       değer olarak herhangi bir CSS rengi / var(--token) verilebilir. */
+    var immerseAttr = root.getAttribute("data-mf-immerse") || "";
+    function resolveColor(val) {
+      var probe = global.document.createElement("span");
+      probe.style.display = "none";
+      probe.style.color = val;
+      root.appendChild(probe);
+      var c = getComputedStyle(probe).color;
+      probe.remove();
+      return c;
+    }
+
     // Transform'dan etkilenmeyen ölçüm: offset zinciriyle root'a göre merkez.
     function centerOf(el) {
       var x = 0, y = 0, n = el;
@@ -180,6 +197,17 @@
       }, at(0));
       tl.to(overlay, { opacity: dim, ease: "power1.inOut", duration: dur(0.4) }, at(0.05));
 
+      /* Renk immersiyonu — genişleyen görsel intro'nun altına girerken metin
+         inverted'a (ya da data-mf-immerse rengine) döner. Küçük bir metin
+         repaint'i; scrub geri sarınca orijinal renklere döner. */
+      if (intro && immerseAttr !== "false") {
+        var immerseColor = resolveColor(immerseAttr || "var(--color-text--inverted)");
+        var colorTargets = [intro].concat(
+          Array.prototype.slice.call(intro.querySelectorAll("*"))
+        );
+        tl.to(colorTargets, { color: immerseColor, ease: "none", duration: dur(0.12) }, at(0.16));
+      }
+
       /* Vuruş 2 — intro merkeze süzülürken hafifçe küçülür ve yolun sonuna
          varmadan erir; manifesto satırları maskeden yükselir. */
       if (intro) {
@@ -225,6 +253,11 @@
       gsap.set([media, overlay, intro, text, cta].filter(Boolean), {
         clearProps: "transform,opacity,visibility",
       });
+      if (intro) {
+        gsap.set([intro].concat(Array.prototype.slice.call(intro.querySelectorAll("*"))), {
+          clearProps: "color",
+        });
+      }
     }
 
     build();
