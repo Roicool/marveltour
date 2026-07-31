@@ -191,6 +191,7 @@ Dosya adları `PROJECT.md` konvansiyonuna göre: `js/<kategori>/<ad>.js` ↔
 | `expertise-showcase` | components | Home, Rotalar hub | ❌ | ✅ repoda. Panel başına GSAP medya kart destesi (prev/next/swipe) + sticky pill nav scroll-spy; Cultural/Faith/Educational vitrini. Reveal `refreshPriority: -1` |
 | `image-strip` | effects | Home, Destinations, Tailor-made | olası | Yatay scroll/parallax görsel şeridi; pin'liyse tabloya kayıt zorunlu |
 | `split-media` | components | Çok sayfa | ❌ | Görsel + metin dönüşümlü hizalama, scroll reveal |
+| `manifesto` | components | Home ("Experience Manifesto") | ✅ | ✅ repoda. Pinli scrub: split düzenden marka anına — medya fullbleed zemine açılır, intro merkeze eriyip manifesto satır satır gelir, CTA yükselir. refreshPriority 8 |
 | `destination-index` | components | Türkiye hub | ❌ | Liste hover'ında büyük görsel önizleme (Black Tomato tarzı); touch'ta fallback |
 | `process-steps` | components | HWW, Tailor-made | ✅ aday | Scroll-driven adım anlatısı; pin kullanırsa refreshPriority tablosuna |
 | `timeline` | components | About | ✅ aday | Scroll-driven yıl akışı |

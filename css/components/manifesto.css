@@ -1,0 +1,69 @@
+/*!
+ * manifesto.css v1.0.0
+ * Behavioural CSS for js/components/manifesto.js — katman düzeni, fullbleed
+ * taşma kırpması, overlay ve sinematik moddaki merkez manifesto katmanı.
+ * Görsel tasarım (split düzeni, tipografi, renkler, medya çerçevesi oranı)
+ * Webflow Designer'da kalır.
+ *
+ * .is-cinema class'ını JS basar (yalnız GSAP+ScrollTrigger aktif ve
+ * reduced-motion kapalıyken). Class yokken manifesto katmanı normal akışta
+ * görünür kalır — no-JS/reduced-motion fallback budur; Designer'da bu hali
+ * de düzgün duracak şekilde bırak (intro'nun altında sade bir blok).
+ */
+
+/* Section — pinlenir; fullbleed'e açılan medyanın taşmasını kırpar.
+   PIN KURALI: bu elemanda ve HİÇBİR ancestor'ında transform/filter/
+   perspective/will-change:transform olamaz (PROJECT.md Kural 3). */
+[data-manifesto] {
+  position: relative;
+  overflow: clip;
+}
+
+/* Karartma — medya çerçevesinin içinde, opacity'yi JS sürer */
+[data-manifesto] [data-mf-media] {
+  position: relative;
+}
+[data-manifesto] [data-mf-overlay] {
+  position: absolute;
+  inset: 0;
+  background-color: var(--neutral--950);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Sinematik mod (yalnız JS aktifken) ── */
+[data-manifesto].is-cinema [data-mf-intro] {
+  position: relative;
+  z-index: 2;
+  will-change: transform;
+}
+[data-manifesto].is-cinema [data-mf-media] {
+  z-index: 1;
+  will-change: transform;
+  overflow: clip; /* overlay + görsel, büyürken çerçevede kalır */
+}
+
+/* Manifesto katmanı merkezde, medyanın üstünde. pointer-events none:
+   katman görünmezken alttaki intro linkleri tıklanabilir kalır; yalnız
+   CTA etkileşim alır. */
+[data-manifesto].is-cinema [data-mf-manifesto] {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--spacing--8);
+  pointer-events: none;
+}
+[data-manifesto].is-cinema [data-mf-cta] {
+  pointer-events: auto;
+}
+
+/* SplitText satırları — reveal'i JS sürer; blok akışı korunur */
+[data-manifesto] .mf-line {
+  display: block;
+  will-change: transform;
+}
