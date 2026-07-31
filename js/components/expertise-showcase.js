@@ -1,5 +1,10 @@
 /*!
- * expertise-showcase.js v1.5.1
+ * expertise-showcase.js v1.6.0
+ * v1.6.0: GİRİŞ ANİMASYONU — panel viewport'a girerken ön kart maske-reveal
+ *         (clip-path, border-radius korumalı) ile alttan açılır, arka kartlar
+ *         fan-out ile derinlik pozisyonlarına akar, oklar en son belirir;
+ *         [data-es-reveal] metinleriyle aynı tetik (top 75%, once).
+ *         Reduced-motion / ScrollTrigger yokken atlanır, deste direkt açık.
  * Panelli uzmanlık vitrini ("capabilities" kalıbının Marveltour uyarlaması):
  * her panelde üst üste binmiş medya kartlarından bir deste (deck) — prev/next
  * ok veya yatay swipe ile öndeki kart arkaya akar, arkadaki öne gelir; öndeki
@@ -391,6 +396,55 @@
       });
 
       apply(true);
+
+      // ── Giriş animasyonu (reveal.js dili): panel viewport'a girerken ön
+      // kart maske-reveal ile alttan açılır (border-radius korunur), arka
+      // kartlar önün arkasından yelpaze gibi (fan-out) derinlik pozisyonlarına
+      // akar, oklar en son belirir. Metinler zaten [data-es-reveal] ile aynı
+      // tetikte geliyor — ikisi birlikte tek sahne okur.
+      // İçteki görsele scale VERİLMEZ: apply()'ın counter-scale'iyle (parts
+      // scaleY) aynı kanalı sürer, çakışır. Clip + fan-out yeterli.
+      if (hasST && !reduce) {
+        var front0 = frontSlide();
+        var r0 = getComputedStyle(front0).borderRadius;
+        var round0 = (r0 && r0 !== "0px") ? " round " + r0 : "";
+        var backs0 = order.slice(0, -1);
+        var arrows0 = Array.prototype.slice.call(panel.querySelectorAll("[data-es-arrow]"));
+
+        // Başlangıç: deste kapalı — hepsi ön pozisyonda, arka kartlar görünmez,
+        // ön kart clip'le gizli. (apply(true) bookkeeping'i — z-index, is-front,
+        // metin, video — çoktan oturdu; yalnız transform durumu eziliyor.)
+        gsap.set(order, { x: 0, scaleY: 1 });
+        order.forEach(function (s) {
+          gsap.set(Array.prototype.slice.call(s.children), { scaleY: 1 });
+          var ov = s.querySelector("[data-es-overlay]");
+          if (ov) gsap.set(ov, { opacity: 0 });
+        });
+        gsap.set(backs0, { autoAlpha: 0 });
+        gsap.set(front0, { clipPath: "inset(100% 0% 0% 0%" + round0 + ")" });
+        if (arrows0.length) gsap.set(arrows0, { autoAlpha: 0, y: 12 });
+
+        var entrance = gsap.timeline({ paused: true });
+        entrance.to(front0, {
+          clipPath: "inset(0% 0% 0% 0%" + round0 + ")",
+          duration: 1, ease: "power4.out",
+        }, 0);
+        entrance.set(backs0, { autoAlpha: 1 }, 0.45);
+        entrance.add(function () { apply(false); }, 0.5); // fan-out — mevcut deste mekaniğiyle
+        if (arrows0.length) {
+          entrance.to(arrows0, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.9);
+        }
+        // clip'i tamamen bırak — sonraki kart geçişleri/hover'lar kırpılmasın
+        entrance.set(front0, { clearProps: "clipPath" }, 1.25);
+
+        ScrollTrigger.create({
+          trigger: panel,
+          start: "top 75%",
+          once: true,
+          refreshPriority: -1,
+          onEnter: function () { entrance.play(); },
+        });
+      }
 
       return {
         syncVideos: syncVideos,
