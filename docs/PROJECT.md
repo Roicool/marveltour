@@ -259,7 +259,7 @@ göre bu tablodan seç (üstteki büyük, alttaki küçük) ve **tabloyu güncel
 |---|---|---|
 | `hero-cinematic` | Home — sayfanın en üstü | `10` |
 | `h-scroll` | Home — hero ile manifesto arası | `9` (Webflow'da `data-hscroll-priority="9"` — attribute verilmezse default 1'dir, ÜSTTEKİ pin olarak MUTLAKA ver) |
-| `manifesto` | Home — hero'nun altında (Experience Manifesto) | `8` |
+| `manifesto` | Home — hero'nun altında (Experience Manifesto) | `8` (Webflow'da `data-mf-priority="8"` — kod default'u da 8, ama sayfa haritası markup'tan okunsun diye attribute'u açıkça ver) |
 | Pin olmayan reveal-tarzı preset'ler (parallax dahil) | Her yerde | `-1` |
 
 Yeni bir pin araya girerse kesirli değer verme; mevcut değerleri yeniden numaralandır
