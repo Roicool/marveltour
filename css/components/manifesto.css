@@ -1,5 +1,5 @@
 /*!
- * manifesto.css v1.0.0
+ * manifesto.css v1.0.1
  * Behavioural CSS for js/components/manifesto.js — katman düzeni, fullbleed
  * taşma kırpması, overlay ve sinematik moddaki merkez manifesto katmanı.
  * Görsel tasarım (split düzeni, tipografi, renkler, medya çerçevesi oranı)
@@ -32,6 +32,17 @@
 }
 
 /* ── Sinematik mod (yalnız JS aktifken) ── */
+
+/* Pinli sahne viewport'u doldurmalı: section kendi sınırında kırptığı için
+   kısaysa fullbleed açılım ekranı değil section'ı kaplar. Statik fallback'te
+   (class yok) yükseklik içerikten gelir — bilinçli olarak zorlanmaz. */
+[data-manifesto].is-cinema {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 [data-manifesto].is-cinema [data-mf-intro] {
   position: relative;
   z-index: 2;
