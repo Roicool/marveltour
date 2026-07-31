@@ -61,6 +61,9 @@ Her sayfada, bu sırayla:
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
+<!-- reveal v1.0.0 — mask/clip giriş animasyonu: data-reveal(="up|down|left|right") + data-reveal-delay; içteki img/video 1.15→1 scale'le oturur, border-radius korunur, once (gsap + ScrollTrigger gerekir; CSS gerekmez; pinli bölüm İÇİNDE ve parallax'lı elemanın KENDİSİNDE kullanılmaz) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/reveal.js" defer></script>
+
 <!-- <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/effects/<name>.js" defer></script> -->
 ```
 
@@ -101,6 +104,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initUtils(container);
         Marveltour.initStaggerButton(container);
         Marveltour.initParallax(container);
+        Marveltour.initReveal(container);
         Marveltour.initHeroCinematic(container);
         Marveltour.initMarquee(container);
         Marveltour.initStepScroll(container);
