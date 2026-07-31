@@ -258,6 +258,7 @@ göre bu tablodan seç (üstteki büyük, alttaki küçük) ve **tabloyu güncel
 | Component | Sayfadaki konum | refreshPriority |
 |---|---|---|
 | `hero-cinematic` | Home — sayfanın en üstü | `10` |
+| `h-scroll` | Home — hero ile manifesto arası | `9` (Webflow'da `data-hscroll-priority="9"` — attribute verilmezse default 1'dir, ÜSTTEKİ pin olarak MUTLAKA ver) |
 | `manifesto` | Home — hero'nun altında (Experience Manifesto) | `8` |
 | Pin olmayan reveal-tarzı preset'ler (parallax dahil) | Her yerde | `-1` |
 
