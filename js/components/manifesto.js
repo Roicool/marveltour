@@ -1,5 +1,5 @@
 /*!
- * manifesto.js v1.2.0
+ * manifesto.js v1.3.0
  * "Experience Manifesto" — pinli, scrub'lı üç vuruşluk sinematik bölüm.
  * Split düzenli bir section'dan (etiket + intro metni solda, medya sağda)
  * marka anına dönüşür:
@@ -30,7 +30,7 @@
  *   </section>
  *
  * Root attributes (hepsi opsiyonel):
- *   data-mf-distance   pin mesafesi, viewport katı           (default 2.5 → +=250%)
+ *   data-mf-distance   pin mesafesi, viewport katı           (default 3 → +=300%)
  *   data-mf-hold       sahne başlamadan önceki boş scrub payı (default 0.15 —
  *                      section oturur, kullanıcı split'i okur, sonra başlar)
  *   data-mf-dim        fullbleed'de overlay opacity           (default 0.55)
@@ -98,7 +98,7 @@
       return { root: root, destroy: function () {} };
     }
 
-    var distance = attrNum(root, "data-mf-distance", 2.5);
+    var distance = attrNum(root, "data-mf-distance", 3);
     var dim = Math.min(attrNum(root, "data-mf-dim", 0.55), 0.9);
     var priority = attrNum(root, "data-mf-priority", 8);
 
@@ -158,6 +158,9 @@
         gsap.set(revealTargets, { autoAlpha: 0, y: 32 });
       }
       if (cta) gsap.set(cta, { autoAlpha: 0, y: 24 });
+      /* Katmanın TAMAMI başta gizli — [data-mf-text] dışına konan ekstra
+         içerik (etiket, ikinci paragraf vb.) de ilk sahnede görünmez. */
+      gsap.set(layer, { autoAlpha: 0 });
 
       /* Koreografi: scrub'ın ilk data-mf-hold kadarı BOŞ — section oturur,
          kullanıcı split düzeni okur, sahne ondan sonra başlar. Kalan aralık
@@ -193,9 +196,9 @@
           );
         },
         ease: "power2.inOut",
-        duration: dur(0.4),
+        duration: dur(0.5),
       }, at(0));
-      tl.to(overlay, { opacity: dim, ease: "power1.inOut", duration: dur(0.4) }, at(0.05));
+      tl.to(overlay, { opacity: dim, ease: "power1.inOut", duration: dur(0.5) }, at(0.05));
 
       /* Renk immersiyonu — genişleyen görsel intro'nun altına girerken metin
          inverted'a (ya da data-mf-immerse rengine) döner. Küçük bir metin
@@ -205,7 +208,7 @@
         var colorTargets = [intro].concat(
           Array.prototype.slice.call(intro.querySelectorAll("*"))
         );
-        tl.to(colorTargets, { color: immerseColor, ease: "none", duration: dur(0.12) }, at(0.16));
+        tl.to(colorTargets, { color: immerseColor, ease: "none", duration: dur(0.15) }, at(0.2));
       }
 
       /* Vuruş 2 — intro merkeze süzülürken hafifçe küçülür ve yolun sonuna
@@ -216,23 +219,25 @@
           y: function () { return global.innerHeight / 2 - centerOf(intro).y; },
           scale: 0.96,
           ease: "power2.inOut",
-          duration: dur(0.3),
-        }, at(0.22));
-        tl.to(intro, { autoAlpha: 0, ease: "power1.in", duration: dur(0.18) }, at(0.26));
+          duration: dur(0.35),
+        }, at(0.3));
+        tl.to(intro, { autoAlpha: 0, ease: "power1.in", duration: dur(0.22) }, at(0.35));
       }
+      /* Katman satırlardan hemen önce görünür olur */
+      tl.to(layer, { autoAlpha: 1, duration: dur(0.04) }, at(0.56));
       if (maskedReveal) {
         tl.to(revealTargets, {
           yPercent: 0,
           ease: "power3.out",
           duration: dur(0.3),
           stagger: revealTargets.length > 1 ? dur(0.06) : 0,
-        }, at(0.5));
+        }, at(0.6));
       } else {
-        tl.to(revealTargets, { autoAlpha: 1, y: 0, ease: "power2.out", duration: dur(0.3) }, at(0.5));
+        tl.to(revealTargets, { autoAlpha: 1, y: 0, ease: "power2.out", duration: dur(0.3) }, at(0.6));
       }
 
-      /* Vuruş 3 — CTA yükselir; pin bitmeden tam görünür, son %5 nefes. */
-      if (cta) tl.to(cta, { autoAlpha: 1, y: 0, ease: "power2.out", duration: dur(0.12) }, at(0.88));
+      /* Vuruş 3 — CTA yükselir; pin bitmeden tam görünür, sonda nefes kalır. */
+      if (cta) tl.to(cta, { autoAlpha: 1, y: 0, ease: "power2.out", duration: dur(0.1) }, at(0.88));
     }
 
     function teardown() {
@@ -250,7 +255,7 @@
         masks = null;
       }
       if (split) { split.revert(); split = null; }
-      gsap.set([media, overlay, intro, text, cta].filter(Boolean), {
+      gsap.set([media, overlay, intro, text, cta, layer].filter(Boolean), {
         clearProps: "transform,opacity,visibility",
       });
       if (intro) {
