@@ -1,5 +1,5 @@
 /*!
- * manifesto.css v1.0.1
+ * manifesto.css v1.1.0
  * Behavioural CSS for js/components/manifesto.js — katman düzeni, fullbleed
  * taşma kırpması, overlay ve sinematik moddaki merkez manifesto katmanı.
  * Görsel tasarım (split düzeni, tipografi, renkler, medya çerçevesi oranı)
@@ -73,7 +73,11 @@
   pointer-events: auto;
 }
 
-/* SplitText satırları — reveal'i JS sürer; blok akışı korunur */
+/* SplitText satırları — reveal'i JS sürer; blok akışı korunur.
+   .mf-line-mask sarmalayıcısını JS oluşturur: satır maskeden yükselir. */
+[data-manifesto] .mf-line-mask {
+  overflow: clip;
+}
 [data-manifesto] .mf-line {
   display: block;
   will-change: transform;
