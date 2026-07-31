@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/utils.js
- * v1.1.0  (adapted from Sestek utils.js v1.0.0 + blog-utils.js v1.5.0 +
+ * v1.1.1  (adapted from Sestek utils.js v1.0.0 + blog-utils.js v1.5.0 +
  *          search.js v1.4.0 + pagination.js v1.7.0 + dropdown.js v1.3.0 +
  *          blog-slider-pro.js v1.0.0)
  * ------------------------------------------------------------
@@ -737,6 +737,29 @@
     return escapeHtml(before) + "<mark>" + escapeHtml(match) + "</mark>" + escapeHtml(after);
   }
 
+  /**
+   * [data-search-item]'ın URL'ini çöz: kendi href'i → data-search-url →
+   * İÇİNDEKİ ilk a[href] → SARAN a[href]. (Webflow'da attribute çoğu zaman
+   * Collection Item div'ine verilir, link içeride/dışarıda kalır — hepsi
+   * desteklenir.) Boş/"#" değerler yok sayılır.
+   */
+  function searchItemUrl(el) {
+    var candidates = [
+      el.getAttribute("href"),
+      el.getAttribute("data-search-url"),
+    ];
+    var inner = el.querySelector("a[href]");
+    if (inner) candidates.push(inner.getAttribute("href"));
+    var outer = el.closest ? el.closest("a[href]") : null;
+    if (outer && outer !== el) candidates.push(outer.getAttribute("href"));
+
+    for (var i = 0; i < candidates.length; i++) {
+      var u = candidates[i];
+      if (u && u.trim() && u.trim() !== "#") return u.trim();
+    }
+    return "#";
+  }
+
   function buildSearchIndex(sources) {
     var items = [];
     sources.forEach(function (source) {
@@ -747,7 +770,7 @@
         items.push({
           title: title,
           norm: foldNormalize(title),
-          url: el.getAttribute("href") || el.getAttribute("data-search-url") || "#",
+          url: searchItemUrl(el),
           imgSrc: img ? (img.currentSrc || img.src) : "",
           imgSrcset: img ? (img.getAttribute("srcset") || "") : "",
           imgAlt: img ? (img.getAttribute("alt") || "") : ""
