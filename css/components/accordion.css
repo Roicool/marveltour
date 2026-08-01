@@ -1,8 +1,10 @@
 /*!
- * accordion.css v1.0.0
- * Behavioural CSS for js/components/accordion.js — yalnız davranışsal/kritik
- * kurallar. Renk, tipografi, çizgiler ve boşluklar Webflow Designer + RC
- * token'larında. (roicool/sestek accordion.css v1.0.0'dan port.)
+ * accordion.css v1.1.0
+ * CSS for js/components/accordion.js — iki katman:
+ *   1) Davranışsal/kritik kurallar (her kullanımda gerekli)
+ *   2) OPT-IN "FAQ" görünümü — root'a data-accordion="faq" ver
+ *      (boş data-accordion = yalnız davranış; stili Designer yapar)
+ * (roicool/sestek accordion.css v1.0.0'dan port.)
  */
 
 /* ── Trigger (soru başlığı) ─────────────────────────────────── */
@@ -53,5 +55,73 @@
   [data-accordion-icon] {
     will-change: auto;
     transition: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OPT-IN GÖRÜNÜM — data-accordion="faq"
+   Editoryal SSS: hairline satır ayraçları, sakin tipografi, tek
+   vurgu rengi. Monocle dili — kutu/kart/gölge yok.
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-accordion="faq"] [data-accordion-item] {
+  border-top: 1px solid color-mix(in oklab, var(--neutral--950, #0a0a0a) 12%, transparent);
+}
+
+[data-accordion="faq"] [data-accordion-item]:last-child {
+  border-bottom: 1px solid color-mix(in oklab, var(--neutral--950, #0a0a0a) 12%, transparent);
+}
+
+/* Soru satırı — cömert dikey nefes, tıklanabilir alan tüm satır */
+[data-accordion="faq"] [data-accordion-trigger] {
+  padding-block: var(--spacing--5, 1.5rem);
+  font-size: var(--text--lg, 1.25rem);
+  line-height: 1.3;
+  color: var(--neutral--950, #0a0a0a);
+  transition: color 0.25s ease;
+}
+
+@media (hover: hover) {
+  [data-accordion="faq"] [data-accordion-trigger]:hover {
+    color: var(--brand-primary--700, #6d1f2c);
+  }
+}
+
+[data-accordion="faq"] [data-accordion-item].is-open [data-accordion-trigger] {
+  color: var(--brand-primary--700, #6d1f2c);
+}
+
+/* İkon — sakin, soru renginin gölgesinde */
+[data-accordion="faq"] [data-accordion-icon] {
+  width: 1em;
+  height: 1em;
+  color: color-mix(in oklab, var(--neutral--950, #0a0a0a) 45%, transparent);
+}
+
+[data-accordion="faq"] [data-accordion-item].is-open [data-accordion-icon] {
+  color: var(--brand-primary--700, #6d1f2c);
+}
+
+/* Cevap — okuma genişliği sınırlı, mürekkep bir ton geri çekilir */
+[data-accordion="faq"] [data-accordion-content] {
+  padding-bottom: var(--spacing--6, 2rem);
+  max-width: 65ch;
+  font-size: var(--text--base, 1rem);
+  line-height: 1.65;
+  color: color-mix(in oklab, var(--neutral--950, #0a0a0a) 72%, transparent);
+}
+
+/* JS yokken (paneller doğal yükseklikte) cevaba da nefes bırak */
+[data-accordion="faq"]:not(.is-enhanced) [data-accordion-content] {
+  padding-top: var(--spacing--2, 0.5rem);
+}
+
+@media (max-width: 47.9375em) {
+  [data-accordion="faq"] [data-accordion-trigger] {
+    padding-block: var(--spacing--4, 1.25rem);
+    font-size: var(--text--md, 1.1rem);
+  }
+  [data-accordion="faq"] [data-accordion-content] {
+    padding-bottom: var(--spacing--5, 1.5rem);
   }
 }

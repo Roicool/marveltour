@@ -104,7 +104,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/manifesto.css">
 <!-- process-steps -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/process-steps.css">
-<!-- accordion -->
+<!-- accordion v1.1.0 — davranışsal kurallar + opt-in editoryal FAQ görünümü (root'a data-accordion="faq" ver; boş data-accordion = yalnız davranış) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/accordion.css">
 <!-- stat-counter -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stat-counter.css">
