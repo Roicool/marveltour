@@ -1,17 +1,12 @@
 /*!
- * stat-counter.css v1.0.0
- * Behavioural CSS for js/components/stat-counter.js — drift hijyeni ve
- * rakam tipografisi güvencesi. Kolaj yerleşimi, karo tasarımı, renkler ve
- * görsel çerçeveleri tamamen Webflow Designer'da.
+ * stat-counter.css v2.0.0
+ * Behavioural CSS for js/components/stat-counter.js — pinli yükselen kolaj
+ * sahnesinin iskeleti. Karo tasarımı, boyutlar, renkler ve görsel çerçeveleri
+ * tamamen Webflow Designer'da; buradaki her şey davranış için zorunlu.
  */
 
 [data-stat-counter] {
   position: relative;
-}
-
-/* Kolaj parçası — drift transform'u burada yaşar */
-[data-stat-counter] [data-sc-item] {
-  will-change: transform;
 }
 
 /* Sayaç titremesin: rakamlar eşit genişlikte aksın */
@@ -26,4 +21,34 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* ── Sinematik mod (yalnız JS basar — JS yokken Designer yerleşimi geçerli) ── */
+
+[data-stat-counter].is-cinema {
+  min-height: 100svh;
+  overflow: clip; /* parçalar sahne dışında (alt/üst) görünmez */
+}
+
+/* Parçalar sahnenin hemen altına park eder; dikey akışı JS sürer,
+   yatay şeridi (left) JS basar. SECTION'a göre konumlanırlar — aradaki
+   wrapper'lara (container, grid) position VERME. */
+[data-stat-counter].is-cinema [data-sc-item] {
+  position: absolute;
+  top: 100%;
+  z-index: 1;
+  margin: 0;
+  will-change: transform;
+}
+
+/* Merkez başlık: sahne çapası — parçalar önünden akar, tık geçirmez */
+[data-stat-counter].is-cinema [data-sc-heading] {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
 }

@@ -260,7 +260,8 @@ göre bu tablodan seç (üstteki büyük, alttaki küçük) ve **tabloyu güncel
 | `hero-cinematic` | Home — sayfanın en üstü | `10` |
 | `h-scroll` | Home — hero ile manifesto arası | `9` (Webflow'da `data-hscroll-priority="9"` — attribute verilmezse default 1'dir, ÜSTTEKİ pin olarak MUTLAKA ver) |
 | `manifesto` | Home — hero'nun altında (Experience Manifesto) | `8` (Webflow'da `data-mf-priority="8"` — kod default'u da 8, ama sayfa haritası markup'tan okunsun diye attribute'u açıkça ver) |
-| `process-steps` | How We Work — sayfanın tek pini | `9` (Webflow'da `data-ps-priority="9"` — kod default'u 0, MUTLAKA ver) |
+| `process-steps` | How We Work — üstteki pin | `9` (Webflow'da `data-ps-priority="9"` — kod default'u 0, MUTLAKA ver) |
+| `stat-counter` | How We Work — process'in altında ("Why Marveltour") | `8` (Webflow'da `data-sc-priority="8"` — kod default'u 0, MUTLAKA ver; Home'da kullanılırsa manifesto'nun altı → `7`) |
 | Pin olmayan reveal-tarzı preset'ler (parallax dahil) | Her yerde | `-1` |
 
 Yeni bir pin araya girerse kesirli değer verme; mevcut değerleri yeniden numaralandır
