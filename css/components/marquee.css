@@ -1,13 +1,7 @@
 /*!
- * marquee.css v1.1.1  (adapted from Sestek marquee.css v1.0.0)
+ * marquee.css v1.0.0  (adapted from Sestek marquee.css v1.0.0)
  * Infinite drag/momentum logo marquee — behavioural CSS.
  * Logo boyutu, gap ve renk/filtre yorumu Webflow Designer'da override edilebilir.
- * v1.1.0: CMS desteği — Collection List sarmalayıcıları (w-dyn-*) display:
- *         contents ile layout'tan şeffaflaştırılır (track flex'i doğrudan
- *         item'lara işler; JS scrollWidth ölçtüğü için döngü etkilenmez).
- *         Kenar erimesi --marquee-fade değişkenine bağlandı (default 12%).
- *         "photos" varyantı: data-marquee="photos" → sabit satır yüksekliği,
- *         genişlik görselin doğal oranından (h-scroll film şeridi mantığı).
  */
 
 /* ── Root ────────────────────────────────────────────────────── */
@@ -20,41 +14,24 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  --marquee-fade: 12%; /* kenar erimesi — instance başına custom property ile ez */
   -webkit-mask-image: linear-gradient(
     to right,
-    transparent 0%,
-    black var(--marquee-fade),
-    black calc(100% - var(--marquee-fade)),
-    transparent 100%
+    transparent  0%,
+    black        12%,
+    black        88%,
+    transparent  100%
   );
   mask-image: linear-gradient(
     to right,
-    transparent 0%,
-    black var(--marquee-fade),
-    black calc(100% - var(--marquee-fade)),
-    transparent 100%
+    transparent  0%,
+    black        12%,
+    black        88%,
+    transparent  100%
   );
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
   padding-block: var(--spacing--6, 1.5rem);
-}
-
-/* ── CMS desteği ─────────────────────────────────────────────── */
-/* Collection List, track ile item'ların arasına .w-dyn-list > .w-dyn-items
-   sokar — flex ve gap item'lara değil bu kutulara işler (dev boşlukların
-   sebebi). display:contents sarmalayıcıları layout'tan siler; item'lar
-   track'in doğrudan flex hücresi olur. JS klon/ölçüm etkilenmez
-   (track.scrollWidth kutu değil içerik ölçer). */
-.marquee__track > .w-dyn-list,
-.marquee__track .w-dyn-items {
-  display: contents;
-}
-/* .marquee__item class'ı Collection Item'ın kendisinde DEĞİL de içindeki
-   div'deyse, item sarmalayıcısını da şeffaflaştır */
-.marquee__track .w-dyn-item:not(.marquee__item) {
-  display: contents;
 }
 
 /* Grabbing state — JS adds / removes this class */
@@ -112,50 +89,4 @@
   .marquee__logo {
     transition: none;
   }
-}
-
-/* ── "photos" varyantı — data-marquee="photos" ───────────────── */
-/* Film şeridi: sabit satır yüksekliği, genişlik görselin doğal oranından
-   (h-scroll mantığı). Class'lar aynı; JS davranışı (hız/yön/drag) değişmez. */
-.marquee[data-marquee="photos"] {
-  --marquee-h: clamp(14rem, 24vw, 22rem);
-  --marquee-fade: 4%; /* fotoğraf şeridinde kenar erimesi dar */
-}
-
-.marquee[data-marquee="photos"] .marquee__track {
-  column-gap: var(--spacing--4, 1rem);
-}
-
-.marquee[data-marquee="photos"] .marquee__item {
-  overflow: clip;
-  border-radius: var(--radius--3xl, 24px);
-  /* Utility emniyeti: hücre boyutu İÇERİKTEN gelir — w-full/max-w gibi
-     Designer utility'leri film şeridini bozamaz */
-  width: auto;
-  max-width: none;
-  height: auto;
-}
-
-/* Sabit yükseklik, doğal oran — max-width:none Webflow'un
-   img{max-width:100%}'ünü ezer (şart, yoksa oran çöker) */
-.marquee[data-marquee="photos"] .marquee__logo,
-.marquee[data-marquee="photos"] .marquee__item img {
-  height: var(--marquee-h);
-  width: auto;
-  max-width: none;
-  object-fit: cover;
-  filter: none; /* fotoğraflar gri başlamaz */
-}
-
-.marquee[data-marquee="photos"] .marquee__item:hover .marquee__logo,
-.marquee[data-marquee="photos"] .marquee__item:hover img {
-  filter: none;
-  transform: scale(1.04);
-}
-
-@media (max-width: 991px) {
-  .marquee[data-marquee="photos"] { --marquee-h: clamp(11rem, 28vw, 16rem); }
-}
-@media (max-width: 767px) {
-  .marquee[data-marquee="photos"] { --marquee-h: clamp(9rem, 34vw, 13rem); }
 }
