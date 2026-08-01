@@ -186,7 +186,7 @@ Dosya adları `PROJECT.md` konvansiyonuna göre: `js/<kategori>/<ad>.js` ↔
 | `hero-cinematic` | components | Home | ✅ | Video/görsel + scroll'da scale/parallax. Sayfanın en üstü → **en yüksek refreshPriority** |
 | `hero-editorial` | components | Tüm iç sayfalar | ❌ | Sakin varyant; reveal + hafif parallax |
 | `text-reveal` | animations | Çok sayfa | ❌ | Satır/kelime bazlı reveal preset, `refreshPriority: -1` |
-| `stat-counter` | components | Home, HWW, Rotalar | ❌ | Sayı count-up; `prefers-reduced-motion`'da direkt final değer |
+| `stat-counter` | components | Home, HWW, Rotalar | ❌ | ✅ repoda. Kanıt duvarı: farklı hızlarda süzülen stat/görsel kolajı + önek/sonek koruyan count-up (`prefers-reduced-motion`'da direkt final değer); girişler data-reveal, görsel içi drift data-parallax ile komposit |
 | `editorial-cards` | components | Home, hub'lar | ❌ | Dergi düzeni — **klasik kart grid'i DEĞİL**; asimetrik, bol boşluklu |
 | `expertise-showcase` | components | Home, Rotalar hub | ❌ | ✅ repoda. Panel başına GSAP medya kart destesi (prev/next/swipe) + sticky pill nav scroll-spy; Cultural/Faith/Educational vitrini. Reveal `refreshPriority: -1` |
 | `image-strip` | effects | Home, Destinations, Tailor-made | olası | Yatay scroll/parallax görsel şeridi; pin'liyse tabloya kayıt zorunlu |

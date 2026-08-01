@@ -61,6 +61,9 @@ Her sayfada, bu sırayla:
 <!-- manifesto v1.0.0 — pinli scrub'lı Experience Manifesto: medya fullbleed zemine açılır, intro merkeze erir, manifesto satır satır + CTA (gsap + ScrollTrigger; SplitText opsiyonel; PIN — refreshPriority 8, tabloda kayıtlı) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/manifesto.js" defer></script>
 
+<!-- stat-counter v1.0.0 — kanıt duvarı: farklı hızlarda süzülen stat/görsel kolajı + önek/sonek koruyan count-up (gsap + ScrollTrigger; pin YOK, refreshPriority -1; data-reveal ve data-parallax ile komposit kullanılabilir) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/stat-counter.js" defer></script>
+
 <!-- process-steps v1.0.0 — pinli akordiyon süreç anlatısı: sol akordiyon maddeleri + doluş rayı, sağdan gelen görseller + iç parallax (gsap + ScrollTrigger; PIN — data-ps-priority ver, tabloya kaydet; HWW/Tailor-made) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/process-steps.js" defer></script>
 
@@ -98,6 +101,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/manifesto.css">
 <!-- process-steps -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/process-steps.css">
+<!-- stat-counter -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stat-counter.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -122,6 +127,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initExpertiseShowcase(container);
         Marveltour.initManifesto(container);
         Marveltour.initProcessSteps(container);
+        Marveltour.initStatCounter(container);
       }
     });
   });

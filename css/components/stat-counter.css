@@ -1,0 +1,29 @@
+/*!
+ * stat-counter.css v1.0.0
+ * Behavioural CSS for js/components/stat-counter.js — drift hijyeni ve
+ * rakam tipografisi güvencesi. Kolaj yerleşimi, karo tasarımı, renkler ve
+ * görsel çerçeveleri tamamen Webflow Designer'da.
+ */
+
+[data-stat-counter] {
+  position: relative;
+}
+
+/* Kolaj parçası — drift transform'u burada yaşar */
+[data-stat-counter] [data-sc-item] {
+  will-change: transform;
+}
+
+/* Sayaç titremesin: rakamlar eşit genişlikte aksın */
+[data-stat-counter] [data-sc-num] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Görsel karoları: çerçeveyi Designer çizer, görsel kutuyu doldurur */
+[data-stat-counter] [data-sc-item] img,
+[data-stat-counter] [data-sc-item] video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
