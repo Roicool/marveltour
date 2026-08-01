@@ -1,0 +1,57 @@
+/*!
+ * accordion.css v1.0.0
+ * Behavioural CSS for js/components/accordion.js — yalnız davranışsal/kritik
+ * kurallar. Renk, tipografi, çizgiler ve boşluklar Webflow Designer + RC
+ * token'larında. (roicool/sestek accordion.css v1.0.0'dan port.)
+ */
+
+/* ── Trigger (soru başlığı) ─────────────────────────────────── */
+[data-accordion-trigger] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--spacing--4, 1rem);
+  /* Native button görünümü sıfırlanır — Designer stilleri kazansın */
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Görünür klavye odağı — erişilebilirlik */
+[data-accordion-trigger]:focus-visible {
+  outline: 2px solid var(--brand-primary--500, #6d1f2c);
+  outline-offset: 2px;
+}
+
+/* ── Panel — yüksekliği GSAP sürer; animasyonda overflow clip.
+   .is-enhanced'i JS basar: JS/GSAP yokken paneller DOĞAL yükseklikte kalır
+   (tüm cevaplar görünür — erişilebilir fallback). ── */
+[data-accordion].is-enhanced [data-accordion-panel] {
+  height: 0;
+  overflow: hidden;
+  /* CSS transition YOK — height tween'inin sahibi GSAP (auto'ya oturur) */
+  will-change: height;
+}
+
+/* ── İkon — item açıkken döner (kozmetik, CSS sürer) ── */
+[data-accordion-icon] {
+  flex: 0 0 auto;
+  transition: transform var(--accordion-icon-speed, 0.3s) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-accordion-item].is-open [data-accordion-trigger] [data-accordion-icon] {
+  transform: rotate(180deg);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [data-accordion-panel],
+  [data-accordion-icon] {
+    will-change: auto;
+    transition: none !important;
+  }
+}

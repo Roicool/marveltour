@@ -67,6 +67,9 @@ Her sayfada, bu sırayla:
 <!-- process-steps v1.0.0 — pinli akordiyon süreç anlatısı: sol akordiyon maddeleri + doluş rayı, sağdan gelen görseller + iç parallax (gsap + ScrollTrigger; PIN — data-ps-priority ver, tabloya kaydet; HWW/Tailor-made) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/process-steps.js" defer></script>
 
+<!-- accordion v1.0.0 — erişilebilir SSS/disclosure akordiyonu: tam ARIA + klavye, GSAP height 0↔auto, tekli/çoklu mod; toggle sonrası ScrollTrigger.refresh (gsap gerekir, ScrollTrigger opsiyonel; JS yokken tüm cevaplar açık; sestek'ten port) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/accordion.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -101,6 +104,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/manifesto.css">
 <!-- process-steps -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/process-steps.css">
+<!-- accordion -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/accordion.css">
 <!-- stat-counter -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stat-counter.css">
 ```
@@ -128,6 +133,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initManifesto(container);
         Marveltour.initProcessSteps(container);
         Marveltour.initStatCounter(container);
+        Marveltour.initAccordion(container);
       }
     });
   });

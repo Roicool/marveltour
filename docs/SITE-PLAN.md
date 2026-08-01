@@ -198,7 +198,7 @@ Dosya adları `PROJECT.md` konvansiyonuna göre: `js/<kategori>/<ad>.js` ↔
 | `team-grid` | components | About | ❌ | Uzmanlık unvanlı, insani portreler |
 | `journal-teaser` / `journal-index` | components | Home, Journal | ❌ | CMS-driven |
 | `article-layout` | css only | Journal article | ❌ | Büyük oranda CSS/typografi işi |
-| `accordion` | components | HWW | ❌ | Erişilebilir (ARIA), animasyonlu aç/kapa |
+| `accordion` | components | HWW | ❌ | ✅ repoda (sestek'ten port). Tam ARIA + klavye gezinme, GSAP height 0↔auto, tekli/çoklu mod, toggle sonrası ScrollTrigger.refresh; JS yokken tüm cevaplar açık (statik fallback). Height animasyonu bilinçli istisna |
 | `related-links` | components | Detail sayfaları | ❌ | CMS cross-link |
 | `cta-conversation` | components | Tüm sayfalar | ❌ | Tek tip inquiry CTA — sitede tek conversion dili |
 | `inquiry-form` | components | Contact | ❌ | Webflow form + davranış katmanı (validation feel, success state) |
