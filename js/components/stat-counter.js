@@ -1,5 +1,5 @@
 /*!
- * stat-counter.js v2.0.0
+ * stat-counter.js v2.1.0
  * "Kanıt duvarı" — PİNLİ yükselen kolaj (SITE-PLAN: Home #3, HWW #3, Rotalar #2):
  *   - Section 100svh sahne olarak PİNLENİR; pin süresini JS, parça sayısından
  *     hesaplar (N × data-sc-step-vh).
@@ -31,7 +31,8 @@
  *                    küçük = hızlı geçer. Verilmezse index'e göre otomatik
  *                    çeşitleme (tekdüzelik olmasın diye).
  *   data-sc-x        parçanın yatay konumu, sol %'si (örn "12"). Verilmezse
- *                    index'e göre otomatik şerit dağıtımı.
+ *                    index'e göre otomatik şerit dağıtımı (sol/sağ dengeli).
+ *                    Mobilde (<768px) tüm şeritler ×0.7 içeri toplanır.
  *   data-sc-from     count-up başlangıcı (default 0)
  *
  * Root attribute'ları (opsiyonel):
@@ -61,7 +62,10 @@
 
   // Otomatik çeşitleme (deterministik — resize/refresh'te aynı kalsın):
   var SPEEDS = [1, 1.4, 0.8, 1.15, 0.95, 1.5, 0.85, 1.25]; // süre çarpanı
-  var LANES = [6, 58, 30, 72, 14, 64, 40, 78, 22, 50];     // left %
+  // Şeritler sol/sağı dengeler. Tipik DOM'da ilk yarı stat, ikinci yarı
+  // görsel gelir — ikinci yarıya da SOL şeritler serpilir ki görseller
+  // yalnız sağdan akmasın (v2.1.0).
+  var LANES = [6, 68, 34, 76, 10, 56, 18, 70, 28, 62];     // left %
   var JITTER = [0, 0.35, 0.12, 0.5, 0.22, 0.6, 0.05, 0.42]; // giriş kaydırması
 
   var BASE_DUR = 2.4;  // bir parçanın sahneyi kat etme süresi (timeline birimi)
@@ -141,9 +145,13 @@
     var heading = root.querySelector("[data-sc-heading]");
 
     // Şerit dağıtımı: data-sc-x > otomatik LANES (yatay konum inline basılır;
-    // dikey akışı tamamen timeline sürer)
+    // dikey akışı tamamen timeline sürer). Dar ekranda şeritler içeri
+    // toplanır — karo, kenardan taşıp yarım görünmesin.
+    var small = global.matchMedia &&
+      global.matchMedia("(max-width: 47.9375em)").matches;
     items.forEach(function (item, i) {
       var x = attrNum(item, "data-sc-x", LANES[i % LANES.length]);
+      if (small) x *= 0.7;
       item.style.left = x + "%";
     });
 

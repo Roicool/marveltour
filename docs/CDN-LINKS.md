@@ -61,7 +61,7 @@ Her sayfada, bu sırayla:
 <!-- manifesto v1.0.0 — pinli scrub'lı Experience Manifesto: medya fullbleed zemine açılır, intro merkeze erir, manifesto satır satır + CTA (gsap + ScrollTrigger; SplitText opsiyonel; PIN — refreshPriority 8, tabloda kayıtlı) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/manifesto.js" defer></script>
 
-<!-- stat-counter v2.0.0 — kanıt duvarı: pinli sahne, stat/görsel karoları alttan farklı hız/şeritlerde yükselip üstten çıkar + merkez başlık + önek/sonek koruyan count-up; pin süresi = parça sayısı × data-sc-step-vh (gsap + ScrollTrigger; PIN — data-sc-priority ver, tabloya kaydet; HWW'de 8) -->
+<!-- stat-counter v2.1.0 — kanıt duvarı: pinli sahne, stat/görsel karoları alttan farklı hız/şeritlerde (sol/sağ dengeli; mobilde içeri toplanır) yükselip üstten çıkar + merkez başlık + önek/sonek koruyan count-up; pin süresi = parça sayısı × data-sc-step-vh (gsap + ScrollTrigger; PIN — data-sc-priority ver, tabloya kaydet; HWW'de 8) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/stat-counter.js" defer></script>
 
 <!-- process-steps v1.0.0 — pinli akordiyon süreç anlatısı: sol akordiyon maddeleri + doluş rayı, sağdan gelen görseller + iç parallax (gsap + ScrollTrigger; PIN — data-ps-priority ver, tabloya kaydet; HWW/Tailor-made) -->
