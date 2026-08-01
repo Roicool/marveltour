@@ -186,8 +186,8 @@ Dosya adları `PROJECT.md` konvansiyonuna göre: `js/<kategori>/<ad>.js` ↔
 | `hero-cinematic` | components | Home | ✅ | Video/görsel + scroll'da scale/parallax. Sayfanın en üstü → **en yüksek refreshPriority** |
 | `hero-editorial` | components | Tüm iç sayfalar | ❌ | Sakin varyant; reveal + hafif parallax |
 | `text-reveal` | animations | Çok sayfa | ❌ | Satır/kelime bazlı reveal preset, `refreshPriority: -1` |
-| `stat-counter` | components | Home, HWW, Rotalar | ❌ | ✅ repoda. Kanıt duvarı: farklı hızlarda süzülen stat/görsel kolajı + önek/sonek koruyan count-up (`prefers-reduced-motion`'da direkt final değer); girişler data-reveal, görsel içi drift data-parallax ile komposit |
-| `editorial-cards` | components | Home, hub'lar | ❌ | Dergi düzeni — **klasik kart grid'i DEĞİL**; asimetrik, bol boşluklu |
+| `stat-counter` | components | Home, HWW, Rotalar | ✅ | ✅ repoda (v2). Kanıt duvarı: pinli sahne — statlar kenar koridorlarında, görseller merkez bandında alttan yükselip üstten çıkar (stat-görsel çakışmaz), merkez başlık watermark + önek/sonek koruyan count-up (`prefers-reduced-motion`'da statik + final değer). `data-sc-priority` sayfaya göre (HWW: 8, tabloda) |
+| `editorial-cards` | components | Home, hub'lar | ❌ | Dergi düzeni — **klasik kart grid'i DEĞİL**; asimetrik, bol boşluklu. **KARAR: JS'siz, Designer-native** — 12 kolonlu grid'de satır başına kayan hizalama ("dosya satırı": index + overline/başlık/paragraf + spec sütunu + küçük görsel, hairline ayraçlar); hareket mevcut `data-reveal` + `data-parallax` preset'leriyle. Repoya dosya girmez |
 | `expertise-showcase` | components | Home, Rotalar hub | ❌ | ✅ repoda. Panel başına GSAP medya kart destesi (prev/next/swipe) + sticky pill nav scroll-spy; Cultural/Faith/Educational vitrini. Reveal `refreshPriority: -1` |
 | `image-strip` | effects | Home, Destinations, Tailor-made | olası | Yatay scroll/parallax görsel şeridi; pin'liyse tabloya kayıt zorunlu |
 | `split-media` | components | Çok sayfa | ❌ | Görsel + metin dönüşümlü hizalama, scroll reveal |
