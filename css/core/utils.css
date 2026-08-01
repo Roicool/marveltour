@@ -1,8 +1,10 @@
 /*!
  * Marveltour — core/utils.css
- * v1.1.0  (adapted from sestek search.css v1.7.1 + pagination.css v1.3.0 +
+ * v1.1.1  (adapted from sestek search.css v1.7.1 + pagination.css v1.3.0 +
  *          dropdown.css v1.3.0 + blog-slider-pro.css v1.0.0 + TOC/marker
  *          inline styles)
+ * v1.1.1: TOC vurguları brand-primary yerine brand-secondary (sunlight/sun
+ *         sarı ailesi) token'larına alındı.
  * ------------------------------------------------------------
  * utils.js'in TÜM parçaları için davranışsal + marka stilleri tek dosyada:
  *   1. rich-text liste marker'ı
@@ -13,6 +15,7 @@
  *   6. Blog Slider Pro ([data-blog-slider-pro] — Swiper CSS'i AYRICA gerekir)
  *
  * Renkler RC token'ları üzerinden: --brand-primary--* (bordo #470e2d ailesi),
+ * --brand-secondary--* (sunlight #f6d967 / sun #f0c601 — TOC vurguları),
  * --neutral--*, --surface--*; hepsi fallback'li — token yoksa da çalışır.
  * Tipografi/yerleşimin geri kalanı Webflow Designer'da.
  *
@@ -75,12 +78,12 @@
 
 [data-toc] [data-toc-item]:hover {
   color: var(--neutral--950, #0a0a0a);
-  background: var(--brand-primary--100, rgba(71, 14, 45, 0.06));
+  background: var(--brand-secondary--100, rgba(246, 217, 103, 0.18));
 }
 [data-toc] [data-toc-item].is-active {
-  color: var(--brand-primary--600, var(--brand-primary--500, #470e2d));
-  border-left-color: var(--brand-primary--500, #470e2d);
-  background: var(--brand-primary--100, rgba(71, 14, 45, 0.06));
+  color: var(--neutral--950, #0a0a0a);
+  border-left-color: var(--brand-secondary--500, #f0c601);
+  background: var(--brand-secondary--100, rgba(246, 217, 103, 0.18));
 }
 
 /* Başlıksız içerik: JS container'a data-toc-empty basar — bloğu gizle */
