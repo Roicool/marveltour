@@ -193,7 +193,7 @@ Dosya adları `PROJECT.md` konvansiyonuna göre: `js/<kategori>/<ad>.js` ↔
 | `split-media` | components | Çok sayfa | ❌ | Görsel + metin dönüşümlü hizalama, scroll reveal |
 | `manifesto` | components | Home ("Experience Manifesto") | ✅ | ✅ repoda. Pinli scrub: split düzenden marka anına — medya fullbleed zemine açılır, intro merkeze eriyip manifesto satır satır gelir, CTA yükselir. refreshPriority 8 |
 | `destination-index` | components | Türkiye hub | ❌ | Liste hover'ında büyük görsel önizleme (Black Tomato tarzı); touch'ta fallback |
-| `process-steps` | components | HWW, Tailor-made | ✅ aday | Scroll-driven adım anlatısı; pin kullanırsa refreshPriority tablosuna |
+| `process-steps` | components | HWW, Tailor-made | ✅ | ✅ repoda. Pinli akordiyon süreç anlatısı: sol maddeler açılır/kapanır + doluş rayı (scroll geri bildirimi), sağdan gelen görseller + iç parallax. `data-ps-priority` sayfaya göre (HWW: 9, tabloda) |
 | `timeline` | components | About | ✅ aday | Scroll-driven yıl akışı |
 | `team-grid` | components | About | ❌ | Uzmanlık unvanlı, insani portreler |
 | `journal-teaser` / `journal-index` | components | Home, Journal | ❌ | CMS-driven |

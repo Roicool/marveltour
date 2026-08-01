@@ -61,6 +61,9 @@ Her sayfada, bu sırayla:
 <!-- manifesto v1.0.0 — pinli scrub'lı Experience Manifesto: medya fullbleed zemine açılır, intro merkeze erir, manifesto satır satır + CTA (gsap + ScrollTrigger; SplitText opsiyonel; PIN — refreshPriority 8, tabloda kayıtlı) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/manifesto.js" defer></script>
 
+<!-- process-steps v1.0.0 — pinli akordiyon süreç anlatısı: sol akordiyon maddeleri + doluş rayı, sağdan gelen görseller + iç parallax (gsap + ScrollTrigger; PIN — data-ps-priority ver, tabloya kaydet; HWW/Tailor-made) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/process-steps.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -93,6 +96,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/effects/noise.css">
 <!-- manifesto -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/manifesto.css">
+<!-- process-steps -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/process-steps.css">
 ```
 
 ## Init (Webflow `</body>` custom code)
@@ -116,6 +121,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initHScroll(container);
         Marveltour.initExpertiseShowcase(container);
         Marveltour.initManifesto(container);
+        Marveltour.initProcessSteps(container);
       }
     });
   });

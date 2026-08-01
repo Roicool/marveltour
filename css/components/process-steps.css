@@ -1,0 +1,97 @@
+/*!
+ * process-steps.css v1.0.0
+ * Behavioural CSS for js/components/process-steps.js — akordiyon kırpması,
+ * doluş rayı, sahne katmanlaması, aktif/pasif madde durumları ve no-JS
+ * fallback. Görsel tasarım (kolon düzeni, tipografi, renkler, sahne oranı)
+ * Webflow Designer'da.
+ *
+ * .is-cinema class'ını JS basar (GSAP+ScrollTrigger aktif ve reduced-motion
+ * kapalıyken). Class yokken TÜM açıklamalar açık, paneller akışta alt alta —
+ * no-JS/reduced-motion fallback'i budur; Designer'da bu hali de düzgün bırak.
+ *
+ * NOT: [data-ps-stage]'e yüksekliği Designer verir (aspect-ratio ya da
+ * height) — paneller sinemada bu kutuyu doldurur.
+ */
+
+/* Section — pinlenir; PIN KURALI: ancestor'larda transform/filter yok */
+[data-process] {
+  position: relative;
+  overflow: clip;
+}
+
+/* Sinematik mod: sahne viewport'u doldurur, içerik ortalanır */
+[data-process].is-cinema {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Akordiyon satırı — tıklanabilir; doluş rayının konum referansı */
+[data-process] [data-ps-item] {
+  position: relative;
+  cursor: pointer;
+  opacity: 0.45;                 /* pasif: soluk */
+  transition: opacity 0.25s;
+}
+[data-process] [data-ps-item].is-active {
+  opacity: 1;                    /* aktif: tam */
+}
+
+/* Akordiyon içeriği — yüksekliği JS sürer (pinli sahne istisnası);
+   kırpma burada */
+[data-process].is-cinema [data-ps-desc] {
+  overflow: clip;
+}
+
+/* Doluş rayı — adımın penceresi boyunca JS scaleY ile doldurur.
+   Rengi/kalınlığı Designer'dan ezilebilir. */
+[data-process] [data-ps-fill] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--brand-primary--500);
+  transform: scaleY(0);          /* no-JS'te görünmez — dekor */
+  transform-origin: top center;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Görsel sahnesi — sinemada paneller üst üste biner */
+[data-process].is-cinema [data-ps-stage] {
+  position: relative;
+  overflow: clip;                /* sağdan giren paneli kırpar */
+}
+[data-process].is-cinema [data-ps-panel] {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* Görsel çerçevesi — iç drift taşmasını kırpar */
+[data-process] [data-ps-media] {
+  position: relative;
+  overflow: clip;
+  height: 100%;
+}
+[data-process] [data-ps-media] > img,
+[data-process] [data-ps-media] > video,
+[data-process] [data-ps-panel] > img,
+[data-process] [data-ps-panel] > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* Statik fallback: maddeler tam görünür, tıklama işareti yok */
+@media (prefers-reduced-motion: reduce) {
+  [data-process] [data-ps-item] {
+    opacity: 1;
+    transition: none;
+    cursor: default;
+  }
+}
