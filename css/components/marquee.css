@@ -1,5 +1,5 @@
 /*!
- * marquee.css v1.1.0  (adapted from Sestek marquee.css v1.0.0)
+ * marquee.css v1.1.1  (adapted from Sestek marquee.css v1.0.0)
  * Infinite drag/momentum logo marquee — behavioural CSS.
  * Logo boyutu, gap ve renk/filtre yorumu Webflow Designer'da override edilebilir.
  * v1.1.0: CMS desteği — Collection List sarmalayıcıları (w-dyn-*) display:
@@ -129,6 +129,11 @@
 .marquee[data-marquee="photos"] .marquee__item {
   overflow: clip;
   border-radius: var(--radius--3xl, 24px);
+  /* Utility emniyeti: hücre boyutu İÇERİKTEN gelir — w-full/max-w gibi
+     Designer utility'leri film şeridini bozamaz */
+  width: auto;
+  max-width: none;
+  height: auto;
 }
 
 /* Sabit yükseklik, doğal oran — max-width:none Webflow'un
