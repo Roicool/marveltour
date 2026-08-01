@@ -1,5 +1,5 @@
 /*!
- * stat-counter.js v2.1.0
+ * stat-counter.js v2.2.0
  * "Kanıt duvarı" — PİNLİ yükselen kolaj (SITE-PLAN: Home #3, HWW #3, Rotalar #2):
  *   - Section 100svh sahne olarak PİNLENİR; pin süresini JS, parça sayısından
  *     hesaplar (N × data-sc-step-vh).
@@ -29,14 +29,19 @@
  * Item attribute'ları (opsiyonel):
  *   data-sc-speed    hız çarpanı — 1'den büyük = YAVAŞ (sahnede uzun kalır),
  *                    küçük = hızlı geçer. Verilmezse index'e göre otomatik
- *                    çeşitleme (tekdüzelik olmasın diye).
+ *                    çeşitleme; MOBİLDE otomatik hız herkese 1 (eşit hız =
+ *                    parçalar birbirini asla yakalamaz → çakışma sıfır).
  *   data-sc-x        parçanın yatay konumu, sol %'si (örn "12"). Verilmezse
- *                    index'e göre otomatik şerit dağıtımı (sol/sağ dengeli).
- *                    Mobilde (<768px) tüm şeritler ×0.7 içeri toplanır.
+ *                    TİPE göre koridor dağıtımı: STAT parçaları ([data-sc-num]
+ *                    içerenler) kenar koridorlarında, görsel parçaları merkez
+ *                    bandında akar — stat ile görsel YATAYDA HİÇ KESİŞMEZ
+ *                    (görseller kendi aralarında binişebilir). Elle data-sc-x
+ *                    verirsen bu garanti senin sorumluluğunda. Mobilde
+ *                    (<768px) tüm şeritler ×0.7 içeri toplanır.
  *   data-sc-from     count-up başlangıcı (default 0)
  *
  * Root attribute'ları (opsiyonel):
- *   data-sc-step-vh  parça başına scroll mesafesi, %vh (default 45 —
+ *   data-sc-step-vh  parça başına scroll mesafesi, %vh (default 60 —
  *                    pin süresi = N × bu değer)
  *   data-sc-priority ScrollTrigger refreshPriority (default 0 — PİNLİ:
  *                    sayfadaki konuma göre MUTLAKA ver, tabloya işle)
@@ -62,10 +67,12 @@
 
   // Otomatik çeşitleme (deterministik — resize/refresh'te aynı kalsın):
   var SPEEDS = [1, 1.4, 0.8, 1.15, 0.95, 1.5, 0.85, 1.25]; // süre çarpanı
-  // Şeritler sol/sağı dengeler. Tipik DOM'da ilk yarı stat, ikinci yarı
-  // görsel gelir — ikinci yarıya da SOL şeritler serpilir ki görseller
-  // yalnız sağdan akmasın (v2.1.0).
-  var LANES = [6, 68, 34, 76, 10, 56, 18, 70, 28, 62];     // left %
+  // Koridorlar (v2.2.0): statlar KENARLARDA (sol/sağ almaşık), görseller
+  // MERKEZ bandında — stat ile görsel yatayda hiç kesişmez (stat asla
+  // görselin üstüne binmez; görseller kendi aralarında binişebilir).
+  // Varsayım: stat genişliği ≤ ~%20, görsel genişliği ≤ ~%14 viewport.
+  var STAT_LANES = [4, 70, 10, 76, 6, 72];   // left % — kenar koridorları
+  var MEDIA_LANES = [30, 48, 38, 56, 33, 52]; // left % — merkez bandı
   var JITTER = [0, 0.35, 0.12, 0.5, 0.22, 0.6, 0.05, 0.42]; // giriş kaydırması
 
   var BASE_DUR = 2.4;  // bir parçanın sahneyi kat etme süresi (timeline birimi)
@@ -133,7 +140,7 @@
       return { root: root, destroy: function () {} };
     }
 
-    var stepVh = attrNum(root, "data-sc-step-vh", 45);
+    var stepVh = attrNum(root, "data-sc-step-vh", 60);
     var priority = attrNum(root, "data-sc-priority", 0);
     var countDur = attrNum(root, "data-sc-duration", 1.2);
 
@@ -144,13 +151,17 @@
     root.classList.add("is-cinema");
     var heading = root.querySelector("[data-sc-heading]");
 
-    // Şerit dağıtımı: data-sc-x > otomatik LANES (yatay konum inline basılır;
-    // dikey akışı tamamen timeline sürer). Dar ekranda şeritler içeri
-    // toplanır — karo, kenardan taşıp yarım görünmesin.
+    // Şerit dağıtımı: data-sc-x > TİPE göre koridor (stat=kenar, görsel=merkez;
+    // yatay konum inline basılır, dikey akışı tamamen timeline sürer).
+    // Dar ekranda şeritler içeri toplanır — karo kenardan taşmasın.
     var small = global.matchMedia &&
       global.matchMedia("(max-width: 47.9375em)").matches;
-    items.forEach(function (item, i) {
-      var x = attrNum(item, "data-sc-x", LANES[i % LANES.length]);
+    var statIdx = 0, mediaIdx = 0;
+    items.forEach(function (item) {
+      var lane = item.querySelector("[data-sc-num]")
+        ? STAT_LANES[statIdx++ % STAT_LANES.length]
+        : MEDIA_LANES[mediaIdx++ % MEDIA_LANES.length];
+      var x = attrNum(item, "data-sc-x", lane);
       if (small) x *= 0.7;
       item.style.left = x + "%";
     });
@@ -183,7 +194,10 @@
     // yol = sahne yüksekliği + parça yüksekliği (function-based — resize'da
     // invalidateOnRefresh yeniden ölçer).
     items.forEach(function (item, i) {
-      var speed = attrNum(item, "data-sc-speed", SPEEDS[i % SPEEDS.length]);
+      // Mobilde otomatik hız herkese eşit: aynı hızdaki parçalar birbirini
+      // asla yakalamaz → daralan koridorlarda da çakışma sıfır.
+      var speed = attrNum(item, "data-sc-speed",
+        small ? 1 : SPEEDS[i % SPEEDS.length]);
       var dur = BASE_DUR * speed;
       var at = 0.25 + i * GAP + JITTER[i % JITTER.length] * GAP;
 
