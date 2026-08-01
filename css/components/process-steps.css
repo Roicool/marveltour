@@ -1,5 +1,5 @@
 /*!
- * process-steps.css v1.0.0
+ * process-steps.css v1.1.0
  * Behavioural CSS for js/components/process-steps.js — akordiyon kırpması,
  * doluş rayı, sahne katmanlaması, aktif/pasif madde durumları ve no-JS
  * fallback. Görsel tasarım (kolon düzeni, tipografi, renkler, sahne oranı)
@@ -27,10 +27,12 @@
   justify-content: center;
 }
 
-/* Akordiyon satırı — tıklanabilir; doluş rayının konum referansı */
+/* Akordiyon satırı — tıklanabilir; doluş rayının konum referansı.
+   padding-left: ray ile içerik arasındaki nefes (Designer'dan ezilebilir) */
 [data-process] [data-ps-item] {
   position: relative;
   cursor: pointer;
+  padding-left: var(--spacing--6);
   opacity: 0.45;                 /* pasif: soluk */
   transition: opacity 0.25s;
 }
@@ -59,10 +61,14 @@
   pointer-events: none;
 }
 
-/* Görsel sahnesi — sinemada paneller üst üste biner */
+/* Görsel sahnesi — sinemada paneller üst üste biner.
+   Default dik oran + yuvarlak köşe; Designer aspect/height ile ezebilir. */
 [data-process].is-cinema [data-ps-stage] {
   position: relative;
-  overflow: clip;                /* sağdan giren paneli kırpar */
+  overflow: clip;                /* sağdan giren paneli kırpar + köşeyi keser */
+  aspect-ratio: 4 / 5;
+  max-height: 72svh;
+  border-radius: var(--radius--3xl);
 }
 [data-process].is-cinema [data-ps-panel] {
   position: absolute;

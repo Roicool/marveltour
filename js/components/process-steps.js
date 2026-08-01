@@ -1,5 +1,5 @@
 /*!
- * process-steps.js v1.0.0
+ * process-steps.js v1.1.0
  * HWW "Süreç adımları" — pinli, adım adım AKORDİYON anlatısı (SITE-PLAN
  * §2.5 #2, §2.4 #3; step-scroll'un tam ekran sinemasının sakin kardeşi):
  *   - Section pinlenir; scroll, adım başına eşit pencerelere bölünür.
@@ -23,6 +23,8 @@
  *
  * DOM (Webflow — görsel tasarım Designer'da, yalnız attribute'lar önemli):
  *   <section data-process class="section_process-steps">   ← PİNLENİR
+ *     [data-ps-heading]            ops. ana başlık — sahne pinlenip ilk
+ *                                   scroll gelince yükselerek belirir
  *     ... sol kolon ...
  *       [data-ps-item] ×N          akordiyon satırı; başlık kısmı serbest
  *                                   (numara + başlık), tıklanabilir; JS doluş
@@ -103,8 +105,17 @@
 
     root.classList.add("is-cinema");
 
+    var heading = root.querySelector("[data-ps-heading]");
+
     var descs = items.map(function (item) {
       return item.querySelector("[data-ps-desc]");
+    });
+    // Akordiyon içeriği: açılışta çocuklar kademeli süzülür (premium his) —
+    // çocuk yoksa desc'in kendisi hedeflenir
+    var descKids = descs.map(function (d) {
+      if (!d) return null;
+      var kids = Array.prototype.slice.call(d.children);
+      return kids.length ? kids : [d];
     });
 
     // Doluş rayları — markup'ta yoksa JS ekler (Designer'da stillenebilir)
@@ -152,10 +163,21 @@
         if (item.setAttribute) item.setAttribute("aria-expanded", i === idx ? "true" : "false");
       });
 
-      // Akordiyon: önceki kapanır, yeni açılır (bilinçli height istisnası —
-      // bkz. header; pinli sahnede sayfa layout'u oynamaz)
-      if (descs[prev]) gsap.to(descs[prev], { height: 0, autoAlpha: 0, duration: 0.4, ease: "power2.inOut", overwrite: "auto" });
-      if (descs[idx]) gsap.to(descs[idx], { height: "auto", autoAlpha: 1, duration: 0.45, ease: "power2.inOut", overwrite: "auto" });
+      // Akordiyon (bilinçli height istisnası — bkz. header; pinli sahnede
+      // sayfa layout'u oynamaz). Premium his: kapanışta içerik ÖNCE hızla
+      // söner, kutu sonra toplanır; açılışta kutu önden açılır, içerik
+      // hafif gecikmeyle alttan kademeli süzülür.
+      if (descs[prev]) {
+        gsap.to(descKids[prev], { autoAlpha: 0, y: -10, duration: 0.2, ease: "power1.in", overwrite: "auto" });
+        gsap.to(descs[prev], { height: 0, duration: 0.45, ease: "power3.inOut", overwrite: "auto" });
+      }
+      if (descs[idx]) {
+        gsap.to(descs[idx], { height: "auto", autoAlpha: 1, duration: 0.55, ease: "power3.inOut", overwrite: "auto" });
+        gsap.fromTo(descKids[idx],
+          { autoAlpha: 0, y: 16 },
+          { autoAlpha: 1, y: 0, duration: 0.45, delay: 0.18, ease: "power2.out",
+            stagger: 0.06, overwrite: "auto" });
+      }
 
       // Görsel: yeni panel SAĞDAN süzülür, eskisi altında yumuşakça söner
       gsap.set(panels[idx], { zIndex: ++zTop });
@@ -182,6 +204,14 @@
         },
       },
     });
+
+    // Ana başlık: sahne pinlenip ilk scroll gelince yükselerek belirir
+    // (scrub'a bağlı — geri sarınca aynı zarafetle çekilir)
+    if (heading) {
+      tl.fromTo(heading,
+        { autoAlpha: 0, y: 28 },
+        { autoAlpha: 1, y: 0, duration: 0.22, ease: "power2.out" }, 0.02);
+    }
 
     panels.forEach(function (_, i) {
       tl.to(fills[i], { scaleY: 1, duration: 1 }, i);
