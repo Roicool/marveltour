@@ -1,12 +1,20 @@
 /*!
- * parallax.css v1.0.0
+ * parallax.css v1.0.1
  * Behavioural CSS for js/animations/parallax.js — the wrapper clips the
  * drifting media. The wrapper must get its size from layout (aspect ratio
  * or explicit height in Webflow Designer); no visual design here.
+ *
+ * v1.0.1: position :where()'e alındı (sıfır specificity) — Designer'ın
+ * .absolute/.fixed utility'leri kazansın (fullbleed bg sarmalayıcıları
+ * relative'e düşüp akışa giriyordu).
  */
 
-[data-parallax] {
+/* Yalnız DEFAULT çapa — utility class'lar (position: absolute vb.) ezer */
+:where([data-parallax]) {
   position: relative;
+}
+
+[data-parallax] {
   overflow: clip;
 }
 
