@@ -73,6 +73,9 @@ Her sayfada, bu sırayla:
 <!-- accordion v1.0.0 — erişilebilir SSS/disclosure akordiyonu: tam ARIA + klavye, GSAP height 0↔auto, tekli/çoklu mod; toggle sonrası ScrollTrigger.refresh (gsap gerekir, ScrollTrigger opsiyonel; JS yokken tüm cevaplar açık; sestek'ten port) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/accordion.js" defer></script>
 
+<!-- text-reveal v1.0.0 — satır satır metin girişi preset'i: data-text-reveal, SplitText line-mask, bir kez oynar ve DOM orijinaline döner (gsap + ScrollTrigger + SplitText; CSS gerekmez; refreshPriority -1; pinli bölüm İÇİNDE ve data-reveal'lı elemanın KENDİSİNDE kullanılmaz) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/text-reveal.js" defer></script>
+
 <!-- parallax v1.0.0 — tek attribute'lu scroll parallax preset (gsap + ScrollTrigger gerekir; pinli bölüm İÇİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/parallax.js" defer></script>
 
@@ -130,6 +133,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initStaggerButton(container);
         Marveltour.initParallax(container);
         Marveltour.initReveal(container);
+        Marveltour.initTextReveal(container);
         Marveltour.initHeroCinematic(container);
         Marveltour.initHeroFrame(container);
         Marveltour.initMarquee(container);
