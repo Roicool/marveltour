@@ -1,5 +1,9 @@
 /*!
- * hero-frame.js v1.0.0
+ * hero-frame.js v1.1.0
+ * v1.1.0: [data-hf-fade] kağıt eriyiği (görsel alta doğru zemine erir —
+ *         taşan başlık HER görselde okunur; kapağa açılırken söner, yerini
+ *         koyu scrim alır) + data-hf-parallax iç drift (pinli sahnede preset
+ *         yasak — drifti component sürer) + kademeli mürekkep aydınlanması.
  * Destination "kadraj açılışı" hero'su (SITE-PLAN: Destination template #1):
  *   Açılış — görsel, container içinde DERGİ KARESİ olarak durur (kadraj);
  *            destination adı altında, off-white zeminde. LCP dostu: görsel
@@ -33,12 +37,15 @@
  * Root attributes (hepsi opsiyonel):
  *   data-hf-distance   pin mesafesi, %vh                    (default 120)
  *   data-hf-ink        kapakta başlığın alacağı renk        (default #f7f5f0)
+ *   data-hf-parallax   görsel iç drift dozu, yPercent       (default 5; 0 kapatır)
  *   data-hf-priority   ScrollTrigger refreshPriority        (default 10 —
  *                      sayfanın EN ÜSTÜ varsayılır; hero başka konumdaysa
  *                      tabloya göre AÇIKÇA ver)
  *
- * Scrim'i JS ekler ([data-hf-scrim] olarak media'nın içine) — istersen
- * Designer'da kendin koyup stille; varsa JS yenisini eklemez.
+ * Scrim'i ([data-hf-scrim] — kapak karanlığı) ve kağıt eriyiğini
+ * ([data-hf-fade] — açılışta görselin altını zemine eritir, başlık okunur)
+ * JS media'nın içine ekler — istersen Designer'da kendin koyup stille;
+ * varsa JS yenisini eklemez.
  *
  * PIN NOTLARI (Kural 1+3): section pinlenir; ancestor'larında transform/
  * filter olamaz. Kadrajın container'ında overflow OLMAMALI (büyüyen kare
@@ -95,15 +102,22 @@
 
     root.classList.add("is-cinema");
 
-    // Scrim — markup'ta yoksa JS ekler (media'nın çocuğu: transform'unu paylaşır,
-    // görseli birebir örter)
-    var scrim = media.querySelector("[data-hf-scrim]");
-    if (!scrim) {
-      scrim = global.document.createElement("div");
-      scrim.setAttribute("data-hf-scrim", "");
-      scrim.setAttribute("aria-hidden", "true");
-      media.appendChild(scrim);
+    // Katmanlar — markup'ta yoksa JS ekler (media'nın çocuğu: transform'unu
+    // paylaşır, görseli birebir örter):
+    //   fade  = kağıt eriyiği (açılışta AÇIK — taşan başlık her görselde okunur)
+    //   scrim = kapak karanlığı (açılışta kapalı — fullbleed'de yükselir)
+    function layer(attr) {
+      var el = media.querySelector("[" + attr + "]");
+      if (!el) {
+        el = global.document.createElement("div");
+        el.setAttribute(attr, "");
+        el.setAttribute("aria-hidden", "true");
+        media.appendChild(el);
+      }
+      return el;
     }
+    var fade = layer("data-hf-fade");
+    var scrim = layer("data-hf-scrim");
 
     var img = media.querySelector("img, video");
 
@@ -138,8 +152,15 @@
       gsap.from(title, { autoAlpha: 0, y: 24, duration: 0.8, ease: "power3.out", delay: 0.15 });
     }
 
-    // İç Ken Burns: görsel kadraj içinde 1.12'den 1'e oturur (scrub boyunca)
-    if (img) gsap.set(img, { scale: 1.12, transformOrigin: "center center" });
+    // İç hareket: Ken Burns oturması + scroll drifti (parallax dili).
+    // Drift varken scale 1.12'nin altına İNMEZ — yPercent taşma payı
+    // (dose 5 → min 1.10 gerekir) hep cepte kalır, kenar boşluğu görünmez.
+    var dose = attrNum(root, "data-hf-parallax", 5);
+    if (img) {
+      gsap.set(img, dose > 0
+        ? { scale: 1.18, yPercent: -dose, transformOrigin: "center center" }
+        : { scale: 1.12, transformOrigin: "center center" });
+    }
 
     var tl = gsap.timeline({
       scrollTrigger: {
@@ -170,16 +191,29 @@
       tl.to(media, { borderRadius: 0, ease: "power2.inOut", duration: 0.45 }, 0);
     }
 
-    if (img) tl.to(img, { scale: 1, ease: "power1.inOut", duration: 1 }, 0);
+    if (img) {
+      if (dose > 0) {
+        tl.to(img, { scale: 1.12, ease: "power1.inOut", duration: 0.6 }, 0);
+        tl.to(img, { yPercent: dose, ease: "none", duration: 1 }, 0);
+      } else {
+        tl.to(img, { scale: 1, ease: "power1.inOut", duration: 1 }, 0);
+      }
+    }
 
-    // Scrim: kare fullbleed'e yaklaşırken yükselir
+    // Katman takası: kağıt eriyiği erken söner, kapak karanlığı yükselir
+    tl.to(fade, { autoAlpha: 0, duration: 0.35, ease: "none" }, 0.08);
     tl.fromTo(scrim, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "none" }, 0.32);
 
-    // Başlık kapak moduna geçer: hafif yükselir + mürekkep aydınlanır
-    // (color tween — bilinçli istisna, bkz. header)
+    // Başlık kapak moduna geçer: hafif yükselir + mürekkep KADEMELİ aydınlanır
+    // (overline → isim → intro; color tween — bilinçli istisna, bkz. header)
     if (title) {
       tl.to(title, { y: -16, ease: "power2.out", duration: 0.4 }, 0.3);
-      tl.to(inkTargets, { color: ink, ease: "none", duration: 0.3 }, 0.32);
+      tl.to(inkTargets, {
+        color: ink,
+        duration: 0.26,
+        ease: "power1.inOut",
+        stagger: 0.045,
+      }, 0.34);
     }
 
     return { root: root, destroy: function () {} };

@@ -1,8 +1,10 @@
 /*!
- * hero-frame.css v1.0.0
+ * hero-frame.css v1.1.0
  * Behavioural CSS for js/components/hero-frame.js — kadraj hero'sunun
  * iskeleti. Kadrajın boyutu/oranı/radius'u, tipografi ve renkler Webflow
  * Designer + RC token'larında.
+ * v1.1.0: [data-hf-fade] kağıt eriyiği katmanı (taşan başlık her görselde
+ * okunur) + katman z sırası.
  */
 
 [data-hero-frame] {
@@ -26,18 +28,34 @@
   object-fit: cover;
 }
 
-/* Scrim — media'nın çocuğu: transform'unu paylaşır, görseli birebir örter.
-   Görsel dili istersen Designer'dan ez (kendi [data-hf-scrim] div'inle). */
+/* Kağıt eriyiği — açılışta AÇIK: görsel alta doğru sayfa zeminine erir,
+   üstüne taşan başlık koyu görselde de okunur. Kapağa açılırken JS söndürür. */
+[data-hf-fade] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    var(--neutral--100, #f7f5f0),
+    color-mix(in oklab, var(--neutral--100, #f7f5f0) 55%, transparent) 22%,
+    transparent 46%
+  );
+}
+
+/* Scrim (kapak karanlığı) — media'nın çocuğu: transform'unu paylaşır,
+   görseli birebir örter. Görsel dili istersen Designer'dan ez. */
 [data-hf-scrim] {
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
   opacity: 0; /* JS sürer */
   background: linear-gradient(
     to top,
-    color-mix(in oklab, var(--neutral--950, #0a0a0a) 55%, transparent),
-    color-mix(in oklab, var(--neutral--950, #0a0a0a) 15%, transparent) 45%,
-    transparent 75%
+    color-mix(in oklab, var(--neutral--950, #0a0a0a) 62%, transparent),
+    color-mix(in oklab, var(--neutral--950, #0a0a0a) 18%, transparent) 45%,
+    transparent 78%
   );
 }
 
