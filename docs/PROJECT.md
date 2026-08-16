@@ -258,6 +258,7 @@ göre bu tablodan seç (üstteki büyük, alttaki küçük) ve **tabloyu güncel
 | Component | Sayfadaki konum | refreshPriority |
 |---|---|---|
 | `hero-cinematic` | Home — sayfanın en üstü | `10` |
+| `hero-frame` | Destination template — sayfanın en üstü | `10` (kod default'u da 10; hero başka konumda kullanılırsa `data-hf-priority` ile AÇIKÇA ver) |
 | `h-scroll` | Home — hero ile manifesto arası | `9` (Webflow'da `data-hscroll-priority="9"` — attribute verilmezse default 1'dir, ÜSTTEKİ pin olarak MUTLAKA ver) |
 | `manifesto` | Home — hero'nun altında (Experience Manifesto) | `8` (Webflow'da `data-mf-priority="8"` — kod default'u da 8, ama sayfa haritası markup'tan okunsun diye attribute'u açıkça ver) |
 | `process-steps` | How We Work — üstteki pin | `9` (Webflow'da `data-ps-priority="9"` — kod default'u 0, MUTLAKA ver) |

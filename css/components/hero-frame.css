@@ -1,0 +1,56 @@
+/*!
+ * hero-frame.css v1.0.0
+ * Behavioural CSS for js/components/hero-frame.js — kadraj hero'sunun
+ * iskeleti. Kadrajın boyutu/oranı/radius'u, tipografi ve renkler Webflow
+ * Designer + RC token'larında.
+ */
+
+[data-hero-frame] {
+  position: relative;
+  /* PIN KURALI (PROJECT.md Kural 3): bu elementin hiçbir ANCESTOR'ında
+     transform/filter/perspective olamaz. */
+}
+
+/* Kadraj kutusu — transform burada yaşar; görsel kutuyu doldurur */
+[data-hf-media] {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+[data-hf-media] img,
+[data-hf-media] video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Scrim — media'nın çocuğu: transform'unu paylaşır, görseli birebir örter.
+   Görsel dili istersen Designer'dan ez (kendi [data-hf-scrim] div'inle). */
+[data-hf-scrim] {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0; /* JS sürer */
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--neutral--950, #0a0a0a) 55%, transparent),
+    color-mix(in oklab, var(--neutral--950, #0a0a0a) 15%, transparent) 45%,
+    transparent 75%
+  );
+}
+
+/* ── Sinematik mod (yalnız JS basar — JS yokken statik dergi karesi) ── */
+
+[data-hero-frame].is-cinema {
+  min-height: 100svh;
+  overflow: clip; /* fullbleed'e açılan kare viewport'ta kesilir */
+}
+
+/* Katman sırası: büyüyen kare altta, başlık kapakta üstte */
+[data-hero-frame].is-cinema [data-hf-media] { z-index: 1; }
+[data-hero-frame].is-cinema [data-hf-title] {
+  position: relative;
+  z-index: 2;
+}
