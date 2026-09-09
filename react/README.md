@@ -33,6 +33,17 @@ mantık `*.tsx`'te kalır. `webflow.json` → `library.components` glob'u sadece
 Integrations → API access. `.env` dosyasına `WEBFLOW_API_TOKEN=...` yaz ya da
 `npm run wf:login` çalıştır.
 
+## CI (GitHub Actions)
+
+`.github/workflows/webflow-code-components.yml`:
+
+- **PR ve push** (`react/`, `webflow.json`, `package*.json`, `tsconfig.json` değişince):
+  `npm ci` → `typecheck` → `wf:bundle`. Kırıksa merge etme.
+- **`main`'e merge** (ve manuel `workflow_dispatch`): ek olarak `wf:import` ile Workspace'e
+  yükler. Token repo secret'ından gelir: `WEBFLOW_API_TOKEN` (Workspace API token).
+
+Lokalde token `.env`'de; CI'da repo secret'ında. İkisi aynı Workspace token'ı olabilir.
+
 ## Yeni component ekleme
 
 1. `react/components/<Ad>/<Ad>.tsx` — saf React, props tipli.

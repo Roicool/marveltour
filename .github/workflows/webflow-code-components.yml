@@ -1,0 +1,56 @@
+name: Webflow Code Components
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "react/**"
+      - "webflow.json"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/webflow-code-components.yml"
+  pull_request:
+    paths:
+      - "react/**"
+      - "webflow.json"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/webflow-code-components.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: webflow-code-components-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck + bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run wf:bundle -- --skip-update-check
+
+  import:
+    name: Import to Webflow Workspace
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run wf:import -- --skip-update-check
+        env:
+          WEBFLOW_API_TOKEN: ${{ secrets.WEBFLOW_API_TOKEN }}
+          CI: "true"
