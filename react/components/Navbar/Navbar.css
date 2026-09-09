@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — Navbar.css v2.0.0
+   Marveltour — Navbar.css v2.0.1
    Şeffaf başlayan bar; scroll'da / panel açıkken off-white zemin.
    Varyant: --inverted (off-white yazı, hero üstü) / --base (koyu yazı).
    Panel'ler tam genişlik, off-white, 3 kolon mega (satırlar | explore | görsel).
@@ -252,6 +252,23 @@
   transition: background 0.15s var(--mt-ease), color 0.15s var(--mt-ease);
 }
 .mt-nav__tag:hover { background: var(--mt-burgundy); color: #fff; }
+
+/* Stack: tüm satır içerikleri aynı hücrede; yükseklik = en uzun içerik (zıplama yok) */
+.mt-nav__stack { display: grid; flex: 1; }
+.mt-nav__stack > .mt-nav__stack-item {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s var(--mt-ease), visibility 0.2s;
+}
+.mt-nav__stack > .mt-nav__stack-item.is-active { opacity: 1; visibility: visible; pointer-events: auto; }
+.mt-nav__stack-item .mt-nav__explore-desc { margin-bottom: 0; }
+.mt-nav__stack-item .mt-nav__tags { margin-top: auto; padding-top: 28px; }
+.mt-nav__stack--media { align-items: stretch; }
+.mt-nav__stack--media > .mt-nav__stack-item { display: block; }
 
 .mt-nav__col--media { display: flex; align-items: stretch; }
 .mt-nav__media {
