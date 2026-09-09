@@ -1,6 +1,8 @@
 /**
- * Navbar — v2.0.0
+ * Navbar — v2.0.1
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v2.0.1 — Mega menüde satır değişince yükseklik zıplaması: explore ve görsel
+ *          içerikleri aynı grid hücresinde üst üste (stack), yalnız aktif görünür.
  * v2.0.0 — Ortalı bar (logo | menü | dil+CTA). Türkiye mega menüsü 3 kolon:
  *          sol satırlar · orta "Explore" (başlık→link, açıklama, destinasyon
  *          tag'leri) · sağ görsel. Capabilities menüsü: linkler + son Journal
@@ -192,9 +194,6 @@ export function Navbar({
     (slug: string) => (slug === "all" ? dests : dests.filter((d) => d.caps.includes(slug))),
     [dests]
   );
-  const active = capBySlug(activeCap);
-  const panelDests = destsFor(activeCap);
-  const activeImage = active.image || allRow.image;
 
   /* ---- Desktop aç/kapa (hover köprüsü 140ms, catcher div YOK) ---- */
   const clearClose = useCallback(() => window.clearTimeout(closeTimer.current), []);
@@ -464,12 +463,38 @@ export function Navbar({
               </button>
             ))}
           </div>
+          {/* Tüm satırların içeriği aynı grid hücresinde üst üste durur; yalnız
+              aktif olan görünür → panel yüksekliği en uzun içeriğe sabit, zıplama yok */}
           <div className="mt-nav__col mt-nav__col--explore">
             <p className="mt-nav__eyebrow">{exploreEyebrow}</p>
-            {exploreBlock(active, panelDests)}
+            <div className="mt-nav__stack">
+              {[allRow, ...caps].map((c) => (
+                <div
+                  key={c.slug}
+                  className={"mt-nav__stack-item" + (activeCap === c.slug ? " is-active" : "")}
+                  aria-hidden={activeCap !== c.slug}
+                >
+                  {exploreBlock(c, destsFor(c.slug))}
+                </div>
+              ))}
+            </div>
           </div>
           <div className="mt-nav__col mt-nav__col--media">
-            {activeImage && <img className="mt-nav__media" src={activeImage} alt="" loading="lazy" />}
+            <div className="mt-nav__stack mt-nav__stack--media">
+              {[allRow, ...caps].map((c) => {
+                const src = c.image || allRow.image;
+                return src ? (
+                  <img
+                    key={c.slug}
+                    className={"mt-nav__media mt-nav__stack-item" + (activeCap === c.slug ? " is-active" : "")}
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    aria-hidden={activeCap !== c.slug}
+                  />
+                ) : null;
+              })}
+            </div>
           </div>
         </div>
       </div>
