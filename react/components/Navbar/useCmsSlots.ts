@@ -177,7 +177,7 @@ export function useCmsSlots(
     const watched = new WeakSet<Node>();
     const have = { caps: 0, dests: 0, journal: false };
     const debug: CmsDebug = {
-      version: "2.0.0",
+      version: "2.1.0",
       reads: 0,
       lastSource: "",
       caps: 0,
@@ -281,6 +281,8 @@ export function useCmsSlots(
     document.addEventListener("DOMContentLoaded", onLoaded);
     window.addEventListener("load", onLoaded);
     if (document.readyState === "complete") onLoaded();
+    // dataUrl varsa (varsayılan "/") DOM okumasını beklemeden hemen çek —
+    // yayında Webflow runtime'ında DOM okuması boş kalıyor, fetch çalışıyor.
     if (dataUrl) readFromHtml(dataUrl);
 
     let polls = 0;

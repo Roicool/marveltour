@@ -1,6 +1,8 @@
 /**
- * Navbar — v2.0.1
+ * Navbar — v2.1.0
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v2.1.0 — CMS kaynağı varsayılan olarak ana sayfa ("/"): yayında DOM okuması
+ *          boş kalırken HTML fetch çalıştığı doğrulandı; fetch ilk anda başlar.
  * v2.0.1 — Mega menüde satır değişince yükseklik zıplaması: explore ve görsel
  *          içerikleri aynı grid hücresinde üst üste (stack), yalnız aktif görünür.
  * v2.0.0 — Ortalı bar (logo | menü | dil+CTA). Türkiye mega menüsü 3 kolon:
@@ -61,6 +63,7 @@ export interface NavbarProps {
 
   capabilitiesList?: ReactNode;
   destinationsList?: ReactNode;
+  /** CMS kutularını içeren sayfa; HTML'i fetch edilip okunur. Varsayılan "/" (ana sayfa). */
   dataUrl?: string;
 
   variant?: NavbarVariant;
@@ -143,7 +146,7 @@ export function Navbar({
   journalEyebrow = "Latest from the Journal",
   capabilitiesList,
   destinationsList,
-  dataUrl = "",
+  dataUrl = "/",
   variant = "inverted",
   navHeight = 64,
   showLangReserve = false,
