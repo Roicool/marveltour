@@ -85,17 +85,23 @@ mobil hamburger + akordeon, `inverted`/`base` varyantı, §0 etkileşim-güvenli
 
 1. Component'i **Barba container'ının DIŞINA** (Page Wrapper içinde, `data-barba="container"`
    dışında) koy. Navbar `position:fixed`; host element akışta yer kaplamaz.
-2. `Capabilities list` slot'una Capabilities Collection List (sort: `nav-order` asc, varsa
-   `nav-visible = yes` filtresi). Item içinde bir **Link Block**: link → capability sayfası,
-   metin → `name`, custom attribute `data-cap` → `slug`.
-3. `Destinations list` slot'una Destinations Collection List (sort: `sort-order` asc). Item
-   içinde Link Block (link → destination sayfası, metin → `name`, `data-dest` → `slug`) ve
-   `related-capabilities` için **nested Collection List**; nested item'da bir elementte
-   `data-cap` → capability `slug`. (Webflow nested list sınırı 5 item; 4 capability sığar.)
-   Alternatif: Link Block'a `data-caps="mice leisure"` gibi boşluk ayrılmış slug listesi.
-4. Slot'lardaki listeler görünmez (`display:none`), yalnız veri kaynağıdır. Attribute yoksa
-   slug href'in son segmentinden türetilir; sıra Collection List sırasıdır.
-5. Linkler boş bırakılırsa default yollar: `/`, `/how-we-work`, `/journals`, `/about`,
+2. **CMS listeleri sayfaya, slot'a DEĞİL.** Webflow, component içine nested Collection List
+   koydurmaz ("Nested components cannot be in components"); Destinations'ın
+   `related-capabilities` nested listesi bu yüzden slot'a giremez. Page Wrapper'a (container
+   DIŞINA, Navbar'ın yanına) iki gizli div koy (`display:none`), Navbar bunları sayfadan
+   okur:
+   - `<div data-nav-capabilities>` → Capabilities Collection List (sort: `nav-order` asc,
+     varsa `nav-visible = yes` filtresi). Item içinde bir **Link Block**: link → capability
+     sayfası, metin → `name`, custom attribute `data-cap` → `slug`.
+   - `<div data-nav-destinations>` → Destinations Collection List (sort: `sort-order` asc).
+     Item içinde Link Block (link → destination sayfası, metin → `name`, `data-dest` →
+     `slug`) ve `related-capabilities` için **nested Collection List**; nested item'a
+     `data-cap` → capability `slug`. (Nested list sınırı 5 item; 4 capability sığar.)
+   Component'in `Capabilities list` / `Destinations list` slot'ları da çalışır ama yalnız
+   nested list içermeyen listeler için; sayfa kutusu varsa slot'a gerek yok.
+3. Attribute yoksa slug href'in son segmentinden türetilir; sıra Collection List sırasıdır.
+   Kutular Page Wrapper'da olduğu için Barba geçişinde kalır; tek sayfada bir kez kurulur.
+4. Linkler boş bırakılırsa default yollar: `/`, `/how-we-work`, `/journals`, `/about`,
    `/destinations`, `/contact-us` (spec §9 açık kararlar).
 
 **Barba köprüsü** (`js/core/barba-init.js` v1.6.0): `runPage` her sayfa kurulumunda

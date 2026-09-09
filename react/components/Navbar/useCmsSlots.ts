@@ -2,9 +2,13 @@
  * useCmsSlots — v1.0.0
  * Designer'ın Slot'lara koyduğu Collection List'lerden (light DOM) veri modeli çıkarır.
  *
- * Webflow Code Component prop'larında dizi/CMS tipi yok; CMS verisi Designer'da
- * Slot'a bırakılan Collection List'lerden okunur. Beklenen markup (Designer'da
- * custom attribute → CMS alanı binding'i ile):
+ * Webflow Code Component prop'larında dizi/CMS tipi yok; CMS verisi Designer'daki
+ * Collection List'lerden okunur. İki kaynak sırayla denenir:
+ *   a) component Slot'ları (nested list İÇERMEYEN listeler için),
+ *   b) sayfadaki gizli kutular: [data-nav-capabilities] / [data-nav-destinations]
+ *      (Webflow component içine nested Collection List koydurmaz; Destinations'ın
+ *      related-capabilities nested listesi bu yüzden sayfa düzeyinde durur).
+ * Beklenen markup (Designer'da custom attribute → CMS alanı binding'i ile):
  *
  *   Capabilities listesi: her item içinde bir <a>
  *     <a href="/capabilities/{slug}" data-cap="{slug}">{name}</a>
@@ -54,8 +58,17 @@ function findSlotRoot(wrapper: HTMLElement | null, slotName: string): ParentNode
     const named = host.querySelector(`[slot="${slotName}"]`);
     if (named) return named;
   }
-  return null;
+  // 4) Sayfa düzeyi kaynak: Webflow component içine nested Collection List
+  //    koymaya izin vermez ("Nested components cannot be in components").
+  //    Bu yüzden listeler Page Wrapper'da gizli bir kutuya konur:
+  //    <div data-nav-capabilities> … </div>  /  <div data-nav-destinations> … </div>
+  return document.querySelector(`[${PAGE_ATTR[slotName]}]`);
 }
+
+const PAGE_ATTR: Record<string, string> = {
+  capabilitiesList: "data-nav-capabilities",
+  destinationsList: "data-nav-destinations",
+};
 
 function itemRoots(root: ParentNode): Element[] {
   const items = Array.from(root.querySelectorAll<HTMLElement>(".w-dyn-item, [data-nav-item]"));
@@ -142,6 +155,27 @@ export function useCmsSlots(
     };
     watch(capsRef.current);
     watch(destsRef.current);
+    // Sayfa düzeyi kutular (Designer'da canlı düzenleme / geç render)
+    Object.values(PAGE_ATTR).forEach((attr) => {
+      const el = document.querySelector<HTMLElement>(`[${attr}]`);
+      if (!el) return;
+      const mo = new MutationObserver(read);
+      mo.observe(el, { childList: true, subtree: true, characterData: true, attributes: true });
+      observers.push(mo);
+    });
+    // Kutu Navbar'dan SONRA DOM'a girerse (Webflow render sırası) yakala
+    const bodyMo = new MutationObserver((muts) => {
+      for (const m of muts) {
+        for (const n of Array.from(m.addedNodes)) {
+          if (n instanceof HTMLElement && (n.matches("[data-nav-capabilities],[data-nav-destinations]") || n.querySelector("[data-nav-capabilities],[data-nav-destinations]"))) {
+            read();
+            return;
+          }
+        }
+      }
+    });
+    bodyMo.observe(document.body, { childList: true, subtree: true });
+    observers.push(bodyMo);
 
     return () => {
       cancelAnimationFrame(raf);
