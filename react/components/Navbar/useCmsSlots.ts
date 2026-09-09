@@ -1,5 +1,5 @@
 /**
- * useCmsSlots — v1.1.0 (geç gelen kutu içeriğine dayanıklı)
+ * useCmsSlots — v1.2.0 (DOM + HTML fetch yedeği + host.__mtNav teşhisi)
  * Designer'ın Slot'lara koyduğu Collection List'lerden (light DOM) veri modeli çıkarır.
  *
  * Webflow Code Component prop'larında dizi/CMS tipi yok; CMS verisi Designer'daki
@@ -118,13 +118,27 @@ export function parseDestinations(root: ParentNode | null): DestItem[] {
   return out;
 }
 
+export type CmsDebug = {
+  version: string;
+  reads: number;
+  lastSource: string;
+  caps: number;
+  dests: number;
+  errors: string[];
+  fetched: string[];
+};
+
 /**
- * İki slot wrapper ref'inden veri modeli. Slot içeriği hydrate sonrası
- * değişebilir (Designer'da canlı düzenleme) → MutationObserver ile tazelenir.
+ * İki slot wrapper ref'inden veri modeli. Kaynak sırası:
+ *   1) Slot içeriği / sayfadaki [data-nav-*] kutuları (DOM; gözlemci + yoklama)
+ *   2) HTML fetch: `dataUrl` verilmişse o sayfa, yoksa mevcut sayfanın kendisi
+ *      DOMParser ile ayrıştırılır → DOM zamanlamasından tamamen bağımsız.
+ * Teşhis: host element üzerinde `__mtNav` nesnesi (reads, errors, kaynak).
  */
 export function useCmsSlots(
   capsRef: RefObject<HTMLDivElement | null>,
-  destsRef: RefObject<HTMLDivElement | null>
+  destsRef: RefObject<HTMLDivElement | null>,
+  dataUrl?: string
 ) {
   const [caps, setCaps] = useState<CapItem[]>([]);
   const [dests, setDests] = useState<DestItem[]>([]);
@@ -136,6 +150,30 @@ export function useCmsSlots(
     const watched = new WeakSet<Node>();
     let capsCount = 0;
     let destsCount = 0;
+    const debug: CmsDebug = { version: "1.2.0", reads: 0, lastSource: "", caps: 0, dests: 0, errors: [], fetched: [] };
+    const hostEl = (capsRef.current?.getRootNode() as ShadowRoot | undefined)?.host as
+      | (HTMLElement & { __mtNav?: CmsDebug })
+      | undefined;
+    if (hostEl) hostEl.__mtNav = debug;
+    const fail = (where: string, e: unknown) => {
+      debug.errors.push(`${where}: ${e instanceof Error ? e.message : String(e)}`);
+    };
+
+    const apply = (c: CapItem[], d: DestItem[], source: string) => {
+      // Var olan veriyi boş sonuçla ezme (geç gelen boş okuma)
+      if (c.length > 0 || capsCount === 0) {
+        capsCount = c.length;
+        setCaps(c);
+      }
+      if (d.length > 0 || destsCount === 0) {
+        destsCount = d.length;
+        setDests(d);
+      }
+      debug.reads += 1;
+      if (c.length || d.length) debug.lastSource = source;
+      debug.caps = capsCount;
+      debug.dests = destsCount;
+    };
 
     const observe = (el: Node | null | undefined) => {
       if (!el || watched.has(el)) return;
@@ -145,45 +183,75 @@ export function useCmsSlots(
       observers.push(mo);
     };
 
-    /* Webflow runtime component'i sayfa daha PARSE edilirken hydrate edebilir:
-       o anda sayfa kutuları ([data-nav-*]) henüz DOM'da olmayabilir ya da boş
-       olabilir. Bu yüzden: her okumada kutu bulunduysa ona gözlemci takılır,
-       DOMContentLoaded/load'da tekrar okunur ve veri gelene kadar kısa bir
-       süre yoklanır. */
+    /* 1) DOM okuması. Webflow runtime component'i sayfa daha PARSE edilirken
+       hydrate edebilir: kutular henüz yok / boş olabilir → gözlemci + yoklama. */
     function read() {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         if (disposed) return;
-        const capsRoot = findSlotRoot(capsRef.current, "capabilitiesList");
-        const destsRoot = findSlotRoot(destsRef.current, "destinationsList");
-        const c = parseCapabilities(capsRoot);
-        const d = parseDestinations(destsRoot);
-        capsCount = c.length;
-        destsCount = d.length;
-        setCaps(c);
-        setDests(d);
-        Object.values(PAGE_ATTR).forEach((attr) => observe(document.querySelector(`[${attr}]`)));
+        try {
+          const capsRoot = findSlotRoot(capsRef.current, "capabilitiesList");
+          const destsRoot = findSlotRoot(destsRef.current, "destinationsList");
+          apply(parseCapabilities(capsRoot), parseDestinations(destsRoot), "dom");
+          Object.values(PAGE_ATTR).forEach((attr) => observe(document.querySelector(`[${attr}]`)));
+        } catch (e) {
+          fail("read", e);
+        }
       });
+    }
+
+    /* 2) HTML fetch — DOM zamanlamasından bağımsız yedek yol. */
+    let fetching = false;
+    async function readFromHtml(url: string) {
+      if (disposed || fetching) return;
+      fetching = true;
+      try {
+        const res = await fetch(url, { credentials: "same-origin" });
+        const html = await res.text();
+        debug.fetched.push(`${url} ${res.status} ${html.length}b`);
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const c = parseCapabilities(doc.querySelector(`[${PAGE_ATTR.capabilitiesList}]`));
+        const d = parseDestinations(doc.querySelector(`[${PAGE_ATTR.destinationsList}]`));
+        if (!disposed && (c.length || d.length)) apply(c, d, "fetch:" + url);
+      } catch (e) {
+        fail("fetch", e);
+      } finally {
+        fetching = false;
+      }
     }
 
     read();
     observe(capsRef.current);
     observe(destsRef.current);
-    const host = (capsRef.current?.getRootNode() as ShadowRoot | undefined)?.host;
-    observe(host);
+    observe(hostEl);
 
-    // Kutu / içeriği Navbar'dan SONRA DOM'a girerse (streaming parse) yakala:
-    // veri gelene kadar body altındaki her ekleme yeniden okutur.
     const bodyMo = new MutationObserver(() => {
       if (capsCount === 0 || destsCount === 0) read();
     });
-    bodyMo.observe(document.body, { childList: true, subtree: true });
-    observers.push(bodyMo);
+    try {
+      bodyMo.observe(document.body, { childList: true, subtree: true });
+      observers.push(bodyMo);
+    } catch (e) {
+      fail("bodyMo", e);
+    }
 
-    document.addEventListener("DOMContentLoaded", read);
-    window.addEventListener("load", read);
+    const onLoaded = () => {
+      read();
+      // Yüklenme bittiğinde hâlâ boşsa HTML'i çek
+      window.setTimeout(() => {
+        if (!disposed && (capsCount === 0 || destsCount === 0)) {
+          readFromHtml(dataUrl || window.location.href);
+        }
+      }, 50);
+    };
+    document.addEventListener("DOMContentLoaded", onLoaded);
+    window.addEventListener("load", onLoaded);
+    if (document.readyState === "complete") onLoaded();
 
-    // Son emniyet: 8 sn boyunca 400 ms'de bir yokla (veri gelince durur)
+    // Ayrı veri sayfası verildiyse en baştan çek (sayfada kutu olmasa da çalışır)
+    if (dataUrl) readFromHtml(dataUrl);
+
+    // Yoklama: 8 sn boyunca 400 ms'de bir; 5. denemede fetch'e de başvur
     let polls = 0;
     const poll = window.setInterval(() => {
       if (disposed || (capsCount > 0 && destsCount > 0) || ++polls > 20) {
@@ -191,17 +259,18 @@ export function useCmsSlots(
         return;
       }
       read();
+      if (polls === 5) readFromHtml(dataUrl || window.location.href);
     }, 400);
 
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
       window.clearInterval(poll);
-      document.removeEventListener("DOMContentLoaded", read);
-      window.removeEventListener("load", read);
+      document.removeEventListener("DOMContentLoaded", onLoaded);
+      window.removeEventListener("load", onLoaded);
       observers.forEach((o) => o.disconnect());
     };
-  }, [capsRef, destsRef]);
+  }, [capsRef, destsRef, dataUrl]);
 
   return { caps, dests };
 }

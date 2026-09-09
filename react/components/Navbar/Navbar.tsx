@@ -1,6 +1,8 @@
 /**
- * Navbar — v1.0.2
+ * Navbar — v1.1.0
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v1.1.0 — CMS verisi için HTML fetch yedeği (dataUrl prop'u / mevcut sayfa),
+ *          host element üzerinde __mtNav teşhis nesnesi.
  * v1.0.2 — CMS kutuları Navbar hydrate olduktan SONRA gelse de okunur
  *          (streaming parse yarışı; gözlemci + DOMContentLoaded/load + yoklama).
  * v1.0.1 — CMS listeleri sayfa düzeyi kutulardan da okunur
@@ -54,6 +56,9 @@ export interface NavbarProps {
   // CMS (Designer: Slot'a Collection List)
   capabilitiesList?: ReactNode;
   destinationsList?: ReactNode;
+
+  // CMS veri sayfası (opsiyonel): kutuları içeren ayrı bir sayfanın yolu, örn. /nav-data
+  dataUrl?: string;
 
   // Davranış
   variant?: NavbarVariant;
@@ -118,6 +123,7 @@ export function Navbar({
   ctaLabel = "Start a Conversation",
   capabilitiesList,
   destinationsList,
+  dataUrl = "",
   variant = "inverted",
   navHeight = 64,
   showLangReserve = false,
@@ -136,7 +142,7 @@ export function Navbar({
   /* ---- CMS verisi (Slot'lardaki Collection List'lerden) ---- */
   const capsSlotRef = useRef<HTMLDivElement>(null);
   const destsSlotRef = useRef<HTMLDivElement>(null);
-  const { caps, dests } = useCmsSlots(capsSlotRef, destsSlotRef);
+  const { caps, dests } = useCmsSlots(capsSlotRef, destsSlotRef, dataUrl.trim() || undefined);
 
   /* ---- State ---- */
   const [open, setOpen] = useState<Panel>(null);

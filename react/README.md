@@ -101,6 +101,12 @@ mobil hamburger + akordeon, `inverted`/`base` varyantı, §0 etkileşim-güvenli
    nested list içermeyen listeler için; sayfa kutusu varsa slot'a gerek yok.
 3. Attribute yoksa slug href'in son segmentinden türetilir; sıra Collection List sırasıdır.
    Kutular Page Wrapper'da olduğu için Barba geçişinde kalır; tek sayfada bir kez kurulur.
+   **Önerilen:** kutuları ayrı, gizli bir sayfaya koy (örn. `/nav-data`, noindex) ve Navbar'ın
+   `Data page URL` prop'una `/nav-data` yaz. Component o sayfayı `fetch` edip parse eder; böylece
+   her sayfaya kutu koymak gerekmez ve DOM zamanlamasına bağımlılık kalmaz. Prop boşsa component
+   önce mevcut sayfanın DOM'unu okur, yükleme bitince hâlâ boşsa mevcut sayfanın HTML'ini çeker.
+   **Teşhis:** yayında Console'da host element üzerinde `__mtNav` nesnesi (okuma sayısı, kaynak,
+   hatalar): `[...document.querySelectorAll('*')].find(e=>e.shadowRoot?.querySelector('.mt-nav')).__mtNav`
 4. Linkler boş bırakılırsa default yollar: `/`, `/how-we-work`, `/journals`, `/about`,
    `/destinations`, `/contact-us` (spec §9 açık kararlar).
 
