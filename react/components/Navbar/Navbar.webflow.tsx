@@ -73,9 +73,9 @@ export default declareComponent(Navbar, {
     dataUrl: props.Text({
       name: "Data page URL",
       group: G_CMS,
-      defaultValue: "",
+      defaultValue: "/",
       tooltip:
-        "Opsiyonel. Kutuları ([data-nav-capabilities] / [data-nav-destinations] / [data-nav-journal]) içeren ayrı bir sayfanın yolu, örn. /nav-data. Boşsa mevcut sayfa okunur.",
+        "CMS kutularını ([data-nav-capabilities] / [data-nav-destinations] / [data-nav-journal]) içeren sayfa; component bu sayfanın HTML'ini fetch edip okur. Varsayılan ana sayfa (/). Boş bırakılırsa mevcut sayfa okunur.",
     }),
 
     // --- Davranış ---

@@ -99,10 +99,11 @@ başlar, scroll'da / panel açıkken off-white zemine oturur. §0 etkileşim-gü
    - `<div data-nav-journal>` → Journals Collection List (**limit 1**, tarih desc). Item: Link
      Block (`data-journal`, link → yazı, metin → başlık) + Image (kapak) + opsiyonel Text
      (`data-journal-meta`, örn. kategori · tarih). Capabilities menüsünün sağ kolonu.
-3. **Önerilen:** kutuları ayrı, gizli bir sayfaya koy (örn. `/nav-data`, noindex) ve Navbar'ın
-   `Data page URL` prop'una `/nav-data` yaz. Component o sayfayı `fetch` edip parse eder;
-   her sayfaya kutu koymak gerekmez, DOM zamanlamasına bağımlılık kalmaz. Prop boşsa
-   component önce mevcut sayfanın DOM'unu okur, yükleme bitince hâlâ boşsa HTML'i çeker.
+3. **Veri kaynağı = ana sayfa.** Kutular yalnız ana sayfada durur; Navbar `Data page URL`
+   prop'u (varsayılan `/`) ile ana sayfanın HTML'ini `fetch` edip parse eder. Her sayfaya kutu
+   koymak gerekmez. Yayında doğrulandı: Webflow runtime'ında component'in DOM okuması boş
+   kalıyor, fetch yolu çalışıyor (`__mtNav.lastSource = "fetch:…"`). Prop boşaltılırsa
+   mevcut sayfanın DOM'u, sonra HTML'i okunur.
 4. "All destinations" satırı için `Mega menu` grubunda açıklama ve görsel prop'ları var.
 5. Linkler boş bırakılırsa default yollar: `/`, `/how-we-work`, `/journals`, `/about`,
    `/destinations`, `/contact-us` (spec §9 açık kararlar).
