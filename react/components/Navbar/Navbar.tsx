@@ -1,6 +1,8 @@
 /**
- * Navbar — v1.0.1
+ * Navbar — v1.0.2
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v1.0.2 — CMS kutuları Navbar hydrate olduktan SONRA gelse de okunur
+ *          (streaming parse yarışı; gözlemci + DOMContentLoaded/load + yoklama).
  * v1.0.1 — CMS listeleri sayfa düzeyi kutulardan da okunur
  *          ([data-nav-capabilities] / [data-nav-destinations]).
  *

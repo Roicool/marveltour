@@ -1,5 +1,5 @@
 /**
- * useCmsSlots — v1.0.0
+ * useCmsSlots — v1.1.0 (geç gelen kutu içeriğine dayanıklı)
  * Designer'ın Slot'lara koyduğu Collection List'lerden (light DOM) veri modeli çıkarır.
  *
  * Webflow Code Component prop'larında dizi/CMS tipi yok; CMS verisi Designer'daki
@@ -131,54 +131,74 @@ export function useCmsSlots(
 
   useEffect(() => {
     let raf = 0;
-    const read = () => {
+    let disposed = false;
+    const observers: MutationObserver[] = [];
+    const watched = new WeakSet<Node>();
+    let capsCount = 0;
+    let destsCount = 0;
+
+    const observe = (el: Node | null | undefined) => {
+      if (!el || watched.has(el)) return;
+      watched.add(el);
+      const mo = new MutationObserver(read);
+      mo.observe(el, { childList: true, subtree: true, characterData: true, attributes: true });
+      observers.push(mo);
+    };
+
+    /* Webflow runtime component'i sayfa daha PARSE edilirken hydrate edebilir:
+       o anda sayfa kutuları ([data-nav-*]) henüz DOM'da olmayabilir ya da boş
+       olabilir. Bu yüzden: her okumada kutu bulunduysa ona gözlemci takılır,
+       DOMContentLoaded/load'da tekrar okunur ve veri gelene kadar kısa bir
+       süre yoklanır. */
+    function read() {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        setCaps(parseCapabilities(findSlotRoot(capsRef.current, "capabilitiesList")));
-        setDests(parseDestinations(findSlotRoot(destsRef.current, "destinationsList")));
+        if (disposed) return;
+        const capsRoot = findSlotRoot(capsRef.current, "capabilitiesList");
+        const destsRoot = findSlotRoot(destsRef.current, "destinationsList");
+        const c = parseCapabilities(capsRoot);
+        const d = parseDestinations(destsRoot);
+        capsCount = c.length;
+        destsCount = d.length;
+        setCaps(c);
+        setDests(d);
+        Object.values(PAGE_ATTR).forEach((attr) => observe(document.querySelector(`[${attr}]`)));
       });
-    };
-    read();
+    }
 
-    const observers: MutationObserver[] = [];
-    const watch = (el: HTMLElement | null) => {
-      if (!el) return;
-      const mo = new MutationObserver(read);
-      mo.observe(el, { childList: true, subtree: true, characterData: true, attributes: true });
-      observers.push(mo);
-      const host = (el.getRootNode() as ShadowRoot).host as HTMLElement | undefined;
-      if (host) {
-        const mo2 = new MutationObserver(read);
-        mo2.observe(host, { childList: true, subtree: true, characterData: true, attributes: true });
-        observers.push(mo2);
-      }
-    };
-    watch(capsRef.current);
-    watch(destsRef.current);
-    // Sayfa düzeyi kutular (Designer'da canlı düzenleme / geç render)
-    Object.values(PAGE_ATTR).forEach((attr) => {
-      const el = document.querySelector<HTMLElement>(`[${attr}]`);
-      if (!el) return;
-      const mo = new MutationObserver(read);
-      mo.observe(el, { childList: true, subtree: true, characterData: true, attributes: true });
-      observers.push(mo);
-    });
-    // Kutu Navbar'dan SONRA DOM'a girerse (Webflow render sırası) yakala
-    const bodyMo = new MutationObserver((muts) => {
-      for (const m of muts) {
-        for (const n of Array.from(m.addedNodes)) {
-          if (n instanceof HTMLElement && (n.matches("[data-nav-capabilities],[data-nav-destinations]") || n.querySelector("[data-nav-capabilities],[data-nav-destinations]"))) {
-            read();
-            return;
-          }
-        }
-      }
+    read();
+    observe(capsRef.current);
+    observe(destsRef.current);
+    const host = (capsRef.current?.getRootNode() as ShadowRoot | undefined)?.host;
+    observe(host);
+
+    // Kutu / içeriği Navbar'dan SONRA DOM'a girerse (streaming parse) yakala:
+    // veri gelene kadar body altındaki her ekleme yeniden okutur.
+    const bodyMo = new MutationObserver(() => {
+      if (capsCount === 0 || destsCount === 0) read();
     });
     bodyMo.observe(document.body, { childList: true, subtree: true });
     observers.push(bodyMo);
 
+    document.addEventListener("DOMContentLoaded", read);
+    window.addEventListener("load", read);
+
+    // Son emniyet: 8 sn boyunca 400 ms'de bir yokla (veri gelince durur)
+    let polls = 0;
+    const poll = window.setInterval(() => {
+      if (disposed || (capsCount > 0 && destsCount > 0) || ++polls > 20) {
+        window.clearInterval(poll);
+        return;
+      }
+      read();
+    }, 400);
+
     return () => {
+      disposed = true;
       cancelAnimationFrame(raf);
+      window.clearInterval(poll);
+      document.removeEventListener("DOMContentLoaded", read);
+      window.removeEventListener("load", read);
       observers.forEach((o) => o.disconnect());
     };
   }, [capsRef, destsRef]);
