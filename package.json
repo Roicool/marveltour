@@ -1,0 +1,42 @@
+{
+  "name": "marveltour",
+  "version": "1.0.0",
+  "description": "Marveltour — Webflow icin CDN-first JS/CSS kutuphanesi + React Code Components",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "wf:bundle": "webflow devlink bundle",
+    "wf:bundle:dev": "webflow devlink bundle --dev",
+    "wf:import": "webflow devlink import",
+    "wf:login": "webflow auth login",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Roicool/marveltour.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Roicool/marveltour/issues"
+  },
+  "homepage": "https://github.com/Roicool/marveltour#readme",
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@webflow/data-types": "^2.3.0",
+    "@webflow/webflow-cli": "^2.7.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@webflow/react": "^2.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,66 @@
+/*
+ * Button.css — v1.0.0
+ * Code Component'ler Shadow DOM içinde render edilir; bu dosya yalnız bu
+ * component'e uygulanır. Renk/spacing/radius değerleri RC-STRUCTURE-REFERENCE
+ * token'larından gelir (custom property'ler shadow sınırını geçer).
+ */
+.mt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing--2);
+  padding: var(--spacing--3) var(--spacing--6);
+  border: 1px solid transparent;
+  border-radius: var(--radius--full);
+  font: inherit;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.mt-btn:hover {
+  transform: translateY(-2px);
+}
+
+.mt-btn:focus-visible {
+  outline: 2px solid var(--brand-primary--500);
+  outline-offset: 3px;
+}
+
+.mt-btn--primary {
+  background: var(--brand-primary--500);
+  color: var(--color-text--inverted);
+}
+.mt-btn--primary:hover {
+  background: var(--brand-primary--600);
+}
+
+.mt-btn--secondary {
+  background: var(--surface--inverted);
+  color: var(--color-text--inverted);
+}
+
+.mt-btn--ghost {
+  background: transparent;
+  color: var(--color-text--base);
+  border-color: currentColor;
+}
+
+.mt-btn--full {
+  display: flex;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mt-btn {
+    transition: none;
+  }
+  .mt-btn:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "library": {
+    "id": "marveltour-react",
+    "name": "Marveltour React",
+    "description": "Marveltour React Code Components — Webflow Designer'da kullanılan React component kütüphanesi",
+    "components": ["react/components/**/*.webflow.tsx"]
+  }
+}

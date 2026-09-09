@@ -11,7 +11,8 @@
 | Scroll Trigger | GSAP ScrollTrigger | ^3.12.x | Scroll-driven animations, pinning |
 | Page Transitions | Barba.js (@barba/core) | ^2.10.x | PJAX sayfa geçişleri; ScrollTrigger-güvenli yaşam döngüsü `core/barba-init.js`'te |
 | Touch Slider | Swiper | ^11.x | Yalnız dokunmatik carousel gereken component'lerde yüklenir (defer); yokluğunda component CSS fallback'iyle çalışmaya devam eder |
-| Bundler | Vanilla / CDN | — | No build step required, CDN-first |
+| Bundler | Vanilla / CDN | — | No build step required, CDN-first (`js/`, `css/`) |
+| Code Components | @webflow/react + @webflow/webflow-cli | ^2.x | `react/` altındaki React component'ler; `webflow devlink import` ile Workspace'e yüklenir |
 
 ## Architecture
 
@@ -27,8 +28,17 @@ marveltour/
 │   ├── components/  # per-component behavioural CSS (JS'in toggle'ladığı state'ler)
 │   ├── effects/     # effect CSS'leri
 │   └── animations/  # animation preset CSS'leri
+├── react/           # Webflow React Code Components (ayrı stack — bkz. react/README.md)
+│   └── components/  # <Ad>/<Ad>.tsx + <Ad>.css + <Ad>.webflow.tsx
+├── webflow.json     # Code Component kütüphane manifesti (id, name, components glob)
 └── docs/            # PROJECT.md, CDN-LINKS.md, RC-STRUCTURE-REFERENCE.css
 ```
+
+**İki stack, iki dağıtım kanalı:** `js/` + `css/` jsDelivr üzerinden build'siz yüklenir
+(CDN-first kuralı burada geçerlidir). `react/` ise `@webflow/react` ile yazılan Code
+Component'lerdir: `npm run wf:import` ile Webflow Workspace'e yüklenir, Designer'da
+native component gibi kullanılır ve Webflow runtime'ı tarafından render edilir. CDN'e
+çıkmaz, `defer` script'i yoktur. Ayrıntı ve kurallar: `react/README.md`.
 
 **Kural:** Her JS component'in davranışsal CSS'i aynı isimle `css/<aynı-kategori>/` altında yaşar
 (`js/effects/foo.js` ↔ `css/effects/foo.css`). Görsel tasarım (renk paleti, layout,
