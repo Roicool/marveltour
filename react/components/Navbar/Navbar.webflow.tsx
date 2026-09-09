@@ -9,13 +9,14 @@ import { Navbar } from "./Navbar";
 
 const G_LINKS = "Links";
 const G_LABELS = "Labels";
+const G_MEGA = "Mega menu";
 const G_CMS = "CMS";
 const G_BEHAVIOR = "Behavior";
 
 export default declareComponent(Navbar, {
   name: "Navbar",
   description:
-    "Marveltour kalıcı navbar — Türkiye mega menüsü (CMS), Capabilities dropdown (CMS), statik linkler, burgundy CTA. Barba container'ının DIŞINA koy.",
+    "Marveltour kalıcı navbar — Türkiye mega menüsü (CMS, 3 kolon), Capabilities menüsü + son Journal yazısı, statik linkler, burgundy CTA, mobil drill-in. Barba container'ının DIŞINA koy.",
   group: "Marveltour",
   props: {
     // --- Linkler ---
@@ -26,7 +27,7 @@ export default declareComponent(Navbar, {
     allDestinationsLink: props.Link({
       name: "All destinations",
       group: G_LINKS,
-      tooltip: "Mega menü footer'ı + mobil ilk satır. Boşsa /destinations",
+      tooltip: "Mega menüde 'All destinations' satırının Explore linki. Boşsa /destinations",
     }),
     startConversationLink: props.Link({
       name: "Start a Conversation (CTA)",
@@ -40,30 +41,41 @@ export default declareComponent(Navbar, {
     howWeWorkLabel: props.Text({ name: "How We Work", group: G_LABELS, defaultValue: "How We Work" }),
     journalLabel: props.Text({ name: "Journal", group: G_LABELS, defaultValue: "Journal" }),
     aboutLabel: props.Text({ name: "About", group: G_LABELS, defaultValue: "About" }),
-    allDestinationsRowLabel: props.Text({ name: "All destinations row", group: G_LABELS, defaultValue: "All destinations" }),
-    megaFooterLabel: props.Text({ name: "Mega footer", group: G_LABELS, defaultValue: "View all destinations →" }),
     ctaLabel: props.Text({ name: "CTA", group: G_LABELS, defaultValue: "Start a Conversation" }),
+    backLabel: props.Text({ name: "Back (mobile)", group: G_LABELS, defaultValue: "Back" }),
 
-    // --- CMS (Slot'a Collection List) ---
+    // --- Mega menü içeriği ---
+    exploreEyebrow: props.Text({ name: "Explore eyebrow", group: G_MEGA, defaultValue: "Explore" }),
+    allDestinationsRowLabel: props.Text({ name: "All destinations row", group: G_MEGA, defaultValue: "All destinations" }),
+    allDestinationsDescription: props.Text({
+      name: "All destinations description",
+      group: G_MEGA,
+      defaultValue: "Eighteen destinations across Türkiye, operated end-to-end by Marveltour since 1982.",
+    }),
+    allDestinationsImage: props.Image({
+      name: "All destinations image",
+      group: G_MEGA,
+      tooltip: "Sağ kolondaki görsel; 'All destinations' satırı aktifken. Capability satırlarında CMS görseli kullanılır.",
+    }),
+    journalEyebrow: props.Text({ name: "Journal eyebrow", group: G_MEGA, defaultValue: "Latest from the Journal" }),
+
+    // --- CMS ---
     capabilitiesList: props.Slot({
       name: "Capabilities list",
       group: G_CMS,
-      tooltip:
-        "Capabilities Collection List (nav-order asc). Her item'da bir Link Block: href=capability sayfası, custom attribute data-cap={slug}",
+      tooltip: "Genelde BOŞ bırakılır; listeler sayfadaki [data-nav-capabilities] kutusundan okunur (bkz. react/README.md).",
     }),
     destinationsList: props.Slot({
       name: "Destinations list",
       group: G_CMS,
-      tooltip:
-        "Destinations Collection List (sort-order asc). Her item'da Link Block (data-dest={slug}) + related-capabilities nested list, her biri data-cap={slug}",
+      tooltip: "Genelde BOŞ bırakılır; listeler sayfadaki [data-nav-destinations] kutusundan okunur.",
     }),
-
     dataUrl: props.Text({
       name: "Data page URL",
       group: G_CMS,
       defaultValue: "",
       tooltip:
-        "Opsiyonel. Kutuları ([data-nav-capabilities] / [data-nav-destinations]) içeren ayrı bir sayfanın yolu, örn. /nav-data. Boşsa mevcut sayfa okunur.",
+        "Opsiyonel. Kutuları ([data-nav-capabilities] / [data-nav-destinations] / [data-nav-journal]) içeren ayrı bir sayfanın yolu, örn. /nav-data. Boşsa mevcut sayfa okunur.",
     }),
 
     // --- Davranış ---
@@ -72,7 +84,7 @@ export default declareComponent(Navbar, {
       group: G_BEHAVIOR,
       defaultValue: "inverted",
       options: ["inverted", "base"],
-      tooltip: "inverted: hero üstü şeffaf başlar, scroll'da zemine oturur. base: baştan off-white zemin.",
+      tooltip: "İkisi de şeffaf başlar. inverted: off-white yazı (hero üstü). base: koyu yazı. Scroll'da ikisi de off-white zemine oturur.",
     }),
     navHeight: props.Number({ name: "Nav height (px)", group: G_BEHAVIOR, defaultValue: 64, min: 48, max: 120, decimals: 0 }),
     zIndex: props.Number({ name: "z-index", group: G_BEHAVIOR, defaultValue: 1000, min: 1, max: 99999, decimals: 0 }),
