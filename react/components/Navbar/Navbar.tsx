@@ -1,6 +1,8 @@
 /**
- * Navbar — v1.0.0
+ * Navbar — v1.0.1
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v1.0.1 — CMS listeleri sayfa düzeyi kutulardan da okunur
+ *          ([data-nav-capabilities] / [data-nav-destinations]).
  *
  * Spec: docs/NAVBAR-SPEC.md. Öz:
  *  - Barba container'ının DIŞINDA yaşar, bir kez mount olur; geçişte remount yok.
