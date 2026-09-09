@@ -58,6 +58,14 @@ export default declareComponent(Navbar, {
         "Destinations Collection List (sort-order asc). Her item'da Link Block (data-dest={slug}) + related-capabilities nested list, her biri data-cap={slug}",
     }),
 
+    dataUrl: props.Text({
+      name: "Data page URL",
+      group: G_CMS,
+      defaultValue: "",
+      tooltip:
+        "Opsiyonel. Kutuları ([data-nav-capabilities] / [data-nav-destinations]) içeren ayrı bir sayfanın yolu, örn. /nav-data. Boşsa mevcut sayfa okunur.",
+    }),
+
     // --- Davranış ---
     variant: props.Variant({
       name: "Variant",
