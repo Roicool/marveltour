@@ -6,10 +6,13 @@ Lenis + GSAP tabanlı; hedef **PageSpeed 90+** ve **Accessibility 90+**.
 ## Yapı
 
 ```
-js/    core · components · effects · animations
-css/   core · components · effects · animations
-docs/  PROJECT.md · CDN-LINKS.md · RC-STRUCTURE-REFERENCE.css
+js/     core · components · effects · animations   (CDN-first, build'siz)
+css/    core · components · effects · animations   (CDN-first, build'siz)
+react/  Webflow React Code Components              (npm + @webflow/react, DevLink import)
+docs/   PROJECT.md · CDN-LINKS.md · RC-STRUCTURE-REFERENCE.css
 ```
+
+- **[react/README.md](react/README.md)** — React Code Component kütüphanesi: kurulum, komutlar, yeni component ekleme
 
 - **[docs/PROJECT.md](docs/PROJECT.md)** — mimari, kurallar, Webflow kurulum rehberi
 - **[docs/CDN-LINKS.md](docs/CDN-LINKS.md)** — kopyala-yapıştır jsDelivr linkleri
