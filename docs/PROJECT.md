@@ -339,9 +339,16 @@ Logo kaynağı (öncelik sırasıyla): sayfadaki gizli `[data-transition-logo]` 
 
 ### Kural B1 — İki katman: kalıcı vs. sayfa
 
-- **Kalıcı katman** (container DIŞINDA, bir kez kurulur): `initLenis` ve ileride nav gibi
-  container dışı modüller. Lenis instance'ı geçişler boyunca yaşar — sadece geçiş
-  sırasında `stop/start` edilir.
+- **Kalıcı katman** (container DIŞINDA, bir kez kurulur): `initLenis`, React **Navbar**
+  code component'i ve ileride benzeri container dışı modüller. Lenis instance'ı geçişler
+  boyunca yaşar — sadece geçiş sırasında `stop/start` edilir. Kalıcı modüller Barba
+  hook'larına doğrudan bağlanmaz; `barba-init.js` (v1.6.0+) document'a `marveltour:leave`
+  (geçiş başı) ve `marveltour:page` (her sayfa kurulumu, `detail.path` + `detail.container`)
+  event'lerini yayınlar, kalıcı modüller bunları dinler.
+- **Webflow Code Component'ler (`react/`) YALNIZ kalıcı katmanda** kullanılır. Container
+  içine konan component Barba geçişinde hydrate edilmez (Webflow runtime'ı yalnız sayfa
+  yüklemesinde çalışır) ve DOMParser declarative shadow root'ları oluşturmadığı için stili
+  de kaybolur. Sayfa içi UI = vanilla `js/` + `onEach`.
 - **Sayfa katmanı** (her geçişte yeniden): ScrollTrigger kuran ya da container içi DOM'a
   bağlanan HER ŞEY. Bunlar `initBarba({ onEach })` içinden çağrılır, asla dışından.
 

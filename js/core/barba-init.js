@@ -1,5 +1,10 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.6.0 — Kalıcı katman event köprüsü: her sayfa kurulumunda (ilk yükleme
+ *          + her geçiş) document'a `marveltour:page` (detail.path,
+ *          detail.container), her geçiş başında `marveltour:leave` yayılır.
+ *          Container DIŞINDAKİ kalıcı modüller (React Navbar code component
+ *          vb.) aktif link'i / açık menüyü buna göre günceller.
  * v1.5.5 — perde rengi --surface--page-transition variable'ından okunur
  *          (yoksa --surface--inverted, o da yoksa koyu fallback).
  * v1.5.4 — ScrollTrigger refresh'i hafızadaki eski scroll'u restore edip
@@ -75,6 +80,16 @@
     var onEach = typeof opts.onEach === "function" ? opts.onEach : function () {};
     var onLeave = typeof opts.onLeave === "function" ? opts.onLeave : function () {};
 
+    /* Kalıcı katman köprüsü: container DIŞINDA yaşayan modüller (React Navbar
+       code component vb.) Barba hook'larına doğrudan bağlanmaz; document
+       event'i dinler. `marveltour:page` her sayfa kurulumunda (ilk yükleme
+       dahil), `marveltour:leave` her geçiş başında yayılır. */
+    function emit(name, detail) {
+      try {
+        document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+      } catch (e) {}
+    }
+
     function runPage(container) {
       var root = container || document;
       /* Modül init hatası PERDEYİ REHİN ALMASIN: hata yakalanır, console'a
@@ -89,6 +104,7 @@
       } catch (e2) {
         console.error("[Marveltour] Video başlatma hatası:", e2);
       }
+      emit("marveltour:page", { path: window.location.pathname, container: root });
     }
 
     /* Lenis, Barba DOM degisiminden haberdar degildir — bayat yukseklik
@@ -358,6 +374,7 @@
           /* Perde kapanır: panel alttan yukarı, logo hafif gecikmeli belirir */
           leave: function (data) {
             if (Marveltour.lenis) Marveltour.lenis.stop();
+            emit("marveltour:leave", { container: data.current.container });
             onLeave(data.current.container);
 
             if (reduced) {
