@@ -1,21 +1,21 @@
 /**
- * Navbar — v1.1.0
+ * Navbar — v2.0.0
  * Marveltour kalıcı navbar (Webflow React Code Component).
- * v1.1.0 — CMS verisi için HTML fetch yedeği (dataUrl prop'u / mevcut sayfa),
- *          host element üzerinde __mtNav teşhis nesnesi.
- * v1.0.2 — CMS kutuları Navbar hydrate olduktan SONRA gelse de okunur
- *          (streaming parse yarışı; gözlemci + DOMContentLoaded/load + yoklama).
- * v1.0.1 — CMS listeleri sayfa düzeyi kutulardan da okunur
- *          ([data-nav-capabilities] / [data-nav-destinations]).
+ * v2.0.0 — Ortalı bar (logo | menü | dil+CTA). Türkiye mega menüsü 3 kolon:
+ *          sol satırlar · orta "Explore" (başlık→link, açıklama, destinasyon
+ *          tag'leri) · sağ görsel. Capabilities menüsü: linkler + son Journal
+ *          yazısı (CMS). base = şeffaf zemin + koyu yazı. Mobil: drill-in
+ *          (logo → Back) + tek butonlu footer.
+ * v1.1.0 — CMS için HTML fetch yedeği (dataUrl), host.__mtNav teşhisi.
+ * v1.0.x — Sayfa kutularından CMS okuma, Barba köprüsü.
  *
  * Spec: docs/NAVBAR-SPEC.md. Öz:
  *  - Barba container'ının DIŞINDA yaşar, bir kez mount olur; geçişte remount yok.
  *  - §0 etkileşim-güvenliği: kök pointer-events:none, catcher div yok,
  *    desktop'ta scroll-lock yok, listener'lar passive.
- *  - CMS: Designer'ın iki Slot'a koyduğu Collection List'ler DOM'dan okunur
- *    (useCmsSlots). Dizi prop'u Webflow'da olmadığı için tek yol budur.
- *  - Aktif link + menü kapatma: barba-init.js'in yayınladığı
- *    `marveltour:page` / `marveltour:leave` event'leri dinlenir.
+ *  - CMS: sayfadaki [data-nav-*] kutuları / dataUrl (useCmsSlots).
+ *  - Aktif link + menü kapatma: barba-init.js'in `marveltour:page` /
+ *    `marveltour:leave` event'leri.
  *  - Lenis: mobil menü açıkken window.Marveltour.lenis.stop()/start().
  */
 import {
@@ -28,14 +28,14 @@ import {
   type ReactNode,
 } from "react";
 import { MarveltourLogotype } from "./MarveltourLogotype";
-import { useCmsSlots } from "./useCmsSlots";
+import { useCmsSlots, type CapItem } from "./useCmsSlots";
 import "./Navbar.css";
 
 export type NavLink = { href: string; target?: string; preload?: string };
+export type NavImage = { src: string; alt?: string };
 export type NavbarVariant = "inverted" | "base";
 
 export interface NavbarProps {
-  // Linkler (Designer: Link alanı) — boşsa default yol
   homeLink?: NavLink;
   howWeWorkLink?: NavLink;
   journalLink?: NavLink;
@@ -43,24 +43,24 @@ export interface NavbarProps {
   allDestinationsLink?: NavLink;
   startConversationLink?: NavLink;
 
-  // Etiketler (Designer: Text)
   destinationsMenuLabel?: string;
   capabilitiesMenuLabel?: string;
   howWeWorkLabel?: string;
   journalLabel?: string;
   aboutLabel?: string;
-  allDestinationsRowLabel?: string;
-  megaFooterLabel?: string;
   ctaLabel?: string;
+  backLabel?: string;
 
-  // CMS (Designer: Slot'a Collection List)
+  exploreEyebrow?: string;
+  allDestinationsRowLabel?: string;
+  allDestinationsDescription?: string;
+  allDestinationsImage?: NavImage;
+  journalEyebrow?: string;
+
   capabilitiesList?: ReactNode;
   destinationsList?: ReactNode;
-
-  // CMS veri sayfası (opsiyonel): kutuları içeren ayrı bir sayfanın yolu, örn. /nav-data
   dataUrl?: string;
 
-  // Davranış
   variant?: NavbarVariant;
   navHeight?: number;
   showLangReserve?: boolean;
@@ -78,6 +78,8 @@ const DEFAULT_LINKS = {
 };
 
 type Panel = null | "dest" | "caps";
+/** Mobil drill-in görünümleri: root → dest → cap:{slug} ; root → caps */
+type MobileView = "root" | "dest" | "caps" | `cap:${string}`;
 
 declare global {
   interface Window {
@@ -97,12 +99,24 @@ function normPath(p: string): string {
 
 function pathOf(link: NavLink | undefined, fallback: string): string {
   const href = link?.href?.trim();
-  return href ? href : fallback;
+  return href && href !== "#" ? href : fallback;
 }
 
-const Caret = ({ size = 14 }: { size?: number }) => (
-  <svg className="mt-nav__caret" width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
+const Caret = ({ size = 14, dir = "down" }: { size?: number; dir?: "down" | "right" | "left" }) => (
+  <svg
+    className={"mt-nav__caret mt-nav__caret--" + dir}
+    width={size}
+    height={size}
+    viewBox="0 0 16 16"
+    aria-hidden="true"
+  >
     <path d="M3 5l5 6 5-6" stroke="currentColor" strokeWidth="1.5" fill="none" />
+  </svg>
+);
+
+const Arrow = () => (
+  <svg className="mt-nav__arrow" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+    <path d="M3 10h13M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" />
   </svg>
 );
 
@@ -118,9 +132,13 @@ export function Navbar({
   howWeWorkLabel = "How We Work",
   journalLabel = "Journal",
   aboutLabel = "About",
-  allDestinationsRowLabel = "All destinations",
-  megaFooterLabel = "View all destinations →",
   ctaLabel = "Start a Conversation",
+  backLabel = "Back",
+  exploreEyebrow = "Explore",
+  allDestinationsRowLabel = "All destinations",
+  allDestinationsDescription = "",
+  allDestinationsImage,
+  journalEyebrow = "Latest from the Journal",
   capabilitiesList,
   destinationsList,
   dataUrl = "",
@@ -139,29 +157,46 @@ export function Navbar({
     startConversation: pathOf(startConversationLink, DEFAULT_LINKS.startConversation),
   };
 
-  /* ---- CMS verisi (Slot'lardaki Collection List'lerden) ---- */
+  /* ---- CMS ---- */
   const capsSlotRef = useRef<HTMLDivElement>(null);
   const destsSlotRef = useRef<HTMLDivElement>(null);
-  const { caps, dests } = useCmsSlots(capsSlotRef, destsSlotRef, dataUrl.trim() || undefined);
+  const { caps, dests, journal } = useCmsSlots(capsSlotRef, destsSlotRef, dataUrl.trim() || undefined);
 
   /* ---- State ---- */
   const [open, setOpen] = useState<Panel>(null);
   const [activeCap, setActiveCap] = useState<string>("all");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileAcc, setMobileAcc] = useState<Panel>(null);
+  const [mobileStack, setMobileStack] = useState<MobileView[]>(["root"]);
   const [scrolled, setScrolled] = useState(false);
   const [activePath, setActivePath] = useState<string>("");
 
   const rootRef = useRef<HTMLElement>(null);
-  const megaRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | undefined>(undefined);
 
-  const panelDests = useMemo(
-    () => (activeCap === "all" ? dests : dests.filter((d) => d.caps.includes(activeCap))),
-    [activeCap, dests]
+  /* "All destinations" sanal satırı + aktif satır */
+  const allRow: CapItem = useMemo(
+    () => ({
+      name: allDestinationsRowLabel,
+      url: links.allDestinations,
+      slug: "all",
+      description: allDestinationsDescription,
+      image: allDestinationsImage?.src || "",
+    }),
+    [allDestinationsRowLabel, links.allDestinations, allDestinationsDescription, allDestinationsImage?.src]
   );
+  const capBySlug = useCallback(
+    (slug: string): CapItem => (slug === "all" ? allRow : caps.find((c) => c.slug === slug) || allRow),
+    [allRow, caps]
+  );
+  const destsFor = useCallback(
+    (slug: string) => (slug === "all" ? dests : dests.filter((d) => d.caps.includes(slug))),
+    [dests]
+  );
+  const active = capBySlug(activeCap);
+  const panelDests = destsFor(activeCap);
+  const activeImage = active.image || allRow.image;
 
-  /* ---- Aç/kapa (hover köprüsü 140ms, catcher div YOK) ---- */
+  /* ---- Desktop aç/kapa (hover köprüsü 140ms, catcher div YOK) ---- */
   const clearClose = useCallback(() => window.clearTimeout(closeTimer.current), []);
   const scheduleClose = useCallback(() => {
     clearClose();
@@ -175,13 +210,10 @@ export function Navbar({
     [clearClose]
   );
 
-  /* Dışarı pointerdown + Esc → kapat. Shadow DOM'da e.target host'a
-     retarget edilir; bu yüzden composedPath() ile kontrol edilir. */
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
-      const path = e.composedPath();
-      if (rootRef.current && !path.includes(rootRef.current)) setOpen(null);
+      if (rootRef.current && !e.composedPath().includes(rootRef.current)) setOpen(null);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(null);
@@ -194,21 +226,7 @@ export function Navbar({
     };
   }, [open]);
 
-  /* Mega panel doğal boyutunu ölç → --w/--h animasyonu (rAF, yalnız panelde) */
-  useEffect(() => {
-    if (open !== "dest" || !megaRef.current) return;
-    const el = megaRef.current;
-    const raf = requestAnimationFrame(() => {
-      const inner = el.querySelector<HTMLElement>(".mt-nav__mega-inner");
-      if (!inner) return;
-      el.style.setProperty("--w", `${Math.min(inner.scrollWidth + 48, window.innerWidth - 48)}px`);
-      el.style.setProperty("--h", `${inner.scrollHeight + 48}px`);
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [open, activeCap, panelDests.length, caps.length]);
-
-  /* Mobil: body kilidi + Lenis stop/start YALNIZ burada.
-     Shadow CSS body'ye ulaşamaz → inline style. */
+  /* ---- Mobil: body kilidi + Lenis stop/start (Shadow CSS body'ye ulaşamaz → inline) ---- */
   useEffect(() => {
     if (!mobileOpen) return;
     const prev = document.body.style.overflow;
@@ -220,7 +238,15 @@ export function Navbar({
     };
   }, [mobileOpen]);
 
-  /* Şeffaf → sticky (inverted); passive listener + rAF throttle */
+  const closeMobile = useCallback(() => {
+    setMobileOpen(false);
+    setMobileStack(["root"]);
+  }, []);
+  const pushView = useCallback((v: MobileView) => setMobileStack((s) => [...s, v]), []);
+  const popView = useCallback(() => setMobileStack((s) => (s.length > 1 ? s.slice(0, -1) : s)), []);
+  const mobileView = mobileStack[mobileStack.length - 1];
+
+  /* ---- Şeffaf → sticky; passive + rAF ---- */
   useEffect(() => {
     let raf = 0;
     const onScroll = () => {
@@ -238,29 +264,23 @@ export function Navbar({
     };
   }, []);
 
-  /* Desktop'a büyürken mobil state reset (ve tersi) */
+  /* ---- Breakpoint değişince state reset ---- */
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 992px)");
     const onChange = () => {
-      if (mq.matches) {
-        setMobileOpen(false);
-        setMobileAcc(null);
-      } else {
-        setOpen(null);
-      }
+      if (mq.matches) closeMobile();
+      else setOpen(null);
     };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-  }, []);
+  }, [closeMobile]);
 
-  /* Barba senkronu: leave → menüler kapanır; page → aktif link güncellenir.
-     Barba yoksa popstate + ilk yükleme yeterli. */
+  /* ---- Barba senkronu ---- */
   useEffect(() => {
     const sync = () => setActivePath(normPath(window.location.pathname));
     const onLeave = () => {
       setOpen(null);
-      setMobileOpen(false);
-      setMobileAcc(null);
+      closeMobile();
     };
     sync();
     document.addEventListener("marveltour:page", sync);
@@ -271,26 +291,59 @@ export function Navbar({
       document.removeEventListener("marveltour:leave", onLeave);
       window.removeEventListener("popstate", sync);
     };
-  }, []);
+  }, [closeMobile]);
 
   const isActive = useCallback(
     (href: string) => activePath !== "" && normPath(href) === activePath,
     [activePath]
   );
 
-  const style = {
-    "--mt-h": `${navHeight}px`,
-    "--mt-z": String(zIndex),
-  } as CSSProperties;
+  const style = { "--mt-h": `${navHeight}px`, "--mt-z": String(zIndex) } as CSSProperties;
 
   const rootClass =
     `mt-nav mt-nav--${variant}` +
     (scrolled ? " is-scrolled" : "") +
+    (open ? " is-panel-open" : "") +
     (mobileOpen ? " is-mobile-open" : "");
+
+  /* ---- Mobil görünüm başlığı (Back butonunun yanında) ---- */
+  const mobileTitle =
+    mobileView === "dest"
+      ? destinationsMenuLabel
+      : mobileView === "caps"
+        ? capabilitiesMenuLabel
+        : mobileView.startsWith("cap:")
+          ? capBySlug(mobileView.slice(4)).name
+          : "";
+
+  const journalCard = journal ? (
+    <a className="mt-nav__journal" href={journal.url}>
+      {journal.image && <img className="mt-nav__journal-img" src={journal.image} alt="" loading="lazy" />}
+      {journal.meta && <span className="mt-nav__journal-meta">{journal.meta}</span>}
+      <span className="mt-nav__journal-title">{journal.title}</span>
+    </a>
+  ) : null;
+
+  const exploreBlock = (cap: CapItem, list: typeof dests) => (
+    <>
+      <a className="mt-nav__explore-title" href={cap.url}>
+        {cap.name}
+        <Arrow />
+      </a>
+      {cap.description && <p className="mt-nav__explore-desc">{cap.description}</p>}
+      <div className="mt-nav__tags">
+        {list.map((d) => (
+          <a key={d.slug} className="mt-nav__tag" href={d.url}>
+            {d.name}
+          </a>
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <header ref={rootRef} className={rootClass} style={style} {...attributes}>
-      {/* CMS veri kaynağı: Designer Slot'a Collection List koyar; görünmez */}
+      {/* CMS slot'ları (genelde boş; veri sayfa kutularından gelir) */}
       <div className="mt-nav__data" ref={capsSlotRef} aria-hidden="true">
         {capabilitiesList}
       </div>
@@ -298,12 +351,21 @@ export function Navbar({
         {destinationsList}
       </div>
 
+      {/* ================= BAR: logo | menü (ortalı) | dil + CTA ================= */}
       <div className="mt-nav__bar">
-        <a className="mt-nav__brand" href={links.home} aria-label="Marveltour">
-          <MarveltourLogotype />
-        </a>
+        <div className="mt-nav__left">
+          {mobileOpen && mobileStack.length > 1 ? (
+            <button type="button" className="mt-nav__back" onClick={popView} aria-label={backLabel}>
+              <Caret size={18} dir="left" />
+              <span className="mt-nav__back-label">{mobileTitle || backLabel}</span>
+            </button>
+          ) : (
+            <a className="mt-nav__brand" href={links.home} aria-label="Marveltour">
+              <MarveltourLogotype />
+            </a>
+          )}
+        </div>
 
-        {/* Desktop menü */}
         <nav className="mt-nav__menu" aria-label="Main">
           <button
             type="button"
@@ -318,12 +380,11 @@ export function Navbar({
             {destinationsMenuLabel}
             <Caret />
           </button>
-
           <button
             type="button"
             className={"mt-nav__item" + (open === "caps" ? " is-open" : "")}
             aria-expanded={open === "caps"}
-            aria-controls="mt-nav-dropdown"
+            aria-controls="mt-nav-caps"
             onMouseEnter={() => openPanel("caps")}
             onFocus={() => openPanel("caps")}
             onMouseLeave={scheduleClose}
@@ -332,7 +393,6 @@ export function Navbar({
             {capabilitiesMenuLabel}
             <Caret />
           </button>
-
           <a
             className={"mt-nav__item" + (isActive(links.howWeWork) ? " is-active" : "")}
             href={links.howWeWork}
@@ -356,174 +416,169 @@ export function Navbar({
           </a>
         </nav>
 
-        <span className="mt-nav__lang" hidden={!showLangReserve}>
-          EN
-        </span>
-
-        <a className="mt-nav__cta" href={links.startConversation}>
-          {ctaLabel}
-        </a>
-
-        <button
-          type="button"
-          className="mt-nav__burger"
-          aria-label="Menu"
-          aria-expanded={mobileOpen}
-          aria-controls="mt-nav-mobile"
-          onClick={() => setMobileOpen((v) => !v)}
-        >
-          <span />
-          <span />
-        </button>
+        <div className="mt-nav__right">
+          <span className="mt-nav__lang" hidden={!showLangReserve}>
+            EN
+          </span>
+          <a className="mt-nav__cta" href={links.startConversation}>
+            {ctaLabel}
+          </a>
+          <button
+            type="button"
+            className="mt-nav__burger"
+            aria-label="Menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mt-nav-mobile"
+            onClick={() => (mobileOpen ? closeMobile() : setMobileOpen(true))}
+          >
+            <span />
+            <span />
+          </button>
+        </div>
       </div>
 
-      {/* ---- MEGA panel (Türkiye) ---- */}
+      {/* ================= MEGA (Türkiye): satırlar | explore | görsel ================= */}
       <div
         id="mt-nav-mega"
-        ref={megaRef}
-        className={"mt-nav__mega" + (open === "dest" ? " is-open" : "")}
+        className={"mt-nav__panel mt-nav__panel--mega" + (open === "dest" ? " is-open" : "")}
         onMouseEnter={clearClose}
         onMouseLeave={scheduleClose}
         role="region"
         aria-label={destinationsMenuLabel}
         aria-hidden={open !== "dest"}
       >
-        <div className="mt-nav__mega-inner">
-          <div className="mt-nav__mega-left">
-            <p className="mt-nav__mega-eyebrow">{destinationsMenuLabel}</p>
-            <button
-              type="button"
-              className={"mt-nav__mega-row" + (activeCap === "all" ? " is-active" : "")}
-              aria-current={activeCap === "all" ? "true" : undefined}
-              onMouseEnter={() => setActiveCap("all")}
-              onFocus={() => setActiveCap("all")}
-            >
-              {allDestinationsRowLabel}
-            </button>
-            {caps.map((c) => (
+        <div className="mt-nav__panel-inner mt-nav__mega">
+          <div className="mt-nav__col mt-nav__col--rows">
+            <p className="mt-nav__eyebrow">{destinationsMenuLabel}</p>
+            {[allRow, ...caps].map((c) => (
               <button
                 type="button"
                 key={c.slug}
-                className={"mt-nav__mega-row" + (activeCap === c.slug ? " is-active" : "")}
+                className={"mt-nav__row" + (activeCap === c.slug ? " is-active" : "")}
                 aria-current={activeCap === c.slug ? "true" : undefined}
                 onMouseEnter={() => setActiveCap(c.slug)}
                 onFocus={() => setActiveCap(c.slug)}
+                onClick={() => setActiveCap(c.slug)}
               >
                 {c.name}
               </button>
             ))}
           </div>
-          <div className="mt-nav__mega-divider" />
-          <div className="mt-nav__mega-right">
-            <div className="mt-nav__mega-grid">
-              {panelDests.map((d) => (
-                <a key={d.slug} className="mt-nav__mega-link" href={d.url}>
-                  {d.name}
-                </a>
-              ))}
-              {panelDests.length === 0 && (
-                <span className="mt-nav__mega-empty">—</span>
-              )}
-            </div>
-            <a className="mt-nav__mega-footer" href={links.allDestinations}>
-              {megaFooterLabel}
-            </a>
+          <div className="mt-nav__col mt-nav__col--explore">
+            <p className="mt-nav__eyebrow">{exploreEyebrow}</p>
+            {exploreBlock(active, panelDests)}
+          </div>
+          <div className="mt-nav__col mt-nav__col--media">
+            {activeImage && <img className="mt-nav__media" src={activeImage} alt="" loading="lazy" />}
           </div>
         </div>
       </div>
 
-      {/* ---- DROPDOWN (Capabilities) ---- */}
+      {/* ================= CAPABILITIES: linkler | son Journal ================= */}
       <div
-        id="mt-nav-dropdown"
-        className={"mt-nav__dropdown" + (open === "caps" ? " is-open" : "")}
+        id="mt-nav-caps"
+        className={"mt-nav__panel mt-nav__panel--caps" + (open === "caps" ? " is-open" : "")}
         onMouseEnter={clearClose}
         onMouseLeave={scheduleClose}
         role="region"
         aria-label={capabilitiesMenuLabel}
         aria-hidden={open !== "caps"}
       >
-        {caps.map((c) => (
-          <a key={c.slug} className="mt-nav__dropdown-link" href={c.url}>
-            {c.name}
-          </a>
-        ))}
-        {caps.length === 0 && <span className="mt-nav__mega-empty">—</span>}
+        <div className="mt-nav__panel-inner mt-nav__caps">
+          <div className="mt-nav__col mt-nav__col--links">
+            <p className="mt-nav__eyebrow">{capabilitiesMenuLabel}</p>
+            {caps.map((c) => (
+              <a key={c.slug} className="mt-nav__list-link" href={c.url}>
+                {c.name}
+                <Arrow />
+              </a>
+            ))}
+          </div>
+          <div className="mt-nav__col mt-nav__col--journal">
+            <p className="mt-nav__eyebrow">{journalEyebrow}</p>
+            {journalCard}
+          </div>
+        </div>
       </div>
 
-      {/* ---- MOBİL ---- */}
+      {/* ================= MOBİL: drill-in + footer ================= */}
       <div id="mt-nav-mobile" className="mt-nav__mobile" aria-hidden={!mobileOpen}>
-        <div className="mt-nav__mobile-inner">
-          <div className={"mt-nav__acc" + (mobileAcc === "dest" ? " is-open" : "")}>
-            <button
-              type="button"
-              className="mt-nav__acc-head"
-              aria-expanded={mobileAcc === "dest"}
-              onClick={() => setMobileAcc(mobileAcc === "dest" ? null : "dest")}
-            >
-              {destinationsMenuLabel}
-              <Caret size={20} />
-            </button>
-            <div className="mt-nav__acc-body">
-              <div className="mt-nav__acc-inner">
-                <a className="mt-nav__mega-link" href={links.allDestinations}>
-                  {allDestinationsRowLabel}
+        <div className="mt-nav__mobile-scroll" key={mobileView}>
+          {mobileView === "root" && (
+            <div className="mt-nav__mlist">
+              <button type="button" className="mt-nav__mrow" onClick={() => pushView("dest")}>
+                {destinationsMenuLabel}
+                <Caret size={18} dir="right" />
+              </button>
+              <button type="button" className="mt-nav__mrow" onClick={() => pushView("caps")}>
+                {capabilitiesMenuLabel}
+                <Caret size={18} dir="right" />
+              </button>
+              <a className={"mt-nav__mrow" + (isActive(links.howWeWork) ? " is-active" : "")} href={links.howWeWork}>
+                {howWeWorkLabel}
+              </a>
+              <a className={"mt-nav__mrow" + (isActive(links.journal) ? " is-active" : "")} href={links.journal}>
+                {journalLabel}
+              </a>
+              <a className={"mt-nav__mrow" + (isActive(links.about) ? " is-active" : "")} href={links.about}>
+                {aboutLabel}
+              </a>
+            </div>
+          )}
+
+          {mobileView === "dest" && (
+            <div className="mt-nav__mlist">
+              <p className="mt-nav__eyebrow">{destinationsMenuLabel}</p>
+              <button type="button" className="mt-nav__mrow" onClick={() => pushView("cap:all")}>
+                {allDestinationsRowLabel}
+                <Caret size={18} dir="right" />
+              </button>
+              {caps.map((c) => (
+                <button type="button" key={c.slug} className="mt-nav__mrow" onClick={() => pushView(`cap:${c.slug}`)}>
+                  {c.name}
+                  <Caret size={18} dir="right" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {mobileView.startsWith("cap:") && (
+            <div className="mt-nav__mexplore">
+              <p className="mt-nav__eyebrow">{exploreEyebrow}</p>
+              {exploreBlock(capBySlug(mobileView.slice(4)), destsFor(mobileView.slice(4)))}
+              {(capBySlug(mobileView.slice(4)).image || allRow.image) && (
+                <img
+                  className="mt-nav__media mt-nav__media--mobile"
+                  src={capBySlug(mobileView.slice(4)).image || allRow.image}
+                  alt=""
+                  loading="lazy"
+                />
+              )}
+            </div>
+          )}
+
+          {mobileView === "caps" && (
+            <div className="mt-nav__mlist">
+              <p className="mt-nav__eyebrow">{capabilitiesMenuLabel}</p>
+              {caps.map((c) => (
+                <a key={c.slug} className="mt-nav__mrow" href={c.url}>
+                  {c.name}
+                  <Arrow />
                 </a>
-                {dests.map((d) => (
-                  <a key={d.slug} className="mt-nav__mega-link" href={d.url}>
-                    {d.name}
-                  </a>
-                ))}
-              </div>
+              ))}
+              {journalCard && (
+                <div className="mt-nav__mjournal">
+                  <p className="mt-nav__eyebrow">{journalEyebrow}</p>
+                  {journalCard}
+                </div>
+              )}
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className={"mt-nav__acc" + (mobileAcc === "caps" ? " is-open" : "")}>
-            <button
-              type="button"
-              className="mt-nav__acc-head"
-              aria-expanded={mobileAcc === "caps"}
-              onClick={() => setMobileAcc(mobileAcc === "caps" ? null : "caps")}
-            >
-              {capabilitiesMenuLabel}
-              <Caret size={20} />
-            </button>
-            <div className="mt-nav__acc-body">
-              <div className="mt-nav__acc-inner">
-                {caps.map((c) => (
-                  <a key={c.slug} className="mt-nav__dropdown-link" href={c.url}>
-                    {c.name}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-nav__acc">
-            <a
-              className={"mt-nav__acc-head" + (isActive(links.howWeWork) ? " is-active" : "")}
-              href={links.howWeWork}
-            >
-              {howWeWorkLabel}
-            </a>
-          </div>
-          <div className="mt-nav__acc">
-            <a
-              className={"mt-nav__acc-head" + (isActive(links.journal) ? " is-active" : "")}
-              href={links.journal}
-            >
-              {journalLabel}
-            </a>
-          </div>
-          <div className="mt-nav__acc">
-            <a
-              className={"mt-nav__acc-head" + (isActive(links.about) ? " is-active" : "")}
-              href={links.about}
-            >
-              {aboutLabel}
-            </a>
-          </div>
-
-          <a className="mt-nav__cta mt-nav__mobile-cta" href={links.startConversation}>
+        {/* Footer: şimdilik tek buton */}
+        <div className="mt-nav__mobile-footer">
+          <a className="mt-nav__cta mt-nav__cta--block" href={links.startConversation}>
             {ctaLabel}
           </a>
         </div>
