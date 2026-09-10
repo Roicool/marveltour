@@ -1,0 +1,211 @@
+/*!
+ * hero-carousel.css v1.0.0
+ * Behavioural CSS for js/components/hero-carousel.js — 5'li sanal
+ * pencereli sonsuz kart carousel'inin yerleşimi (Squarespace
+ * #education-training-hero portu). Kart ölçüleri RC token'larıyla verilir
+ * ve Designer'dan custom property ile ezilebilir; renk/tipografi Designer'da.
+ *
+ * Breakpoint'ler hero-carousel.js ile AYNI tutulur:
+ *   ≥744px  → 2 kart/slayt (track iki kart genişliğinde)   (data-hc-bp)
+ *   <1020px → drag açık                                    (data-hc-bp-drag)
+ *
+ * Fallback: JS çalışmadan önce / JS yokken (.is-ready gelmeden) track
+ * yatay scroll-snap şeridi olarak akar — içerik daima görünür.
+ *
+ * Squarespace ölçü eşlemesi: kart = 8/12 kolon (mobil) → 4/12 (≥744);
+ * burada mobil 72vw'ye kadar --card--md, desktop --card--md; oran 4/3.
+ */
+
+/* ── Kap ─────────────────────────────────────────────────────── */
+[data-hc-carousel] {
+  --hc-card-w: min(var(--card--md), 72vw);
+  --hc-gap: var(--gap--md);
+  --hc-ratio: 4 / 3;
+  --hc-card-h: calc(var(--hc-card-w) / (var(--hc-ratio)));
+
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 744px) {
+  [data-hc-carousel] {
+    --hc-card-w: var(--card--md);
+  }
+}
+
+/* ── Track: tek (mobil) ya da iki (≥744) kart genişliğinde, ortalı;
+      item'lar içinde absolute, JS xPercent ile sürer ───────────── */
+[data-hc-carousel].is-ready .hero-carousel__track {
+  position: relative;
+  left: 0;
+  width: calc(var(--hc-card-w) + var(--hc-gap));
+  height: var(--hc-card-h);
+  margin-left: auto;
+  margin-right: auto;
+  touch-action: pan-y;            /* yatay drag bize, dikey scroll tarayıcıya */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@media (min-width: 744px) {
+  [data-hc-carousel].is-ready .hero-carousel__track {
+    width: calc(2 * var(--hc-card-w) + 2 * var(--hc-gap));
+  }
+}
+
+.hero-carousel__track.is-draggable { cursor: grab; }
+.hero-carousel__track.is-draggable:active { cursor: grabbing; }
+
+.hero-carousel__item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-column-gap: var(--hc-gap);
+  column-gap: var(--hc-gap);
+  will-change: transform;
+  contain: layout style;
+}
+
+/* ── Kart ────────────────────────────────────────────────────── */
+.hero-carousel__card {
+  box-sizing: border-box;         /* Webflow reset'inden bağımsız: padding ölçüye dahil */
+  position: relative;
+  flex: none;
+  width: var(--hc-card-w);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-top: var(--spacing--6);
+  padding-right: var(--spacing--6);
+  padding-bottom: var(--spacing--6);
+  padding-left: var(--spacing--6);
+  border-radius: var(--radius--lg);
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.hero-carousel__card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;           /* native img drag'i kapatır */
+}
+
+/* Alt %38 — okunabilirlik gradyanı (token'lı, ham renk yok) */
+.hero-carousel__card-overlay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 38%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--neutral--transparent) 0%,
+    color-mix(in oklch, var(--neutral--950) 40%, transparent) 100%
+  );
+}
+
+.hero-carousel__card-title {
+  position: relative;
+  z-index: 1;
+  max-width: calc(100% - var(--spacing--6));
+  white-space: pre-wrap;
+  color: var(--color-text--inverted);
+}
+
+.hero-carousel__card-arrow {
+  position: relative;
+  z-index: 2;
+  color: var(--color-text--inverted);
+}
+
+/* ── Prev / next hover kolonları (yalnız ≥744) ───────────────── */
+.hero-carousel__nav {
+  display: none;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  height: var(--hc-card-h);
+  width: calc((100% - var(--hc-card-w) - var(--hc-gap)) / 2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+}
+
+@media (min-width: 744px) {
+  [data-hc-carousel].is-ready .hero-carousel__nav { display: block; }
+  .hero-carousel__nav {
+    width: calc((100% - 2 * var(--hc-card-w) - 2 * var(--hc-gap)) / 2);
+  }
+}
+
+.hero-carousel__nav--prev { left: 0;  cursor: w-resize; }
+.hero-carousel__nav--next { right: 0; cursor: e-resize; }
+
+/* ── Paging indicator (opsiyonel) ────────────────────────────── */
+.hero-carousel__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-column-gap: var(--spacing--2);
+  column-gap: var(--spacing--2);
+  margin-top: var(--spacing--8);
+}
+
+.hero-carousel__dot {
+  width: var(--spacing--2);
+  height: var(--spacing--2);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius--full);
+  background: var(--neutral--300);
+  cursor: pointer;
+  appearance: none;
+}
+
+.hero-carousel__dot[aria-current="true"] {
+  background: var(--neutral--900);
+}
+
+/* ── Fallback: JS öncesi / JS yokken yatay scroll-snap şeridi ─── */
+[data-hc-carousel]:not(.is-ready) .hero-carousel__track,
+[data-hc-carousel]:not(.is-ready) .w-dyn-items {
+  display: flex;
+  flex-wrap: nowrap;
+  grid-column-gap: var(--hc-gap);
+  column-gap: var(--hc-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-left: var(--spacing--6);
+  padding-right: var(--spacing--6);
+}
+
+[data-hc-carousel]:not(.is-ready) .hero-carousel__track::-webkit-scrollbar { display: none; }
+
+[data-hc-carousel]:not(.is-ready) .w-dyn-list { width: 100%; }
+
+[data-hc-carousel]:not(.is-ready) [data-hc-card] {
+  flex: none;
+  width: var(--hc-card-w);
+  aspect-ratio: var(--hc-ratio);
+  scroll-snap-align: center;
+}
+
+[data-hc-carousel]:not(.is-ready) .hero-carousel__nav,
+[data-hc-carousel]:not(.is-ready) .hero-carousel__dots { display: none; }

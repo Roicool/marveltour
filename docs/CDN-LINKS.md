@@ -49,6 +49,9 @@ Her sayfada, bu sırayla:
 <!-- hero-frame v1.0.0 — destination "kadraj açılışı" hero'su: containerlı dergi karesi pin'lenip fullbleed kapağa açılır, scrim + başlık mürekkep aydınlanması (gsap + ScrollTrigger; PIN — refreshPriority default 10, tabloda kayıtlı; LCP dostu, görsel hiç gizlenmez) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/hero-frame.js" defer></script>
 
+<!-- hero-carousel v1.0.0 — hero + sonsuz kart carousel'i (Squarespace education hero portu): 5'li sanal pencere, ≥744 2 kart, 4s autoplay + hover/focus pause, <1020 elastik drag, prev/next hover kolonları, ←/→ klavye, ops. dots + play/pause; giriş fade-up (gsap gerekir; ScrollTrigger opsiyonel — in-view tetik; refreshPriority -1, pin yok; CMS: kart=Item) -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/hero-carousel.js" defer></script>
+
 <!-- marquee v1.0.0 — sonsuz drag/momentum'lu logo marquee, hover'da durur (gsap gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/marquee.js" defer></script>
 
@@ -100,6 +103,8 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/hero-cinematic.css">
 <!-- hero-frame -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/hero-frame.css">
+<!-- hero-carousel — kart ölçüsü/oranı [data-hc-carousel] üstünde --hc-card-w / --hc-gap / --hc-ratio ile ezilebilir -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/hero-carousel.css">
 <!-- marquee -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/marquee.css">
 <!-- h-scroll -->
@@ -136,6 +141,7 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
         Marveltour.initTextReveal(container);
         Marveltour.initHeroCinematic(container);
         Marveltour.initHeroFrame(container);
+        Marveltour.initHeroCarousel(container);
         Marveltour.initMarquee(container);
         Marveltour.initStepScroll(container);
         Marveltour.initHScroll(container);
