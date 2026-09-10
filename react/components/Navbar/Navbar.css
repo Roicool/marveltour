@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — Navbar.css v2.0.1
+   Marveltour — Navbar.css v2.1.1
    Şeffaf başlayan bar; scroll'da / panel açıkken off-white zemin.
    Varyant: --inverted (off-white yazı, hero üstü) / --base (koyu yazı).
    Panel'ler tam genişlik, off-white, 3 kolon mega (satırlar | explore | görsel).
@@ -180,6 +180,11 @@
   transition: opacity 0.22s var(--mt-ease), transform 0.22s var(--mt-ease), visibility 0.22s;
 }
 .mt-nav__panel.is-open { opacity: 1; visibility: visible; transform: translateY(0); }
+/* Emniyet kemeri: kapalı panel ve kapalı mobil menünün HİÇBİR çocuğu tıklama almaz */
+.mt-nav__panel:not(.is-open),
+.mt-nav__panel:not(.is-open) * { pointer-events: none !important; }
+.mt-nav:not(.is-mobile-open) .mt-nav__mobile,
+.mt-nav:not(.is-mobile-open) .mt-nav__mobile * { pointer-events: none !important; }
 .mt-nav__panel-inner {
   max-width: var(--mt-container);
   margin: 0 auto;
@@ -264,7 +269,11 @@
   pointer-events: none;
   transition: opacity 0.2s var(--mt-ease), visibility 0.2s;
 }
-.mt-nav__stack > .mt-nav__stack-item.is-active { opacity: 1; visibility: visible; pointer-events: auto; }
+/* DİKKAT: `visibility: visible` DEĞİL `inherit` — aksi hâlde kapalı panelin
+   (visibility:hidden, opacity:0) içindeki aktif parça görünmez ama tıklanabilir
+   kalır ve hero üstündeki tıklamaları yutar. pointer-events yalnız panel açıkken. */
+.mt-nav__stack > .mt-nav__stack-item.is-active { opacity: 1; visibility: inherit; }
+.mt-nav__panel.is-open .mt-nav__stack > .mt-nav__stack-item.is-active { pointer-events: auto; }
 .mt-nav__stack-item .mt-nav__explore-desc { margin-bottom: 0; }
 .mt-nav__stack-item .mt-nav__tags { margin-top: auto; padding-top: 28px; }
 .mt-nav__stack--media { align-items: stretch; }
