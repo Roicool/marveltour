@@ -1,6 +1,8 @@
 /**
- * Navbar — v2.1.1
+ * Navbar — v2.1.2
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v2.1.2 — CMS DOM okuması global `document` yerine ref.ownerDocument
+ *          üzerinden (runtime realm farkı; fetch yedeği yine devrede).
  * v2.1.1 — Kapalı mega menünün linkleri hero üstünde tıklanabiliyordu: aktif
  *          stack parçasının `visibility:visible`'ı panelin hidden'ını eziyordu.
  *          `inherit` + pointer-events yalnız panel açıkken + kapalı panel/mobil
