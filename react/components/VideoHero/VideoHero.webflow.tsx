@@ -11,9 +11,9 @@ const G_LOOK = "Look";
 const G_MOTION = "Motion";
 
 export default declareComponent(VideoHero, {
-  name: "Video Hero",
+  name: "Video Hero",   // Designer'da yerleşik instance'lar kırılmasın diye ad korunuyor; sayfa içi section olarak da kullanılır
   description:
-    "Tam ekran arka plan videosu + sola hizalı metin (Square AI hero portu). Split-text reveal, video clip/scale reveal, scroll parallax (GSAP). Barba container'ı içinde yalnız tam yüklemede çalışır.",
+    "Tam ekran video/görsel + sola hizalı metin section'ı (Square AI portu). Scroll'a bağlı tersinir reveal (video clip ile büyür/küçülür, split-text), çıkış scrub'ı, parallax (GSAP). Hero ya da sayfa içi section olarak kullanılır.",
   group: "Marveltour",
   props: {
     // --- İçerik ---
@@ -48,7 +48,10 @@ export default declareComponent(VideoHero, {
 
     // --- Hareket ---
     reveal: props.Boolean({ name: "Reveal animation", group: G_MOTION, defaultValue: true, trueLabel: "On", falseLabel: "Off" }),
-    revealRepeat: props.Boolean({ name: "Replay on re-enter", group: G_MOTION, defaultValue: true, trueLabel: "Replay", falseLabel: "Once", tooltip: "Section'dan çıkıp geri gelince reveal yeniden oynar." }),
+    revealMode: props.Variant({ name: "Reveal mode", group: G_MOTION, defaultValue: "scroll", options: ["scroll", "once"], tooltip: "scroll: section girerken video scroll'la büyür, geri çıkınca küçülür (tersinir). once: girince zamanla bir kez oynar." }),
+    revealRepeat: props.Boolean({ name: "Replay on re-enter", group: G_MOTION, defaultValue: false, trueLabel: "Replay", falseLabel: "Once", tooltip: "Section'dan çıkıp geri gelince giriş animasyonu baştan oynar. Scroll'a bağlı tersinir küçülme için bunu KAPALI tut, Exit scrub'ı aç." }),
+    exitScrub: props.Boolean({ name: "Exit scrub (reversible)", group: G_MOTION, defaultValue: true, trueLabel: "On", falseLabel: "Off", tooltip: "Aşağı inerken video clip ile geri küçülür ve metin solar; yukarı çıkarken aynı yoldan geri büyür. Parallax yüzdeleri bu harekete dahil olur." }),
+    exitClip: props.Number({ name: "Exit clip (%)", group: G_MOTION, defaultValue: 22, min: 0, max: 45, decimals: 0, tooltip: "Çıkışta videonun küçüldüğü kenar payı (clip-path inset)." }),
     parallax: props.Boolean({ name: "Scroll parallax", group: G_MOTION, defaultValue: true, trueLabel: "On", falseLabel: "Off", tooltip: "Video yavaş (scrub 0.8), metin hızlı ve solar (scrub 1.4). ScrollTrigger gerekir." }),
     parallaxMedia: props.Number({ name: "Parallax: video (%)", group: G_MOTION, defaultValue: 18, min: 0, max: 60, decimals: 0 }),
     parallaxText: props.Number({ name: "Parallax: text (%)", group: G_MOTION, defaultValue: -24, min: -80, max: 0, decimals: 0 }),

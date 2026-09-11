@@ -1,5 +1,10 @@
 /**
- * VideoHero — v1.1.0
+ * VideoHero — v1.3.0
+ * v1.3.0 — Hero değil, sayfa içi section: giriş reveal'ı scroll'a bağlı
+ *          (revealMode "scroll", tersinir); "once" eski zaman tabanlı mod.
+ * v1.2.0 — Çıkış scrub'ı: aşağı inerken video clip ile geri küçülür, metin
+ *          süzülüp solar; yukarı çıkarken aynı yoldan geri büyür (tersinir,
+ *          restart yok). Replay on re-enter varsayılan kapalı.
  * v1.1.0 — Reveal her girişte yeniden oynar (revealRepeat); section arka planı
  *          şeffaf (video açılmadan önce siyah kutu yok); "image" medya modu.
  * squareup.com "Square AI" hero'sunun (tam ekran arka plan videosu + sola
@@ -48,10 +53,13 @@ export interface VideoHeroProps {
   align?: "left" | "center";
   minHeight?: "100svh" | "80svh" | "60svh" | "auto";
   reveal?: boolean;
+  revealMode?: "scroll" | "once";
   revealRepeat?: boolean;
   parallax?: boolean;
   parallaxMedia?: number;   // yPercent
   parallaxText?: number;    // yPercent (negatif = yukarı)
+  exitScrub?: boolean;      // aşağı inerken scroll'a bağlı geri küçülme, yukarı çıkınca geri büyüme
+  exitClip?: number;        // % (clip-path inset)
   attributes?: Record<string, string>;
 }
 
@@ -76,10 +84,13 @@ export function VideoHero({
   align = "left",
   minHeight = "100svh",
   reveal = true,
-  revealRepeat = true,
+  revealMode = "scroll",
+  revealRepeat = false,
   parallax = true,
   parallaxMedia = 18,
   parallaxText = -24,
+  exitScrub = true,
+  exitClip = 22,
   attributes,
 }: VideoHeroProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -154,10 +165,13 @@ export function VideoHero({
           splitTargets: [eyebrowRef.current, titleRef.current].filter(Boolean) as HTMLElement[],
           riseTargets: [bodyRef.current, linksRef.current].filter(Boolean) as HTMLElement[],
           reveal,
+          revealMode,
           revealRepeat,
           parallax,
           parallaxMedia,
           parallaxText,
+          exitScrub,
+          exitClip,
         });
       } catch (e) {
         root.classList.add("is-revealed");
@@ -168,7 +182,7 @@ export function VideoHero({
       cancelled = true;
       api?.destroy();
     };
-  }, [reveal, revealRepeat, parallax, parallaxMedia, parallaxText, title, eyebrow, body]);
+  }, [reveal, revealMode, revealRepeat, parallax, parallaxMedia, parallaxText, exitScrub, exitClip, title, eyebrow, body]);
 
   const Tag = titleTag === "h2" ? "h2" : "h1";
   const style = {

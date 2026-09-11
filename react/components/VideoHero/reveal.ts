@@ -1,5 +1,5 @@
 /**
- * reveal.ts — v1.1.0 (revealRepeat: her girişte yeniden oynar)
+ * reveal.ts — v1.3.0 (revealMode scroll: giriş de scroll'a bağlı ve tersinir; exitScrub)
  * squareup.com "Square AI" hero'sunun reveal motorunun GSAP portu + Marveltour
  * parallax dili (PROJECT.md Dil 1–2: katmanlı hız farkı, çift scrub).
  *
@@ -31,10 +31,13 @@ export type RevealOptions = {
   splitTargets: HTMLElement[];      // eyebrow, başlık
   riseTargets: HTMLElement[];       // gövde, link
   reveal: boolean;
-  revealRepeat: boolean;            // section'dan çıkıp geri gelince yeniden oynat
+  revealMode: "scroll" | "once";    // scroll: giriş scroll'a bağlı ve tersinir; once: girince zamanla oynar
+  revealRepeat: boolean;            // once modunda: çıkıp geri gelince yeniden oynat
   parallax: boolean;
   parallaxMedia: number;            // yPercent, örn. 18
   parallaxText: number;             // yPercent, örn. -24
+  exitScrub: boolean;               // aşağı inerken scroll'a bağlı geri küçülme (yukarı çıkınca geri büyür)
+  exitClip: number;                 // %, örn. 22 → clip-path inset(22%)
   reduce?: boolean;
 };
 
@@ -114,28 +117,65 @@ export function createReveal(o: RevealOptions): RevealApi {
     tl.add(() => root.classList.add("is-revealed"));
     destroyers.push(() => tl.kill());
 
-    let played = false;
-    const play = () => {
-      if (played && !o.revealRepeat) return;
-      played = true;
-      tl.restart();
-    };
-    /* Tekrar: section tamamen çıkınca başa sar (görünmezken), geri girince
-       yeniden oynar. Satır clip'leri is-revealed ile serbest kalır; başa sarınca
-       geri gelir. */
-    const reset = () => {
-      if (!o.revealRepeat) return;
-      tl.pause(0);
-      root.classList.remove("is-revealed");
-    };
-    if (o.revealRepeat) inViewRepeat(root, 0.15, play, reset);
-    else onceInView(root, 0.15, play);
+    if (o.revealMode === "scroll" && ScrollTrigger) {
+      /* SCROLL modu: section viewport'a girerken timeline scroll'la ilerler
+         (video clip'ten büyür, kelimeler yükselir); yukarı geri çıkınca aynı
+         yoldan geri küçülür. Tersinir, restart yok. */
+      const st = ScrollTrigger.create({
+        trigger: root,
+        start: "top 88%",
+        end: "top 22%",
+        scrub: 0.6,
+        animation: tl,
+        invalidateOnRefresh: true,
+        refreshPriority: -1,
+      });
+      destroyers.push(() => st.kill());
+    } else {
+      let played = false;
+      const play = () => {
+        if (played && !o.revealRepeat) return;
+        played = true;
+        tl.restart();
+      };
+      const reset = () => {
+        if (!o.revealRepeat) return;
+        tl.pause(0);
+        root.classList.remove("is-revealed");
+      };
+      if (o.revealRepeat) inViewRepeat(root, 0.15, play, reset);
+      else onceInView(root, 0.15, play);
+    }
   } else {
     root.classList.add("is-revealed");
   }
 
-  /* ── Parallax (Dil 1–2): video yavaş (scrub 0.8), metin hızlı (scrub 1.4) ── */
-  if (o.parallax && !reduce && ScrollTrigger) {
+  /* ── Çıkış (scrub): aşağı inerken video clip ile geri küçülür + scale artar,
+     metin yukarı süzülüp solar; yukarı çıkarken aynı yoldan geri büyür.
+     Reveal'ın tersi, ama scroll'a bağlı ve tersinir (restart YOK). ── */
+  if (o.exitScrub && !reduce && ScrollTrigger) {
+    const exit = gsap.timeline({
+      scrollTrigger: {
+        trigger: root,
+        start: "top 20%",      /* section üstte yerleşince başlar (hero'da top top'a yakın) */
+        end: "bottom 15%",
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+        refreshPriority: -1,
+      },
+      defaults: { ease: "none" },
+    });
+    if (o.media) exit.to(o.media, { clipPath: `inset(${o.exitClip}%)`, borderRadius: "1.5rem" }, 0);
+    if (o.mediaInner) {
+      exit.to(o.mediaInner, { scale: 1.12, yPercent: o.parallax ? o.parallaxMedia : 0 }, 0);
+    }
+    if (o.textLayer) exit.to(o.textLayer, { yPercent: o.parallax ? o.parallaxText : -12, autoAlpha: 0 }, 0);
+    destroyers.push(() => {
+      exit.scrollTrigger?.kill();
+      exit.kill();
+    });
+  } else if (o.parallax && !reduce && ScrollTrigger) {
+    /* ── Yalnız parallax (Dil 1–2): video yavaş (scrub 0.8), metin hızlı (scrub 1.4) ── */
     const common = { trigger: root, start: "top top", end: "bottom top", invalidateOnRefresh: true };
     if (o.mediaInner && o.parallaxMedia) {
       const t = gsap.to(o.mediaInner, {
