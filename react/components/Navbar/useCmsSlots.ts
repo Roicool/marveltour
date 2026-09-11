@@ -1,5 +1,5 @@
 /**
- * useCmsSlots — v2.0.0
+ * useCmsSlots — v2.1.2 (DOM okuması ref.ownerDocument üzerinden)
  * Designer'daki Collection List'lerden navbar veri modeli çıkarır.
  *
  * Webflow Code Component prop'larında dizi/CMS tipi yok; CMS verisi sayfadaki
@@ -62,7 +62,7 @@ function findSource(wrapper: HTMLElement | null, name: SourceName, doc: Document
     if (slotEl && typeof slotEl.assignedElements === "function") {
       const assigned = slotEl.assignedElements({ flatten: true });
       if (assigned.length) {
-        const holder = document.createElement("div");
+        const holder = wrapper.ownerDocument.createElement("div");
         assigned.forEach((el) => holder.appendChild(el.cloneNode(true)));
         return holder;
       }
@@ -177,7 +177,7 @@ export function useCmsSlots(
     const watched = new WeakSet<Node>();
     const have = { caps: 0, dests: 0, journal: false };
     const debug: CmsDebug = {
-      version: "2.1.0",
+      version: "2.1.2",
       reads: 0,
       lastSource: "",
       caps: 0,
@@ -186,6 +186,10 @@ export function useCmsSlots(
       errors: [],
       fetched: [],
     };
+    // Sayfanın GERÇEK document'ı: code component'in global `document`'ı farklı
+    // bir realm olabilir (yayında DOM okuması bu yüzden boş kalıyordu);
+    // ref'in ownerDocument'ı her zaman sayfadır.
+    const pageDoc: Document = capsRef.current?.ownerDocument ?? document;
     const hostEl = (capsRef.current?.getRootNode() as ShadowRoot | undefined)?.host as
       | (HTMLElement & { __mtNav?: CmsDebug })
       | undefined;
@@ -231,8 +235,8 @@ export function useCmsSlots(
       raf = requestAnimationFrame(() => {
         if (disposed) return;
         try {
-          apply(parseFrom(document, capsRef.current, destsRef.current), "dom");
-          Object.values(PAGE_ATTR).forEach((attr) => observe(document.querySelector(`[${attr}]`)));
+          apply(parseFrom(pageDoc, capsRef.current, destsRef.current), "dom");
+          Object.values(PAGE_ATTR).forEach((attr) => observe(pageDoc.querySelector(`[${attr}]`)));
         } catch (e) {
           fail("read", e);
         }
@@ -266,7 +270,7 @@ export function useCmsSlots(
       if (!complete()) read();
     });
     try {
-      bodyMo.observe(document.body, { childList: true, subtree: true });
+      bodyMo.observe(pageDoc.body, { childList: true, subtree: true });
       observers.push(bodyMo);
     } catch (e) {
       fail("bodyMo", e);
@@ -278,9 +282,9 @@ export function useCmsSlots(
         if (!disposed && !complete()) readFromHtml(dataUrl || window.location.href);
       }, 50);
     };
-    document.addEventListener("DOMContentLoaded", onLoaded);
+    pageDoc.addEventListener("DOMContentLoaded", onLoaded);
     window.addEventListener("load", onLoaded);
-    if (document.readyState === "complete") onLoaded();
+    if (pageDoc.readyState === "complete") onLoaded();
     // dataUrl varsa (varsayılan "/") DOM okumasını beklemeden hemen çek —
     // yayında Webflow runtime'ında DOM okuması boş kalıyor, fetch çalışıyor.
     if (dataUrl) readFromHtml(dataUrl);
@@ -299,7 +303,7 @@ export function useCmsSlots(
       disposed = true;
       cancelAnimationFrame(raf);
       window.clearInterval(poll);
-      document.removeEventListener("DOMContentLoaded", onLoaded);
+      pageDoc.removeEventListener("DOMContentLoaded", onLoaded);
       window.removeEventListener("load", onLoaded);
       observers.forEach((o) => o.disconnect());
     };

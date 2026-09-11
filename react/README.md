@@ -112,6 +112,36 @@ başlar, scroll'da / panel açıkken off-white zemine oturur. §0 etkileşim-gü
 caps/dests/journal sayıları, hatalar):
 `[...document.querySelectorAll('*')].find(e=>e.shadowRoot?.querySelector('.mt-nav')).__mtNav`
 
+### Hero Carousel — `react/components/HeroCarousel/`
+
+`js/components/hero-carousel.js` v1.0.0 + `css/components/hero-carousel.css`'in birebir portu.
+Motor (`engine.ts`) GSAP ile orijinal algoritmayı sürer: 5'li sanal pencere (`xPercent`), ≥744
+2 kart/slayt, 4 s kalan-süre farkındalı autoplay (hover/focus/sekme pause), <1020 elastik
+pointer drag (50 px / 500 px/s eşik), prev/next hover kolonları, ←/→ klavye, ops. dots +
+play/pause, giriş fade-up (carousel 0.45 s gecikmeli), reduced motion. React yalnız iskeleti ve
+CMS'ten gelen kart **şablonlarını** render eder; motor şablonları pencereye klonlar.
+
+**GSAP:** sayfanın `window.gsap`'i kullanılır (CDN, `defer`). Deferred script henüz gelmediyse
+1,5 s beklenir, hâlâ yoksa `gsap@3.13.0` (+ ScrollTrigger) CDN'den yüklenir. ScrollTrigger
+varsa in-view tetiği onunla (`refreshPriority -1`, pin yok), yoksa IntersectionObserver.
+
+**CMS kartları** (`useCards.ts`) — kaynak sırası: `Cards` slot'u → sayfadaki
+`<div data-hero-carousel-cards>` kutusu (`ref.ownerDocument` üzerinden) → sayfanın HTML fetch'i
+(`Data page URL` ya da mevcut sayfa). Kart markup'ı (Collection Item): Link Block (link → sayfa)
++ Image (ilk `<img>`) + Text (`data-hc-title`; yoksa link metni). Nested list gerekmediği için
+slot da denenebilir; çalışmazsa sayfa kutusu. Teşhis: host üzerinde `__mtHeroCarousel`.
+
+**Prop'lar:** Content (eyebrow, H1 TextNode, description, CTA label+link, footnote, `Extra
+content` slot'u), CMS (Cards slot, Data page URL, Card ratio 4:3/3:4/1:1/16:9), Behavior
+(autoplay, interval, intro, dots, play/pause, 2-card breakpoint 744, drag breakpoint 1020),
+Labels (prev/next/pause). Ölçüler CSS custom property ile ezilebilir: `--hc-card-w`, `--hc-gap`,
+`--hc-title-size`, `--hc-py`.
+
+**Barba uyarısı:** bu component Barba container'ının İÇİNDE yaşar. Webflow runtime'ı code
+component'leri yalnız tam sayfa yüklemesinde hydrate eder; Home'a Barba ile gelindiğinde carousel
+çalışmaz (statik SSR HTML kalır). Seçenekler: Home'a giden linklere `data-barba-prevent`, ya da
+Home'da vanilla `hero-carousel.js`'i kullanmak (CDN-LINKS.md). Bu kararı sen ver.
+
 **Barba köprüsü** (`js/core/barba-init.js` v1.6.0): `runPage` her sayfa kurulumunda
 `marveltour:page` (`detail.path`, `detail.container`), `leave` hook'u `marveltour:leave`
 yayınlar. Navbar `leave`'de açık menüleri kapatır, `page`'de aktif linki `location.pathname`'den

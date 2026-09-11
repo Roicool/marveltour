@@ -1,0 +1,264 @@
+/* ============================================================
+   Marveltour — HeroCarousel.css v1.0.0
+   js/components/hero-carousel.js + css/components/hero-carousel.css'in
+   React code component portu. Yerleşim RC token'larıyla (custom
+   property'ler Shadow DOM'a sızar; fallback'ler marka değerleri).
+   Breakpoint'ler HeroCarousel.tsx ile aynı: ≥744 2 kart, <1020 drag.
+   Yalnız transform/opacity anime edilir; hareket motoru GSAP (engine.ts).
+   ============================================================ */
+:host { display: block; }
+
+.hc, .hc * { box-sizing: border-box; }
+
+.hc {
+  --hc-card-w: min(var(--card--md, 22rem), 72vw);
+  --hc-gap: var(--gap--md, 1.5rem);
+  --hc-card-h: calc(var(--hc-card-w) / var(--hc-ratio, 1.3333));
+  --hc-pad: var(--spacing--6, 1.5rem);
+  --hc-radius: var(--radius--lg, 1rem);
+  --hc-fg: var(--color-text--primary, #2b0a1c);
+  --hc-muted: var(--color-text--muted, rgba(43, 10, 28, 0.6));
+  --hc-inverted: var(--color-text--inverted, #f5f5ec);
+  --hc-burgundy: var(--brand-primary--burgundy, #470e2d);
+  --hc-dot: var(--neutral--300, #cfcfc4);
+  --hc-dot-active: var(--neutral--900, #1d1d1a);
+  --hc-ease-slide: cubic-bezier(0.3, 0.1, 0.2, 1);
+  --hc-ease-drag: cubic-bezier(0.33, 1, 0.68, 1);   /* easeOutCubic */
+  --hc-ease-intro: cubic-bezier(0.19, 1, 0.22, 1);  /* easeOutExpo-benzeri */
+
+  position: relative;
+  width: 100%;
+  color: var(--hc-fg);
+  font: inherit;
+  padding: var(--hc-py, clamp(4rem, 10vw, 8rem)) 0 var(--hc-pb, clamp(3rem, 8vw, 6rem));
+  overflow: hidden;
+}
+@media (min-width: 744px) {
+  .hc { --hc-card-w: var(--card--md, 22rem); }
+}
+
+/* ── İçerik (eyebrow, başlık, açıklama, CTA) — stagger'lı giriş ────── */
+.hc__content {
+  max-width: var(--hc-content-w, 52rem);
+  margin: 0 auto;
+  padding: 0 var(--hc-pad);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing--4, 1rem);
+}
+.hc__eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hc-muted);
+}
+.hc__title {
+  margin: 0;
+  font-size: var(--hc-title-size, clamp(2.25rem, 5.5vw, 4.25rem));
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+.hc__desc {
+  margin: 0;
+  max-width: 44ch;
+  font-size: var(--hc-desc-size, clamp(1rem, 1.4vw, 1.25rem));
+  line-height: 1.5;
+  color: var(--hc-muted);
+}
+.hc__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing--3, 0.75rem);
+  margin-top: var(--spacing--2, 0.5rem);
+}
+.hc__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 24px;
+  border-radius: 999px;
+  background: var(--hc-burgundy);
+  color: #fff;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+.hc__cta:hover { background: color-mix(in srgb, var(--hc-burgundy) 85%, white); }
+.hc__cta:focus-visible { outline: 2px solid var(--hc-burgundy); outline-offset: 3px; }
+.hc__footnote { margin: 0; font-size: 0.8125rem; color: var(--hc-muted); }
+
+/* Giriş animasyonu GSAP ile (engine.ts): autoAlpha + y, stagger 0.1s,
+   carousel 0.45s gecikmeli. CSS transition yok. */
+
+/* ── Carousel ───────────────────────────────────────────────────── */
+.hc__carousel {
+  position: relative;
+  width: 100%;
+  margin-top: var(--hc-carousel-mt, clamp(2.5rem, 6vw, 4.5rem));
+  overflow: hidden;
+  outline: none;
+}
+.hc__carousel:focus-visible .hc__track { outline: 2px solid var(--hc-burgundy); outline-offset: 6px; border-radius: var(--hc-radius); }
+
+.hc__track {
+  position: relative;
+  width: calc(var(--hc-card-w) + var(--hc-gap));
+  height: var(--hc-card-h);
+  margin: 0 auto;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+}
+@media (min-width: 744px) {
+  .hc__track { width: calc(2 * var(--hc-card-w) + 2 * var(--hc-gap)); }
+}
+.hc__track.is-draggable { cursor: grab; }
+.hc__track.is-draggable.is-dragging { cursor: grabbing; }
+
+.hc__item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: var(--hc-gap);
+  will-change: transform;
+  contain: layout style;
+}
+
+/* ── Kart ───────────────────────────────────────────────────────── */
+.hc__card {
+  position: relative;
+  flex: none;
+  width: var(--hc-card-w);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--hc-pad);
+  border-radius: var(--hc-radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--hc-inverted);
+  background: var(--neutral--200, #e6e6dc);
+}
+.hc__card:focus-visible { outline: 2px solid var(--hc-burgundy); outline-offset: 3px; }
+.hc__card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition: transform 0.6s var(--hc-ease-slide);
+}
+.hc__card:hover .hc__card-image { transform: scale(1.03); }
+.hc__card-overlay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 38%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, color-mix(in oklch, var(--neutral--950, #111110) 40%, transparent) 100%);
+}
+.hc__card-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: calc(100% - var(--hc-pad));
+  font-size: var(--hc-card-title-size, 1.125rem);
+  line-height: 1.3;
+  white-space: pre-wrap;
+}
+.hc__card-arrow {
+  position: absolute;
+  top: var(--hc-pad);
+  right: var(--hc-pad);
+  z-index: 2;
+  opacity: 0;
+  transform: translate(-6px, 6px);
+  transition: opacity 0.25s ease, transform 0.35s var(--hc-ease-slide);
+}
+.hc__card:hover .hc__card-arrow, .hc__card:focus-visible .hc__card-arrow { opacity: 1; transform: translate(0, 0); }
+
+/* ── Prev / next hover kolonları (yalnız ≥744) ──────────────────── */
+.hc__nav {
+  display: none;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  height: var(--hc-card-h);
+  width: calc((100% - 2 * var(--hc-card-w) - 2 * var(--hc-gap)) / 2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0;
+  cursor: pointer;
+  appearance: none;
+}
+@media (min-width: 744px) { .hc__nav { display: block; } }
+.hc__nav--prev { left: 0; cursor: w-resize; }
+.hc__nav--next { right: 0; cursor: e-resize; }
+
+/* ── Dots + play/pause ──────────────────────────────────────────── */
+.hc__controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing--4, 1rem);
+  margin-top: var(--spacing--8, 2rem);
+}
+.hc__dots { display: flex; align-items: center; column-gap: var(--spacing--2, 0.5rem); }
+.hc__dot {
+  width: var(--spacing--2, 0.5rem);
+  height: var(--spacing--2, 0.5rem);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hc-dot);
+  cursor: pointer;
+  appearance: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.hc__dot[aria-current="true"] { background: var(--hc-dot-active); transform: scale(1.25); }
+.hc__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--hc-fg) 20%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hc-fg);
+  cursor: pointer;
+  appearance: none;
+}
+.hc__toggle:focus-visible { outline: 2px solid var(--hc-burgundy); outline-offset: 2px; }
+
+/* Veri kaynağı slot'u: görünmez */
+.hc__data { display: none !important; }
+
+/* Boş durum (kart gelmeden): yükseklik korunur, zıplama yok */
+.hc__empty {
+  height: var(--hc-card-h);
+  border-radius: var(--hc-radius);
+  background: color-mix(in srgb, var(--hc-fg) 5%, transparent);
+  width: var(--hc-card-w);
+  margin: 0 auto;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hc *, .hc { transition: none !important; }
+}
