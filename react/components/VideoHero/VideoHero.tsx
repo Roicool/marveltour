@@ -1,5 +1,7 @@
 /**
- * VideoHero — v1.0.0
+ * VideoHero — v1.1.0
+ * v1.1.0 — Reveal her girişte yeniden oynar (revealRepeat); section arka planı
+ *          şeffaf (video açılmadan önce siyah kutu yok); "image" medya modu.
  * squareup.com "Square AI" hero'sunun (tam ekran arka plan videosu + sola
  * hizalı metin bloğu) Webflow React Code Component portu.
  *
@@ -32,6 +34,8 @@ export interface VideoHeroProps {
   link?: NavLink;
   content?: ReactNode;
 
+  mediaType?: "video" | "image";
+  image?: NavImage;         // mediaType=image: arka plan görseli
   videoMp4?: string;
   videoWebm?: string;
   mobileVideoMp4?: string;
@@ -44,6 +48,7 @@ export interface VideoHeroProps {
   align?: "left" | "center";
   minHeight?: "100svh" | "80svh" | "60svh" | "auto";
   reveal?: boolean;
+  revealRepeat?: boolean;
   parallax?: boolean;
   parallaxMedia?: number;   // yPercent
   parallaxText?: number;    // yPercent (negatif = yukarı)
@@ -58,6 +63,8 @@ export function VideoHero({
   linkLabel = "",
   link,
   content,
+  mediaType = "video",
+  image,
   videoMp4 = "",
   videoWebm = "",
   mobileVideoMp4 = "",
@@ -69,6 +76,7 @@ export function VideoHero({
   align = "left",
   minHeight = "100svh",
   reveal = true,
+  revealRepeat = true,
   parallax = true,
   parallaxMedia = 18,
   parallaxText = -24,
@@ -85,7 +93,9 @@ export function VideoHero({
   const linksRef = useRef<HTMLDivElement>(null);
 
   const href = link?.href && link.href !== "#" ? link.href : "";
-  const hasVideo = Boolean(videoMp4 || videoWebm || mobileVideoMp4 || mobileVideoWebm);
+  const isImage = mediaType === "image";
+  const hasVideo = !isImage && Boolean(videoMp4 || videoWebm || mobileVideoMp4 || mobileVideoWebm);
+  const still = isImage ? image?.src || poster?.src || "" : poster?.src || "";
   const desktopMq = `(min-width:${mobileBreakpoint}px)`;
   const hasMobile = Boolean(mobileVideoMp4 || mobileVideoWebm);
 
@@ -144,6 +154,7 @@ export function VideoHero({
           splitTargets: [eyebrowRef.current, titleRef.current].filter(Boolean) as HTMLElement[],
           riseTargets: [bodyRef.current, linksRef.current].filter(Boolean) as HTMLElement[],
           reveal,
+          revealRepeat,
           parallax,
           parallaxMedia,
           parallaxText,
@@ -157,7 +168,7 @@ export function VideoHero({
       cancelled = true;
       api?.destroy();
     };
-  }, [reveal, parallax, parallaxMedia, parallaxText, title, eyebrow, body]);
+  }, [reveal, revealRepeat, parallax, parallaxMedia, parallaxText, title, eyebrow, body]);
 
   const Tag = titleTag === "h2" ? "h2" : "h1";
   const style = {
@@ -180,7 +191,7 @@ export function VideoHero({
               {!hasMobile && videoMp4 && <source src={videoMp4} type="video/mp4" />}
             </video>
           )}
-          {poster?.src && <img className="vh__poster" src={poster.src} alt="" loading="eager" fetchPriority="high" />}
+          {still && <img className="vh__poster" src={still} alt={isImage ? image?.alt || "" : ""} loading="eager" fetchPriority="high" />}
         </div>
         <div className="vh__overlay" />
       </div>

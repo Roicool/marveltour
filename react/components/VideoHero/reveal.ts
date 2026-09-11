@@ -1,5 +1,5 @@
 /**
- * reveal.ts — v1.0.0
+ * reveal.ts — v1.1.0 (revealRepeat: her girişte yeniden oynar)
  * squareup.com "Square AI" hero'sunun reveal motorunun GSAP portu + Marveltour
  * parallax dili (PROJECT.md Dil 1–2: katmanlı hız farkı, çift scrub).
  *
@@ -31,6 +31,7 @@ export type RevealOptions = {
   splitTargets: HTMLElement[];      // eyebrow, başlık
   riseTargets: HTMLElement[];       // gövde, link
   reveal: boolean;
+  revealRepeat: boolean;            // section'dan çıkıp geri gelince yeniden oynat
   parallax: boolean;
   parallaxMedia: number;            // yPercent, örn. 18
   parallaxText: number;             // yPercent, örn. -24
@@ -105,23 +106,30 @@ export function createReveal(o: RevealOptions): RevealApi {
     if (o.mediaInner) gsap.set(o.mediaInner, { scale: 1.2 });
     root.classList.add("is-armed");
 
+    const tl = gsap.timeline({ paused: true, defaults: { ease: EASE_OUT } });
+    if (o.media) tl.to(o.media, { clipPath: "inset(0%)", autoAlpha: 1, duration: 1.4, ease: "power3.out" }, 0);
+    if (o.mediaInner) tl.to(o.mediaInner, { scale: 1, duration: 1.8, ease: "power3.out" }, 0);
+    if (allWords.length) tl.to(allWords, { y: 0, opacity: 1, duration: 1.1, stagger: WORD_STAGGER }, 0.15);
+    if (o.riseTargets.length) tl.to(o.riseTargets, { y: 0, opacity: 1, duration: 1.0, stagger: 0.12 }, 0.55);
+    tl.add(() => root.classList.add("is-revealed"));
+    destroyers.push(() => tl.kill());
+
     let played = false;
     const play = () => {
-      if (played) return;
+      if (played && !o.revealRepeat) return;
       played = true;
-      const tl = gsap.timeline({ defaults: { ease: EASE_OUT } });
-      if (o.media) tl.to(o.media, { clipPath: "inset(0%)", autoAlpha: 1, duration: 1.4, ease: "power3.out" }, 0);
-      if (o.mediaInner) tl.to(o.mediaInner, { scale: 1, duration: 1.8, ease: "power3.out" }, 0);
-      if (allWords.length) tl.to(allWords, { y: 0, opacity: 1, duration: 1.1, stagger: WORD_STAGGER }, 0.15);
-      if (o.riseTargets.length) tl.to(o.riseTargets, { y: 0, opacity: 1, duration: 1.0, stagger: 0.12 }, 0.55);
-      tl.add(() => {
-        root.classList.add("is-revealed");
-        // Parallax devralacak: satır clip'lerini serbest bırak (descender'lar için)
-        gsap.set(allWords, { clearProps: "transform,opacity" });
-        gsap.set(o.riseTargets, { clearProps: "transform,opacity" });
-      });
+      tl.restart();
     };
-    onceInView(root, 0.15, play);
+    /* Tekrar: section tamamen çıkınca başa sar (görünmezken), geri girince
+       yeniden oynar. Satır clip'leri is-revealed ile serbest kalır; başa sarınca
+       geri gelir. */
+    const reset = () => {
+      if (!o.revealRepeat) return;
+      tl.pause(0);
+      root.classList.remove("is-revealed");
+    };
+    if (o.revealRepeat) inViewRepeat(root, 0.15, play, reset);
+    else onceInView(root, 0.15, play);
   } else {
     root.classList.add("is-revealed");
   }
@@ -146,6 +154,39 @@ export function createReveal(o: RevealOptions): RevealApi {
       });
       destroyers.push(() => { t.scrollTrigger?.kill(); t.kill(); });
     }
+  }
+
+  function inViewRepeat(el: Element, amount: number, onIn: () => void, onOut: () => void) {
+    if (ScrollTrigger) {
+      const st = ScrollTrigger.create({
+        trigger: el,
+        start: `top ${Math.round((1 - amount) * 100)}%`,
+        end: "bottom top",
+        refreshPriority: -1,
+        onEnter: onIn,
+        onEnterBack: onIn,
+        onLeave: onOut,
+        onLeaveBack: onOut,
+      });
+      destroyers.push(() => st.kill());
+      return;
+    }
+    if ("IntersectionObserver" in win) {
+      let inside = false;
+      const io = new win.IntersectionObserver(
+        (entries: IntersectionObserverEntry[]) => {
+          const now = entries.some((e) => e.isIntersecting);
+          if (now && !inside) onIn();
+          if (!now && inside) onOut();
+          inside = now;
+        },
+        { threshold: [0, amount] }
+      );
+      io.observe(el);
+      destroyers.push(() => io.disconnect());
+      return;
+    }
+    onIn();
   }
 
   function onceInView(el: Element, amount: number, cb: () => void) {

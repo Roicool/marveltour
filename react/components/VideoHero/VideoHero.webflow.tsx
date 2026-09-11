@@ -6,7 +6,7 @@ import { props } from "@webflow/data-types";
 import { VideoHero } from "./VideoHero";
 
 const G_CONTENT = "Content";
-const G_VIDEO = "Video";
+const G_VIDEO = "Media";
 const G_LOOK = "Look";
 const G_MOTION = "Motion";
 
@@ -30,7 +30,9 @@ export default declareComponent(VideoHero, {
     link: props.Link({ name: "Link", group: G_CONTENT }),
     content: props.Slot({ name: "Extra content", group: G_CONTENT, tooltip: "Linkin altına ek elementler (butonlar vb.)." }),
 
-    // --- Video ---
+    // --- Medya ---
+    mediaType: props.Variant({ name: "Media type", group: G_VIDEO, defaultValue: "video", options: ["video", "image"], tooltip: "image: video yok, yalnız arka plan görseli (Image prop'u)." }),
+    image: props.Image({ name: "Image (image mode)", group: G_VIDEO, tooltip: "Media type = image iken arka plan görseli." }),
     videoMp4: props.Text({ name: "Video MP4 URL", group: G_VIDEO, defaultValue: "", tooltip: "Desktop kaynağı (16:9). Webflow Assets ya da CDN URL'i." }),
     videoWebm: props.Text({ name: "Video WebM URL", group: G_VIDEO, defaultValue: "", tooltip: "Opsiyonel; MP4'ten önce denenir." }),
     mobileVideoMp4: props.Text({ name: "Mobile MP4 URL", group: G_VIDEO, defaultValue: "", tooltip: "Opsiyonel art-directed mobil kaynak (2:3). Boşsa desktop kaynağı kullanılır." }),
@@ -46,6 +48,7 @@ export default declareComponent(VideoHero, {
 
     // --- Hareket ---
     reveal: props.Boolean({ name: "Reveal animation", group: G_MOTION, defaultValue: true, trueLabel: "On", falseLabel: "Off" }),
+    revealRepeat: props.Boolean({ name: "Replay on re-enter", group: G_MOTION, defaultValue: true, trueLabel: "Replay", falseLabel: "Once", tooltip: "Section'dan çıkıp geri gelince reveal yeniden oynar." }),
     parallax: props.Boolean({ name: "Scroll parallax", group: G_MOTION, defaultValue: true, trueLabel: "On", falseLabel: "Off", tooltip: "Video yavaş (scrub 0.8), metin hızlı ve solar (scrub 1.4). ScrollTrigger gerekir." }),
     parallaxMedia: props.Number({ name: "Parallax: video (%)", group: G_MOTION, defaultValue: 18, min: 0, max: 60, decimals: 0 }),
     parallaxText: props.Number({ name: "Parallax: text (%)", group: G_MOTION, defaultValue: -24, min: -80, max: 0, decimals: 0 }),
