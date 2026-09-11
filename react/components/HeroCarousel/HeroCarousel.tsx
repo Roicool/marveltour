@@ -1,5 +1,7 @@
 /**
- * HeroCarousel — v1.1.0
+ * HeroCarousel — v1.1.1
+ * v1.1.1 — Kontrol satırı: dots ortada çizgi formunda (aktif uzun), play/pause
+ *          en sağda; ok butonları varsayılan kapalı (yan kolon hover'ı yeter).
  * v1.1.0 — Play/pause butonu varsayılan görünür (ikon durumla değişir);
  *          prev/next hover kolonlarında imleci takip eden yuvarlak ok; kontrol
  *          satırında görünür ok butonları; yan kartlar hafif soluk, hover'da
@@ -96,7 +98,7 @@ export function HeroCarousel({
   intro = true,
   showDots = true,
   showToggle = true,
-  showArrows = true,
+  showArrows = false,
   dimInactive = true,
   prevLabel = "Previous",
   nextLabel = "Next",
