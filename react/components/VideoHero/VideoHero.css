@@ -1,0 +1,163 @@
+/* ============================================================
+   Marveltour — VideoHero.css v1.0.0
+   squareup.com "Square AI" hero portu: tam ekran arka plan videosu +
+   sola hizalı metin bloğu; reveal + parallax GSAP ile (reveal.ts).
+   Token'lar RC/BRAND (custom property'ler Shadow DOM'a sızar).
+   ============================================================ */
+:host { display: block; }
+.vh, .vh * { box-sizing: border-box; }
+
+.vh {
+  --vh-fg: var(--color-text--inverted, #f5f5ec);
+  --vh-fg-muted: color-mix(in srgb, var(--vh-fg) 78%, transparent);
+  --vh-bg: var(--neutral--950, #111110);
+  --vh-pad-x: var(--vh-px, clamp(1.25rem, 5vw, 5rem));
+  --vh-pad-y: var(--vh-py, clamp(4rem, 12vh, 8rem));
+  --vh-eyebrow-size: 0.8125rem;
+  --vh-title-size: var(--vh-title, clamp(2.5rem, 6.5vw, 5.5rem));
+  --vh-body-size: var(--vh-body, clamp(1.0625rem, 1.5vw, 1.375rem));
+  --vh-ease: cubic-bezier(0.19, 1, 0.22, 1);
+
+  position: relative;
+  width: 100%;
+  min-height: var(--vh-min-h, 100svh);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--vh-bg);
+  color: var(--vh-fg);
+  font: inherit;
+}
+.vh--light {
+  --vh-fg: var(--color-text--primary, #2b0a1c);
+  --vh-bg: var(--neutral--off-white, #f5f5ec);
+}
+.vh--center { text-align: center; }
+.vh--center .vh__stack { align-items: center; margin-inline: auto; }
+
+/* ── Arka plan medya: inset 0, object-fit cover; reveal clip + scale ── */
+.vh__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  will-change: clip-path, opacity;
+}
+.vh__media-inner {
+  position: absolute;
+  inset: -6% 0;               /* parallax drift için üst/alt pay */
+  will-change: transform;
+}
+.vh__video,
+.vh__poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--vh-obj-pos, center center);
+}
+.vh__video { position: absolute; inset: 0; }
+.vh__poster { position: absolute; inset: 0; }
+.vh__video.is-playing + .vh__poster { opacity: 0; transition: opacity 0.6s ease; }
+.vh__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, var(--vh-overlay, 0.35)) 0%, rgba(0, 0, 0, calc(var(--vh-overlay, 0.35) * 0.4)) 60%, rgba(0, 0, 0, 0) 100%),
+    linear-gradient(to top, rgba(0, 0, 0, calc(var(--vh-overlay, 0.35) * 0.6)) 0%, rgba(0, 0, 0, 0) 40%);
+}
+.vh--light .vh__overlay {
+  background:
+    linear-gradient(to right, rgba(245, 245, 236, calc(var(--vh-overlay, 0.35) * 1.4)) 0%, rgba(245, 245, 236, 0) 70%);
+}
+
+/* ── İçerik katmanı (parallax: metin videodan hızlı) ─────────────── */
+.vh__content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--vh-container, 1440px);
+  margin: 0 auto;
+  padding: var(--vh-pad-y) var(--vh-pad-x);
+  will-change: transform, opacity;
+}
+.vh__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: var(--vh-stack-w, 40rem);
+  text-indent: -0.1ch;         /* optik hizalama (Square) */
+}
+.vh__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: var(--vh-eyebrow-size);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--vh-fg);
+}
+.vh__title {
+  margin: 0;
+  font-size: var(--vh-title-size);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  text-wrap: balance;
+  color: var(--vh-fg);
+}
+.vh__body {
+  margin: 1.5rem 0 0;
+  max-width: 34ch;
+  font-size: var(--vh-body-size);
+  line-height: 1.45;
+  color: var(--vh-fg-muted);
+  text-wrap: pretty;
+}
+.vh__links { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-top: 2rem; }
+
+/* "Learn more" — büyüyüp küçülen alt çizgi (Square Action--text) */
+.vh__link {
+  position: relative;
+  display: inline-block;
+  color: var(--vh-fg);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  padding-bottom: 3px;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1.5px;
+  background-position: 100% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.4s var(--vh-ease);
+}
+.vh__link:hover { background-size: 0% 1.5px; }
+.vh__link:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 2px; }
+
+/* ── Split-text: satır clip maskeleri ───────────────────────────── */
+.vh__line { display: block; clip-path: inset(-0.5em 0); }
+.vh__word { display: inline-block; will-change: transform, opacity; }
+.vh.is-revealed .vh__line { clip-path: none; }
+
+/* SSR/JS-öncesi: reveal açıkken içerik gizli başlar (flash yok); JS 3 sn
+   içinde devralmazsa CSS fallback'i her şeyi görünür yapar. */
+.vh[data-reveal="1"]:not(.is-armed):not(.is-revealed) .vh__media,
+.vh[data-reveal="1"]:not(.is-armed):not(.is-revealed) .vh__stack > * {
+  opacity: 0;
+  animation: vh-fallback-in 0.8s var(--vh-ease) 3s forwards;
+}
+@keyframes vh-fallback-in { to { opacity: 1; } }
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .vh { align-items: flex-end; }
+  .vh__body { max-width: none; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .vh *, .vh { transition: none !important; animation: none !important; }
+  .vh[data-reveal="1"] .vh__media, .vh[data-reveal="1"] .vh__stack > * { opacity: 1; }
+}

@@ -142,6 +142,28 @@ component'leri yalnız tam sayfa yüklemesinde hydrate eder; Home'a Barba ile ge
 çalışmaz (statik SSR HTML kalır). Seçenekler: Home'a giden linklere `data-barba-prevent`, ya da
 Home'da vanilla `hero-carousel.js`'i kullanmak (CDN-LINKS.md). Bu kararı sen ver.
 
+### Video Hero — `react/components/VideoHero/`
+
+squareup.com "Square AI" hero'sunun portu (spec: tam ekran arka plan videosu + sola hizalı
+metin bloğu + Square'in reveal motoru). Motor GSAP (`reveal.ts`):
+
+- **Split-text clip-rise**: eyebrow + başlık kelimelere bölünür, `offsetTop` ile satırlara
+  gruplanır, her satır `clip-path` maskeli; kelimeler `y:10rem / opacity:.2 → 0 / 1`, kelime
+  stagger'ı. Düz metin `aria-label`'de korunur.
+- **Rise**: gövde + link `y:10rem / opacity:.2 → 0 / 1`.
+- **Media-scale**: video kabı `clip-path inset(25%) → 0`, opacity 0 → 1, iç kap `scale 1.2 → 1`.
+- **Parallax (PROJECT.md Dil 1–2)**: scroll'da video `yPercent +18` (scrub 0.8), metin katmanı
+  `yPercent -24` + solma (scrub 1.4). ScrollTrigger yoksa yalnız reveal (IO ile).
+- **Video**: art-directed kaynaklar (desktop ≥ breakpoint 16:9, mobil 2:3), webm + mp4
+  fallback, poster (LCP), `preload=none`, viewport'ta oynar / dışında durur.
+- SSR'da içerik `data-reveal` ile gizli başlar (flash yok); JS 3 sn içinde devralmazsa CSS
+  fallback'i görünür yapar. Reduced motion: her şey statik.
+
+**Prop'lar:** Content (eyebrow, title + tag h1/h2, body, link label + link, extra slot), Video
+(MP4/WebM desktop + mobil URL'leri, poster, breakpoint, overlay 0–1), Look (color mode dark/light,
+align, min height), Motion (reveal, parallax, video/text yüzdeleri). CSS ile ezilebilir:
+`--vh-title`, `--vh-body`, `--vh-px`, `--vh-py`, `--vh-stack-w`, `--vh-obj-pos`.
+
 **Barba köprüsü** (`js/core/barba-init.js` v1.6.0): `runPage` her sayfa kurulumunda
 `marveltour:page` (`detail.path`, `detail.container`), `leave` hook'u `marveltour:leave`
 yayınlar. Navbar `leave`'de açık menüleri kapatır, `page`'de aktif linki `location.pathname`'den
