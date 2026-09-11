@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — VideoHero.css v1.0.0
+   Marveltour — VideoHero.css v1.1.0
    squareup.com "Square AI" hero portu: tam ekran arka plan videosu +
    sola hizalı metin bloğu; reveal + parallax GSAP ile (reveal.ts).
    Token'lar RC/BRAND (custom property'ler Shadow DOM'a sızar).
@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  background: var(--vh-bg);
+  background: transparent;     /* video clip'ten açılırken sayfa zemini görünür, siyah kutu yok */
   color: var(--vh-fg);
   font: inherit;
 }
@@ -59,6 +59,7 @@
 .vh__video { position: absolute; inset: 0; }
 .vh__poster { position: absolute; inset: 0; }
 .vh__video.is-playing + .vh__poster { opacity: 0; transition: opacity 0.6s ease; }
+.vh__media-inner { background: var(--vh-media-bg, transparent); }
 .vh__overlay {
   position: absolute;
   inset: 0;
