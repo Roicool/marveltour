@@ -1,5 +1,9 @@
 /**
- * HeroCarousel — v1.0.0
+ * HeroCarousel — v1.1.0
+ * v1.1.0 — Play/pause butonu varsayılan görünür (ikon durumla değişir);
+ *          prev/next hover kolonlarında imleci takip eden yuvarlak ok; kontrol
+ *          satırında görünür ok butonları; yan kartlar hafif soluk, hover'da
+ *          ilgili taraf canlanır (dimInactive).
  * js/components/hero-carousel.js + css/components/hero-carousel.css'in
  * Webflow React Code Component portu. Davranış motoru (GSAP) engine.ts'te,
  * orijinalle birebir: 5'li sanal pencere, ≥744 2 kart, 4s kalan-süre
@@ -48,6 +52,8 @@ export interface HeroCarouselProps {
   intro?: boolean;
   showDots?: boolean;
   showToggle?: boolean;
+  showArrows?: boolean;
+  dimInactive?: boolean;
   prevLabel?: string;
   nextLabel?: string;
   pauseLabel?: string;
@@ -64,6 +70,11 @@ const RATIO: Record<NonNullable<HeroCarouselProps["cardRatio"]>, string> = {
 const Arrow = () => (
   <svg className="hc__card-arrow" width="22" height="22" viewBox="0 0 20 20" aria-hidden="true">
     <path d="M3 10h13M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+  </svg>
+);
+const ArrowIcon = () => (
+  <svg className="hc__arrow-icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+    <path d="M3 10h13M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.7" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -84,7 +95,9 @@ export function HeroCarousel({
   bpDrag = 1020,
   intro = true,
   showDots = true,
-  showToggle = false,
+  showToggle = true,
+  showArrows = true,
+  dimInactive = true,
   prevLabel = "Previous",
   nextLabel = "Next",
   pauseLabel = "Pause",
@@ -99,6 +112,9 @@ export function HeroCarousel({
   const nextRef = useRef<HTMLButtonElement>(null);
   const dotsRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const arrowPrevRef = useRef<HTMLButtonElement>(null);
+  const arrowNextRef = useRef<HTMLButtonElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
   const slotRef = useRef<HTMLDivElement>(null);
 
   const cards = useCards(slotRef, dataUrl.trim() || undefined);
@@ -127,6 +143,9 @@ export function HeroCarousel({
           cards: Array.from(template.children) as HTMLElement[],
           prevBtn: prevRef.current,
           nextBtn: nextRef.current,
+          arrowPrev: arrowPrevRef.current,
+          arrowNext: arrowNextRef.current,
+          cursor: cursorRef.current,
           dotsEl: dotsRef.current,
           toggle: toggleRef.current,
           bp,
@@ -145,13 +164,13 @@ export function HeroCarousel({
       carousel.classList.remove("is-ready");
       track.innerHTML = "";
     };
-  }, [cards, bp, bpDrag, interval, autoplay, intro]);
+  }, [cards, bp, bpDrag, interval, autoplay, intro, showArrows, showToggle, showDots]);
 
   const hasContent = Boolean(eyebrow || title || description || ctaHref || footnote || content);
   const style = { "--hc-ratio": RATIO[cardRatio] } as React.CSSProperties;
 
   return (
-    <section ref={rootRef} className="hc" style={style} {...attributes}>
+    <section ref={rootRef} className={"hc" + (dimInactive ? " hc--dim" : "")} style={style} {...attributes}>
       {/* CMS slot'u (görünmez veri kaynağı) */}
       <div className="hc__data" ref={slotRef} aria-hidden="true">
         {cardsSlot}
@@ -193,22 +212,47 @@ export function HeroCarousel({
           {cards.length === 0 && <div className="hc__empty" />}
         </div>
 
-        <button type="button" className="hc__nav hc__nav--prev" ref={prevRef} aria-label={prevLabel}>
+        {/* Hover kolonları (≥744): görünmez, imleci takip eden ok gösterir */}
+        <button type="button" className="hc__nav hc__nav--prev" ref={prevRef} aria-label={prevLabel} aria-hidden="true">
           {prevLabel}
         </button>
-        <button type="button" className="hc__nav hc__nav--next" ref={nextRef} aria-label={nextLabel}>
+        <button type="button" className="hc__nav hc__nav--next" ref={nextRef} aria-label={nextLabel} aria-hidden="true">
           {nextLabel}
         </button>
+        <div className="hc__cursor" ref={cursorRef} aria-hidden="true">
+          <ArrowIcon />
+        </div>
 
-        {(showDots || showToggle) && (
+        {(showDots || showToggle || showArrows) && (
           <div className="hc__controls">
+            {showArrows && (
+              <button type="button" className="hc__arrow-btn hc__arrow-btn--prev" ref={arrowPrevRef} aria-label={prevLabel}>
+                <ArrowIcon />
+              </button>
+            )}
             {showDots && <div className="hc__dots" ref={dotsRef} role="tablist" />}
             {showToggle && (
-              <button type="button" className="hc__toggle" ref={toggleRef} aria-label={pauseLabel} aria-pressed="false">
-                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-                  <rect x="2" y="1" width="3" height="10" fill="currentColor" />
-                  <rect x="7" y="1" width="3" height="10" fill="currentColor" />
+              <button
+                type="button"
+                className="hc__toggle"
+                ref={toggleRef}
+                aria-label={pauseLabel}
+                aria-pressed="false"
+                data-state="paused"
+                title={pauseLabel}
+              >
+                <svg className="hc__icon-pause" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+                  <rect x="2" y="1" width="3" height="10" rx="0.5" fill="currentColor" />
+                  <rect x="7" y="1" width="3" height="10" rx="0.5" fill="currentColor" />
                 </svg>
+                <svg className="hc__icon-play" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+                  <path d="M3 1.5v9l7.5-4.5z" fill="currentColor" />
+                </svg>
+              </button>
+            )}
+            {showArrows && (
+              <button type="button" className="hc__arrow-btn hc__arrow-btn--next" ref={arrowNextRef} aria-label={nextLabel}>
+                <ArrowIcon />
               </button>
             )}
           </div>

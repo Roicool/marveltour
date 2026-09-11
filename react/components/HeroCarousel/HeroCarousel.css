@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — HeroCarousel.css v1.0.0
+   Marveltour — HeroCarousel.css v1.1.0
    js/components/hero-carousel.js + css/components/hero-carousel.css'in
    React code component portu. Yerleşim RC token'larıyla (custom
    property'ler Shadow DOM'a sızar; fallback'ler marka değerleri).
@@ -188,7 +188,14 @@
 }
 .hc__card:hover .hc__card-arrow, .hc__card:focus-visible .hc__card-arrow { opacity: 1; transform: translate(0, 0); }
 
-/* ── Prev / next hover kolonları (yalnız ≥744) ──────────────────── */
+/* ── Yan kartlar: hafif soluk, hover'da ilgili taraf canlanır ────── */
+.hc__item { transition: opacity 0.45s var(--hc-ease-slide); }
+.hc--dim .hc__item:not(.is-active) { opacity: 0.55; }
+.hc--dim .hc__carousel.is-hover-prev .hc__item:not(.is-active),
+.hc--dim .hc__carousel.is-hover-next .hc__item:not(.is-active) { opacity: 0.85; }
+.hc--dim .hc__track.is-dragging .hc__item { opacity: 1; }
+
+/* ── Prev / next hover kolonları (yalnız ≥744): görünmez alan, imleç gizli ── */
 .hc__nav {
   display: none;
   position: absolute;
@@ -206,10 +213,34 @@
   appearance: none;
 }
 @media (min-width: 744px) { .hc__nav { display: block; } }
-.hc__nav--prev { left: 0; cursor: w-resize; }
-.hc__nav--next { right: 0; cursor: e-resize; }
+.hc__nav--prev { left: 0; }
+.hc__nav--next { right: 0; }
+.hc__carousel.has-cursor .hc__nav { cursor: none; }
 
-/* ── Dots + play/pause ──────────────────────────────────────────── */
+/* İmleci takip eden yuvarlak ok */
+.hc__cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hc-cursor-bg, var(--neutral--off-white, #f5f5ec));
+  color: var(--hc-cursor-fg, var(--hc-fg));
+  box-shadow: 0 10px 30px rgba(43, 10, 28, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform;
+}
+.hc__cursor .hc__arrow-icon { transition: transform 0.25s var(--hc-ease-slide); }
+.hc__cursor.is-prev .hc__arrow-icon { transform: rotate(180deg); }
+
+/* ── Kontrol satırı: [ok] dots play/pause [ok] ───────────────────── */
 .hc__controls {
   display: flex;
   justify-content: center;
@@ -230,21 +261,36 @@
   transition: background 0.2s ease, transform 0.2s ease;
 }
 .hc__dot[aria-current="true"] { background: var(--hc-dot-active); transform: scale(1.25); }
-.hc__toggle {
+
+.hc__toggle,
+.hc__arrow-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--hc-fg) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hc-fg) 18%, transparent);
   border-radius: 999px;
   background: transparent;
   color: var(--hc-fg);
   cursor: pointer;
   appearance: none;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s var(--hc-ease-slide);
 }
-.hc__toggle:focus-visible { outline: 2px solid var(--hc-burgundy); outline-offset: 2px; }
+.hc__toggle:hover,
+.hc__arrow-btn:hover { background: var(--hc-fg); border-color: var(--hc-fg); color: var(--hc-inverted); }
+.hc__arrow-btn:active { transform: scale(0.92); }
+.hc__toggle:focus-visible,
+.hc__arrow-btn:focus-visible { outline: 2px solid var(--hc-burgundy); outline-offset: 2px; }
+.hc__arrow-btn--prev .hc__arrow-icon { transform: rotate(180deg); }
+.hc__arrow-btn .hc__arrow-icon { width: 18px; height: 18px; }
+/* Play/pause ikonu duruma göre */
+.hc__toggle .hc__icon-play { display: none; }
+.hc__toggle[data-state="paused"] .hc__icon-pause { display: none; }
+.hc__toggle[data-state="paused"] .hc__icon-play { display: block; }
+/* Autoplay kapalıyken toggle anlamsız — motor data-state basmaz, gizle */
+.hc__toggle:not([data-state]) { display: none; }
 
 /* Veri kaynağı slot'u: görünmez */
 .hc__data { display: none !important; }
