@@ -1,5 +1,5 @@
 /**
- * engine.ts — v1.0.0
+ * engine.ts — v1.1.0 (imleç-takip ok, kontrol satırı okları)
  * js/components/hero-carousel.js v1.0.0'ın birebir portu (GSAP).
  * React yalnız iskeleti ve kart şablonlarını render eder; bu motor
  * orijinaldeki gibi DOM'u sürer: 5'li sanal pencere (xPercent), responsive
@@ -38,6 +38,9 @@ export type EngineOptions = {
   cards: HTMLElement[]; // şablon kartlar (klonlanır)
   prevBtn?: HTMLElement | null;
   nextBtn?: HTMLElement | null;
+  arrowPrev?: HTMLElement | null;   // kontrol satırındaki görünür ok
+  arrowNext?: HTMLElement | null;
+  cursor?: HTMLElement | null;      // imleci takip eden yuvarlak ok
   dotsEl?: HTMLElement | null;
   toggle?: HTMLElement | null;
   bp?: number;
@@ -346,6 +349,78 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
     nextBtn.addEventListener("click", onNext);
     nextBtn.setAttribute("tabindex", "-1");
     destroyers.push(() => nextBtn.removeEventListener("click", onNext));
+  }
+  // Kontrol satırındaki görünür oklar (klavye/dokunmatik için erişilebilir)
+  if (o.arrowPrev) {
+    const el = o.arrowPrev;
+    el.addEventListener("click", onPrev);
+    el.addEventListener("mouseenter", pause);
+    el.addEventListener("mouseleave", resumeLater);
+    destroyers.push(() => {
+      el.removeEventListener("click", onPrev);
+      el.removeEventListener("mouseenter", pause);
+      el.removeEventListener("mouseleave", resumeLater);
+    });
+  }
+  if (o.arrowNext) {
+    const el = o.arrowNext;
+    el.addEventListener("click", onNext);
+    el.addEventListener("mouseenter", pause);
+    el.addEventListener("mouseleave", resumeLater);
+    destroyers.push(() => {
+      el.removeEventListener("click", onNext);
+      el.removeEventListener("mouseenter", pause);
+      el.removeEventListener("mouseleave", resumeLater);
+    });
+  }
+
+  /* ── İmleci takip eden yuvarlak ok (prev/next hover kolonları) ────
+     Squarespace davranışı: kolon üstünde imleç yerine yumuşak takip eden
+     bir daire; yön sınıfı (is-prev / is-next) oku çevirir; tıklamada
+     küçük bir "basma" sıçraması. gsap.quickTo ile rAF-throttle'lı. */
+  const cursor = o.cursor || null;
+  if (cursor && win.matchMedia && win.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    gsap.set(cursor, { xPercent: -50, yPercent: -50, scale: 0.6, autoAlpha: 0 });
+    const qx = gsap.quickTo(cursor, "x", { duration: 0.35, ease: "power3.out" });
+    const qy = gsap.quickTo(cursor, "y", { duration: 0.35, ease: "power3.out" });
+    const bind = (btn: HTMLElement | null, dir: "prev" | "next") => {
+      if (!btn) return;
+      const move = (e: PointerEvent) => {
+        const r = carousel.getBoundingClientRect();
+        qx(e.clientX - r.left);
+        qy(e.clientY - r.top);
+      };
+      const enter = (e: PointerEvent) => {
+        const r = carousel.getBoundingClientRect();
+        gsap.set(cursor, { x: e.clientX - r.left, y: e.clientY - r.top });
+        cursor.classList.toggle("is-prev", dir === "prev");
+        cursor.classList.toggle("is-next", dir === "next");
+        carousel.classList.add("is-hover-" + dir);
+        gsap.to(cursor, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out", overwrite: true });
+      };
+      const leave = () => {
+        carousel.classList.remove("is-hover-" + dir);
+        gsap.to(cursor, { autoAlpha: 0, scale: 0.6, duration: 0.25, ease: "power2.in", overwrite: true });
+      };
+      const press = () => {
+        gsap.fromTo(cursor, { scale: 0.85 }, { scale: 1, duration: 0.45, ease: "elastic.out(1, 0.5)", overwrite: "auto" });
+      };
+      btn.addEventListener("pointerenter", enter);
+      btn.addEventListener("pointermove", move);
+      btn.addEventListener("pointerleave", leave);
+      btn.addEventListener("pointerdown", press);
+      destroyers.push(() => {
+        btn.removeEventListener("pointerenter", enter);
+        btn.removeEventListener("pointermove", move);
+        btn.removeEventListener("pointerleave", leave);
+        btn.removeEventListener("pointerdown", press);
+        carousel.classList.remove("is-hover-prev", "is-hover-next");
+      });
+    };
+    bind(prevBtn, "prev");
+    bind(nextBtn, "next");
+    carousel.classList.add("has-cursor");
+    destroyers.push(() => carousel.classList.remove("has-cursor"));
   }
   const onToggle = () => {
     manuallyPaused = !manuallyPaused;
