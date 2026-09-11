@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — HeroCarousel.css v1.1.0
+   Marveltour — HeroCarousel.css v1.1.1
    js/components/hero-carousel.js + css/components/hero-carousel.css'in
    React code component portu. Yerleşim RC token'larıyla (custom
    property'ler Shadow DOM'a sızar; fallback'ler marka değerleri).
@@ -240,27 +240,32 @@
 .hc__cursor .hc__arrow-icon { transition: transform 0.25s var(--hc-ease-slide); }
 .hc__cursor.is-prev .hc__arrow-icon { transform: rotate(180deg); }
 
-/* ── Kontrol satırı: [ok] dots play/pause [ok] ───────────────────── */
+/* ── Kontrol satırı: dots ORTADA (çizgi formu), play/pause EN SAĞDA ──── */
 .hc__controls {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: var(--spacing--4, 1rem);
   margin-top: var(--spacing--8, 2rem);
+  min-height: 40px;
+  padding: 0 var(--hc-pad);
 }
-.hc__dots { display: flex; align-items: center; column-gap: var(--spacing--2, 0.5rem); }
+.hc__dots { display: flex; align-items: center; column-gap: 8px; }
 .hc__dot {
-  width: var(--spacing--2, 0.5rem);
-  height: var(--spacing--2, 0.5rem);
+  width: 12px;
+  height: 3px;
   padding: 0;
   border: 0;
   border-radius: 999px;
   background: var(--hc-dot);
   cursor: pointer;
   appearance: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: width 0.3s var(--hc-ease-slide), background 0.2s ease;
 }
-.hc__dot[aria-current="true"] { background: var(--hc-dot-active); transform: scale(1.25); }
+.hc__dot:hover { background: color-mix(in srgb, var(--hc-dot-active) 55%, var(--hc-dot)); }
+.hc__dot[aria-current="true"] { width: 32px; background: var(--hc-dot-active); }
+.hc__dot:focus-visible { outline: 2px solid var(--hc-burgundy); outline-offset: 4px; }
 
 .hc__toggle,
 .hc__arrow-btn {
@@ -278,6 +283,12 @@
   appearance: none;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s var(--hc-ease-slide);
 }
+.hc__toggle {
+  position: absolute;
+  right: var(--hc-pad);
+  top: 50%;
+  transform: translateY(-50%);
+}
 .hc__toggle:hover,
 .hc__arrow-btn:hover { background: var(--hc-fg); border-color: var(--hc-fg); color: var(--hc-inverted); }
 .hc__arrow-btn:active { transform: scale(0.92); }
@@ -289,8 +300,6 @@
 .hc__toggle .hc__icon-play { display: none; }
 .hc__toggle[data-state="paused"] .hc__icon-pause { display: none; }
 .hc__toggle[data-state="paused"] .hc__icon-play { display: block; }
-/* Autoplay kapalıyken toggle anlamsız — motor data-state basmaz, gizle */
-.hc__toggle:not([data-state]) { display: none; }
 
 /* Veri kaynağı slot'u: görünmez */
 .hc__data { display: none !important; }

@@ -46,7 +46,7 @@ export default declareComponent(HeroCarousel, {
     intro: props.Boolean({ name: "Intro animation", group: G_BEHAVIOR, defaultValue: true, trueLabel: "On", falseLabel: "Off" }),
     showDots: props.Boolean({ name: "Show dots", group: G_BEHAVIOR, defaultValue: true, trueLabel: "Show", falseLabel: "Hide" }),
     showToggle: props.Boolean({ name: "Show play/pause", group: G_BEHAVIOR, defaultValue: true, trueLabel: "Show", falseLabel: "Hide" }),
-    showArrows: props.Boolean({ name: "Show arrow buttons", group: G_BEHAVIOR, defaultValue: true, trueLabel: "Show", falseLabel: "Hide", tooltip: "Kontrol satırındaki görünür oklar. Yan kolon hover'ında imleci takip eden ok her zaman var (≥744, mouse)." }),
+    showArrows: props.Boolean({ name: "Show arrow buttons", group: G_BEHAVIOR, defaultValue: false, trueLabel: "Show", falseLabel: "Hide", tooltip: "Kontrol satırındaki görünür oklar. Yan kolon hover'ında imleci takip eden ok her zaman var (≥744, mouse)." }),
     dimInactive: props.Boolean({ name: "Dim side cards", group: G_BEHAVIOR, defaultValue: true, trueLabel: "Dim", falseLabel: "Full", tooltip: "Merkez dışındaki kartlar hafif soluk; prev/next hover'ında ilgili taraf canlanır." }),
     bp: props.Number({ name: "2-card breakpoint (px)", group: G_BEHAVIOR, defaultValue: 744, min: 320, max: 1600, decimals: 0, tooltip: "Bunun üstünde 2 kart/slayt. CSS media query 744'te sabit; değiştirirsen CSS'i de güncelle." }),
     bpDrag: props.Number({ name: "Drag breakpoint (px)", group: G_BEHAVIOR, defaultValue: 1020, min: 320, max: 2000, decimals: 0, tooltip: "Bunun altında pointer drag açık." }),
