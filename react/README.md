@@ -164,6 +164,22 @@ metin bloğu + Square'in reveal motoru). Motor GSAP (`reveal.ts`):
 align, min height), Motion (reveal, parallax, video/text yüzdeleri). CSS ile ezilebilir:
 `--vh-title`, `--vh-body`, `--vh-px`, `--vh-py`, `--vh-stack-w`, `--vh-obj-pos`.
 
+### Contact Form — `react/components/ContactForm/`
+
+Minimal iletişim formu: **Ad · Soyad · E-posta · [🇹🇷 +90 ▾] Telefon · Gönder**. Kendi doğrulaması
+(zorunlu, e-posta biçimi, telefon 6–14 rakam), honeypot, gönderim/başarı/hata durumları, ülke
+kodu seçicisi (50 ülke, bayrak + kod; varsayılan TR). Shadow DOM içindeki form Webflow'un kendi
+form JS'i tarafından yakalanmadığı için component kendisi POST eder:
+
+| Ayar | Davranış |
+|---|---|
+| `Action URL` dolu | Oraya POST; `Action method` json (`application/json`) ya da form (urlencoded). Webhook, Make, Zapier, Formspark, kendi API'n. |
+| `Action URL` boş + `Webflow Site ID` dolu | `POST https://webflow.com/api/v1/form/{siteId}` (Webflow native formlarının kullandığı uç; resmi belgelenmemiş). Gönderiler Site Settings → Forms'a düşer, e-posta bildirimleri çalışır. |
+
+Payload alanları: `firstName`, `lastName`, `name`, `email`, `phoneCountry` (ISO), `phoneDial`,
+`phone` (`+90 5321234567`), `page`. `Redirect URL` doluysa başarıda yönlendirir; boşsa yerinde
+teşekkür kartı. Tüm etiketler/mesajlar prop. `Inverted` koyu zemin için açık metin.
+
 **Barba köprüsü** (`js/core/barba-init.js` v1.6.0): `runPage` her sayfa kurulumunda
 `marveltour:page` (`detail.path`, `detail.container`), `leave` hook'u `marveltour:leave`
 yayınlar. Navbar `leave`'de açık menüleri kapatır, `page`'de aktif linki `location.pathname`'den
