@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/utils.js
- * v1.1.1  (adapted from Sestek utils.js v1.0.0 + blog-utils.js v1.5.0 +
+ * v1.2.0  (adapted from Sestek utils.js v1.0.0 + blog-utils.js v1.5.0 +
  *          search.js v1.4.0 + pagination.js v1.7.0 + dropdown.js v1.3.0 +
  *          blog-slider-pro.js v1.0.0)
  * ------------------------------------------------------------
@@ -21,7 +21,11 @@
  *
  *  B) Blog/içerik yardımcıları (blog-utils'ten):
  *
- *       Marveltour.initAiSummarize(container)   [data-ai-summarize]
+ *       Marveltour.initAiSummarize(container)   [data-ai-summarize] — açık
+ *                                               olan sayfayı AI'a özetletir
+ *       Marveltour.initAiAsk(container)         [data-ai-ask] — markayı AI'a
+ *                                               sordurur (footer/site-wide;
+ *                                               document genelinde taranır)
  *       Marveltour.initSocialShare(container)   [data-share]
  *       Marveltour.initToc(container)           [data-toc] + scroll-spy
  *       Marveltour.initReadTime(container)      [data-read-time]
@@ -61,8 +65,11 @@
  *   • Search overlay'i site-wide (container dışı) da olabilir: init her
  *     geçişte açık kalmış overlay'i kapatır, trigger'lar document genelinde
  *     her seferinde taranır. Scroll kilidi Marveltour.lenis.stop()/start().
- *   • [data-brand] / sayfa geneli [data-ai-prompt] document genelinde aranır
- *     (site-wide embed navbar/footer'da, yani container DIŞINDA olabilir).
+ *   • [data-brand] / sayfa geneli [data-ai-prompt] / [data-ai-ask-prompt]
+ *     document genelinde aranır (site-wide embed navbar/footer'da, yani
+ *     container DIŞINDA olabilir). [data-ai-ask] linklerinin KENDİSİ de
+ *     document genelinde taranır — footer'dakiler her geçişte tazelenir,
+ *     listener yalnız bir kez takılır.
  *
  * DOM şemaları için: docs/UTILS.md
  */
@@ -267,28 +274,38 @@
     return lang.toLowerCase().split("-")[0];
   }
 
-  /** Sayfa geneli AI prompt'u — dil eşleşmeli, locale'siz fallback'li. */
-  function pageAiPrompt(locale) {
+  /**
+   * Sayfa geneli prompt embed'i — dil eşleşmeli, locale'siz fallback'li.
+   * @param {string} attr  "data-ai-prompt" | "data-ai-ask-prompt"
+   * @param {string} locale
+   */
+  function pagePrompt(attr, locale) {
     var el;
     if (locale) {
-      el = document.querySelector("[data-ai-prompt-" + locale + "]");
-      if (el) return el.getAttribute("data-ai-prompt-" + locale);
+      el = document.querySelector("[" + attr + "-" + locale + "]");
+      if (el) return el.getAttribute(attr + "-" + locale);
     }
-    el = document.querySelector("[data-ai-prompt]");
-    return el ? el.getAttribute("data-ai-prompt") : null;
+    el = document.querySelector("[" + attr + "]");
+    return el ? el.getAttribute(attr) : null;
   }
 
   /** Buton dili → buton generic → sayfa geneli → gömülü şablon. */
-  function resolveAiPrompt(el, locale, pageDefault) {
-    return (locale && el.getAttribute("data-ai-prompt-" + locale)) ||
-      el.getAttribute("data-ai-prompt") ||
+  function resolvePrompt(el, attr, locale, pageDefault, fallback) {
+    return (locale && el.getAttribute(attr + "-" + locale)) ||
+      el.getAttribute(attr) ||
       pageDefault ||
-      AI_PROMPT_TEMPLATE;
+      fallback;
   }
 
-  /** {URL}/{BRAND} yer tutucularını (tüm geçişler) doldur. */
+  /** {URL}/{BRAND}/{SITE}/{DOMAIN} yer tutucularını (tüm geçişler) doldur. */
   function fillPrompt(tpl, url, brand) {
-    return tpl.split("{URL}").join(url).split("{BRAND}").join(brand);
+    var loc  = global.location;
+    var site = loc.origin || (loc.protocol + "//" + loc.host);
+    return tpl
+      .split("{URL}").join(url)
+      .split("{BRAND}").join(brand)
+      .split("{SITE}").join(site)
+      .split("{DOMAIN}").join(loc.hostname);
   }
 
   /**
@@ -343,14 +360,80 @@
     var url         = global.location.href;
     var brand       = getBrandName();
     var locale      = pageLocale();
-    var pageDefault = pageAiPrompt(locale);
+    var pageDefault = pagePrompt("data-ai-prompt", locale);
 
     els.forEach(function (el) {
       var key = el.getAttribute("data-ai-summarize").toLowerCase().trim();
       var tpl = AI_PROVIDERS[key];
       if (!tpl) { warn("Unknown AI provider: " + key); return; }
-      var prompt  = fillPrompt(resolveAiPrompt(el, locale, pageDefault), url, brand);
+      var prompt  = fillPrompt(
+        resolvePrompt(el, "data-ai-prompt", locale, pageDefault, AI_PROMPT_TEMPLATE),
+        url, brand);
       wireLink(el, tpl.replace("{Q}", encodeURIComponent(prompt)));
+    });
+  }
+
+  // ── 1B. Ask AI — marka hakkında soru ─────────────────────────────
+
+  var AI_ASK_TEMPLATE =
+    "What do you know about {BRAND} ({SITE})? Give an overview of who they " +
+    "are, the travel experiences and services they offer, and what makes " +
+    "them stand out. Use {SITE} as the primary source.";
+
+  /**
+   * Href'i her init'te tazelenebilen link: <a> ise href güncellenir,
+   * değilse click listener'ı TEK sefer takılır ve tıklama anında son
+   * href okunur (footer container dışında olduğu için Barba geçişlerinde
+   * aynı element tekrar tekrar bağlanmasın diye).
+   * @param {HTMLElement} el
+   * @param {string} href
+   */
+  function wireLiveLink(el, href) {
+    el._mtAiHref = href;
+    if (el.tagName === "A") {
+      el.setAttribute("href", href);
+      el.setAttribute("target", "_blank");
+      el.setAttribute("rel", "noopener noreferrer");
+      return;
+    }
+    if (el._mtAiWired) return;
+    el._mtAiWired = true;
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      global.open(el._mtAiHref, "_blank", "noopener,noreferrer");
+    });
+  }
+
+  /**
+   * [data-ai-ask] elementlerini bağla — sayfayı değil, MARKAYI sorar.
+   * Attribute değeri sağlayıcı anahtarıdır (chatgpt, claude, grok, …).
+   * Footer/navbar site-wide olduğu (Barba container'ın DIŞINDA kaldığı)
+   * için tarama container değil document genelindedir; her onEach'te
+   * yeniden çalışır, href tazelenir, listener bir kez takılır.
+   * @param {HTMLElement} [container] imza tutarlılığı için — kullanılmaz
+   */
+  function initAiAsk(container) {   // eslint-disable-line no-unused-vars
+    var els = document.querySelectorAll("[data-ai-ask]");
+    if (!els.length) return;
+
+    var url         = global.location.href;
+    var locale      = pageLocale();
+    var pageDefault = pagePrompt("data-ai-ask-prompt", locale);
+    var brand       = getBrandName();
+
+    if (!brand) {
+      warn("AskAI: [data-brand] bulunamadı — marka adı yerine domain kullanılıyor.");
+      brand = global.location.hostname;
+    }
+
+    els.forEach(function (el) {
+      var key = el.getAttribute("data-ai-ask").toLowerCase().trim();
+      var tpl = AI_PROVIDERS[key];
+      if (!tpl) { warn("Unknown AI provider (ask): " + key); return; }
+      var prompt = fillPrompt(
+        resolvePrompt(el, "data-ai-ask-prompt", locale, pageDefault, AI_ASK_TEMPLATE),
+        url, brand);
+      wireLiveLink(el, tpl.replace("{Q}", encodeURIComponent(prompt)));
     });
   }
 
@@ -1776,6 +1859,7 @@
 
   function initUtils(container) {
     initAiSummarize(container);
+    initAiAsk(container);
     initSocialShare(container);
     initToc(container);
     initReadTime(container);
@@ -1788,6 +1872,7 @@
 
   // ── Public API ───────────────────────────────────────────────────
   Marveltour.initAiSummarize   = initAiSummarize;
+  Marveltour.initAiAsk         = initAiAsk;
   Marveltour.initSocialShare   = initSocialShare;
   Marveltour.initToc           = initToc;
   Marveltour.initReadTime      = initReadTime;

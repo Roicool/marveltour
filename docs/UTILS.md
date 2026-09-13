@@ -30,7 +30,8 @@ sadece o parça uyarıp atlanır).
 
 ## Init (Barba `onEach`)
 
-Dokuz parçanın hepsi container-scoped'dur ve sayfada ilgili DOM yoksa
+On parçanın hepsi container-scoped'dur (Ask AI ve Search site-wide da
+çalışsın diye document genelinde tarar) ve sayfada ilgili DOM yoksa
 **sessizce atlanır** — tek çağrı her sayfada güvenlidir:
 
 ```js
@@ -43,7 +44,7 @@ Marveltour.initBarba({
 ```
 
 Tek tek de çağrılabilir (hepsi `(container)` imzalı): `initAiSummarize`,
-`initSocialShare`, `initToc`, `initReadTime`, `initReadProgress`,
+`initAiAsk`, `initSocialShare`, `initToc`, `initReadTime`, `initReadProgress`,
 `initSearch`, `initPagination`, `initDropdown`, `initBlogSliderPro`.
 
 **Barba güvenliği (kendiliğinden hallolur):**
@@ -60,8 +61,10 @@ Tek tek de çağrılabilir (hepsi `(container)` imzalı): `initAiSummarize`,
 - Search overlay'i site-wide (navbar, container DIŞI) olabilir: her geçişte
   açık kalmış overlay kapatılır, yeni gelen trigger'lar/CMS source'ları
   otomatik bağlanır. Scroll kilidi `Marveltour.lenis.stop()/start()`.
-- `[data-brand]` ve sayfa geneli `[data-ai-prompt]` **document genelinde**
-  aranır; navbar/footer gibi container dışı yerlere konabilir.
+- `[data-brand]`, sayfa geneli `[data-ai-prompt]` / `[data-ai-ask-prompt]`
+  **document genelinde** aranır; navbar/footer gibi container dışı yerlere
+  konabilir. Ask AI linklerinin kendisi de document genelinde taranır
+  (footer'dakiler her geçişte tazelenir, listener yalnız bir kez takılır).
 
 ---
 
@@ -85,6 +88,38 @@ Sayfayı, hazır bir promptla seçilen AI'da açar.
   Dil `<html lang>`'den okunur (`en-US` → `en`) — tek embed her Webflow
   locale'ine hizmet eder.
 - `{URL}` ve `{BRAND}` yer tutucuları otomatik doldurulur.
+
+## 1B. Ask AI — `[data-ai-ask]`
+
+Sayfayı değil, **markayı** sordurur: "Marveltour kimdir, ne yapar?" promptunu
+hazır şekilde seçilen AI'da açar. Footer gibi site-wide yerler için
+tasarlandı — linkler Barba container'ın dışında olsa da bağlanır.
+
+```html
+<!-- footer'da bir kez: marka + prompt (TR/EN) -->
+<span data-brand="Marveltour"
+      data-ai-ask-prompt-tr="{BRAND} ({SITE}) hakkında ne biliyorsun? Kim olduklarını, sundukları seyahat deneyimlerini ve onları farklı kılan yanları özetle. Birincil kaynak olarak {SITE} adresini kullan."
+      data-ai-ask-prompt-en="What do you know about {BRAND} ({SITE})? Give an overview of who they are, the travel experiences they offer, and what makes them stand out. Use {SITE} as the primary source."></span>
+
+<!-- footer link grubu -->
+<a data-ai-ask="chatgpt">ChatGPT'ye sor</a>
+<a data-ai-ask="claude">Claude'a sor</a>
+<a data-ai-ask="grok">Grok'a sor</a>
+<a data-ai-ask="perplexity">Perplexity'ye sor</a>
+```
+
+- Sağlayıcılar: `chatgpt | claude | grok | perplexity | google`
+- Prompt çözümü (ilk eşleşen kazanır): linkin `data-ai-ask-prompt-<lang>` →
+  linkin `data-ai-ask-prompt` → sayfa geneli `data-ai-ask-prompt-<lang>` →
+  sayfa geneli `data-ai-ask-prompt` → gömülü İngilizce şablon. Dil
+  `<html lang>`'den okunur (`en-US` → `en`).
+- Yer tutucular: `{BRAND}` (`[data-brand]`), `{SITE}` (site kökü, ör.
+  `https://marveltour.com`), `{DOMAIN}` (yalnız alan adı), `{URL}` (o anki
+  sayfa). `[data-brand]` yoksa uyarır ve marka yerine domain'i kullanır.
+- Link başına farklı prompt istersen attribute'u linkin üstüne koy:
+  `<a data-ai-ask="chatgpt" data-ai-ask-prompt-tr="{BRAND} turlarını karşılaştır…">`
+- `[data-ai-summarize]`'dan farkı: o **açık olan yazıyı** özetletir ve
+  container-scoped'dur; bu ise **markayı** sordurur ve site-wide çalışır.
 
 ## 2. Social Share — `[data-share]`
 
