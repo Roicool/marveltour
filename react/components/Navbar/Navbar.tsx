@@ -1,6 +1,12 @@
 /**
- * Navbar — v2.1.2
+ * Navbar — v2.2.0
  * Marveltour kalıcı navbar (Webflow React Code Component).
+ * v2.2.0 — Türkiye mega menüsünün sol kolonu artık CAPABILITY değil REGION:
+ *          Destinations'taki `region` Option alanı (related-capabilities
+ *          multi-reference'ı kalktı). Satırlar destinasyonların region
+ *          değerlerinden türetilir; başlık/açıklama/görsel/sıra opsiyonel
+ *          `[data-nav-regions]` statik kutusundan gelir. Region verisi yoksa
+ *          eski capability satırlarına düşer. Capabilities menüsü değişmedi.
  * v2.1.2 — CMS DOM okuması global `document` yerine ref.ownerDocument
  *          üzerinden (runtime realm farkı; fetch yedeği yine devrede).
  * v2.1.1 — Kapalı mega menünün linkleri hero üstünde tıklanabiliyordu: aktif
@@ -38,7 +44,7 @@ import {
   type ReactNode,
 } from "react";
 import { MarveltourLogotype } from "./MarveltourLogotype";
-import { useCmsSlots, type CapItem } from "./useCmsSlots";
+import { useCmsSlots, type RegionItem } from "./useCmsSlots";
 import "./Navbar.css";
 
 export type NavLink = { href: string; target?: string; preload?: string };
@@ -89,8 +95,9 @@ const DEFAULT_LINKS = {
 };
 
 type Panel = null | "dest" | "caps";
-/** Mobil drill-in görünümleri: root → dest → cap:{slug} ; root → caps */
-type MobileView = "root" | "dest" | "caps" | `cap:${string}`;
+/** Mobil drill-in görünümleri: root → dest → region:{slug} ; root → caps */
+type MobileView = "root" | "dest" | "caps" | `region:${string}`;
+const REGION_PREFIX = "region:";
 
 declare global {
   interface Window {
@@ -171,11 +178,11 @@ export function Navbar({
   /* ---- CMS ---- */
   const capsSlotRef = useRef<HTMLDivElement>(null);
   const destsSlotRef = useRef<HTMLDivElement>(null);
-  const { caps, dests, journal } = useCmsSlots(capsSlotRef, destsSlotRef, dataUrl.trim() || undefined);
+  const { caps, dests, regions, journal } = useCmsSlots(capsSlotRef, destsSlotRef, dataUrl.trim() || undefined);
 
   /* ---- State ---- */
   const [open, setOpen] = useState<Panel>(null);
-  const [activeCap, setActiveCap] = useState<string>("all");
+  const [activeRow, setActiveRow] = useState<string>("all");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileStack, setMobileStack] = useState<MobileView[]>(["root"]);
   const [scrolled, setScrolled] = useState(false);
@@ -185,7 +192,7 @@ export function Navbar({
   const closeTimer = useRef<number | undefined>(undefined);
 
   /* "All destinations" sanal satırı + aktif satır */
-  const allRow: CapItem = useMemo(
+  const allRow: RegionItem = useMemo(
     () => ({
       name: allDestinationsRowLabel,
       url: links.allDestinations,
@@ -195,12 +202,19 @@ export function Navbar({
     }),
     [allDestinationsRowLabel, links.allDestinations, allDestinationsDescription, allDestinationsImage?.src]
   );
-  const capBySlug = useCallback(
-    (slug: string): CapItem => (slug === "all" ? allRow : caps.find((c) => c.slug === slug) || allRow),
-    [allRow, caps]
+  /* Sol kolon: region satırları. Region verisi hiç gelmezse (Webflow düzenlemesi
+     henüz yayınlanmamışsa) eski capability satırlarına düşer — yayın bozulmaz. */
+  const megaRows: RegionItem[] = regions.length ? regions : caps;
+  const rows = useMemo(() => [allRow, ...megaRows], [allRow, megaRows]);
+  const rowBySlug = useCallback(
+    (slug: string): RegionItem => rows.find((r) => r.slug === slug) || allRow,
+    [rows, allRow]
   );
   const destsFor = useCallback(
-    (slug: string) => (slug === "all" ? dests : dests.filter((d) => d.caps.includes(slug))),
+    (slug: string) =>
+      slug === "all"
+        ? dests
+        : dests.filter((d) => (d.regionSlug ? d.regionSlug === slug : d.caps.includes(slug))),
     [dests]
   );
 
@@ -320,8 +334,8 @@ export function Navbar({
       ? destinationsMenuLabel
       : mobileView === "caps"
         ? capabilitiesMenuLabel
-        : mobileView.startsWith("cap:")
-          ? capBySlug(mobileView.slice(4)).name
+        : mobileView.startsWith(REGION_PREFIX)
+          ? rowBySlug(mobileView.slice(REGION_PREFIX.length)).name
           : "";
 
   const journalCard = journal ? (
@@ -332,13 +346,15 @@ export function Navbar({
     </a>
   ) : null;
 
-  const exploreBlock = (cap: CapItem, list: typeof dests) => (
+  const exploreBlock = (row: RegionItem, list: typeof dests) => (
     <>
-      <a className="mt-nav__explore-title" href={cap.url}>
-        {cap.name}
+      {/* Region Option alanının kendi sayfası yok; satıra URL verilmediyse
+          "All destinations" hedefine düşer. */}
+      <a className="mt-nav__explore-title" href={row.url || links.allDestinations}>
+        {row.name}
         <Arrow />
       </a>
-      {cap.description && <p className="mt-nav__explore-desc">{cap.description}</p>}
+      {row.description && <p className="mt-nav__explore-desc">{row.description}</p>}
       <div className="mt-nav__tags">
         {list.map((d) => (
           <a key={d.slug} className="mt-nav__tag" href={d.url}>
@@ -458,17 +474,17 @@ export function Navbar({
         <div className="mt-nav__panel-inner mt-nav__mega">
           <div className="mt-nav__col mt-nav__col--rows">
             <p className="mt-nav__eyebrow">{destinationsMenuLabel}</p>
-            {[allRow, ...caps].map((c) => (
+            {rows.map((r) => (
               <button
                 type="button"
-                key={c.slug}
-                className={"mt-nav__row" + (activeCap === c.slug ? " is-active" : "")}
-                aria-current={activeCap === c.slug ? "true" : undefined}
-                onMouseEnter={() => setActiveCap(c.slug)}
-                onFocus={() => setActiveCap(c.slug)}
-                onClick={() => setActiveCap(c.slug)}
+                key={r.slug}
+                className={"mt-nav__row" + (activeRow === r.slug ? " is-active" : "")}
+                aria-current={activeRow === r.slug ? "true" : undefined}
+                onMouseEnter={() => setActiveRow(r.slug)}
+                onFocus={() => setActiveRow(r.slug)}
+                onClick={() => setActiveRow(r.slug)}
               >
-                {c.name}
+                {r.name}
               </button>
             ))}
           </div>
@@ -477,29 +493,29 @@ export function Navbar({
           <div className="mt-nav__col mt-nav__col--explore">
             <p className="mt-nav__eyebrow">{exploreEyebrow}</p>
             <div className="mt-nav__stack">
-              {[allRow, ...caps].map((c) => (
+              {rows.map((r) => (
                 <div
-                  key={c.slug}
-                  className={"mt-nav__stack-item" + (activeCap === c.slug ? " is-active" : "")}
-                  aria-hidden={activeCap !== c.slug}
+                  key={r.slug}
+                  className={"mt-nav__stack-item" + (activeRow === r.slug ? " is-active" : "")}
+                  aria-hidden={activeRow !== r.slug}
                 >
-                  {exploreBlock(c, destsFor(c.slug))}
+                  {exploreBlock(r, destsFor(r.slug))}
                 </div>
               ))}
             </div>
           </div>
           <div className="mt-nav__col mt-nav__col--media">
             <div className="mt-nav__stack mt-nav__stack--media">
-              {[allRow, ...caps].map((c) => {
-                const src = c.image || allRow.image;
+              {rows.map((r) => {
+                const src = r.image || allRow.image;
                 return src ? (
                   <img
-                    key={c.slug}
-                    className={"mt-nav__media mt-nav__stack-item" + (activeCap === c.slug ? " is-active" : "")}
+                    key={r.slug}
+                    className={"mt-nav__media mt-nav__stack-item" + (activeRow === r.slug ? " is-active" : "")}
                     src={src}
                     alt=""
                     loading="lazy"
-                    aria-hidden={activeCap !== c.slug}
+                    aria-hidden={activeRow !== r.slug}
                   />
                 ) : null;
               })}
@@ -563,33 +579,32 @@ export function Navbar({
           {mobileView === "dest" && (
             <div className="mt-nav__mlist">
               <p className="mt-nav__eyebrow">{destinationsMenuLabel}</p>
-              <button type="button" className="mt-nav__mrow" onClick={() => pushView("cap:all")}>
-                {allDestinationsRowLabel}
-                <Caret size={18} dir="right" />
-              </button>
-              {caps.map((c) => (
-                <button type="button" key={c.slug} className="mt-nav__mrow" onClick={() => pushView(`cap:${c.slug}`)}>
-                  {c.name}
+              {rows.map((r) => (
+                <button
+                  type="button"
+                  key={r.slug}
+                  className="mt-nav__mrow"
+                  onClick={() => pushView(`${REGION_PREFIX}${r.slug}`)}
+                >
+                  {r.name}
                   <Caret size={18} dir="right" />
                 </button>
               ))}
             </div>
           )}
 
-          {mobileView.startsWith("cap:") && (
-            <div className="mt-nav__mexplore">
-              <p className="mt-nav__eyebrow">{exploreEyebrow}</p>
-              {exploreBlock(capBySlug(mobileView.slice(4)), destsFor(mobileView.slice(4)))}
-              {(capBySlug(mobileView.slice(4)).image || allRow.image) && (
-                <img
-                  className="mt-nav__media mt-nav__media--mobile"
-                  src={capBySlug(mobileView.slice(4)).image || allRow.image}
-                  alt=""
-                  loading="lazy"
-                />
-              )}
-            </div>
-          )}
+          {mobileView.startsWith(REGION_PREFIX) &&
+            (() => {
+              const row = rowBySlug(mobileView.slice(REGION_PREFIX.length));
+              const src = row.image || allRow.image;
+              return (
+                <div className="mt-nav__mexplore">
+                  <p className="mt-nav__eyebrow">{exploreEyebrow}</p>
+                  {exploreBlock(row, destsFor(row.slug))}
+                  {src && <img className="mt-nav__media mt-nav__media--mobile" src={src} alt="" loading="lazy" />}
+                </div>
+              );
+            })()}
 
           {mobileView === "caps" && (
             <div className="mt-nav__mlist">

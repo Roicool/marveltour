@@ -55,7 +55,8 @@ export default declareComponent(Navbar, {
     allDestinationsImage: props.Image({
       name: "All destinations image",
       group: G_MEGA,
-      tooltip: "Sağ kolondaki görsel; 'All destinations' satırı aktifken. Capability satırlarında CMS görseli kullanılır.",
+      tooltip:
+        "Sağ kolondaki görsel; 'All destinations' satırı aktifken. Region satırlarında sayfadaki [data-nav-regions] kutusunun görseli, o da yoksa bu görsel kullanılır.",
     }),
     journalEyebrow: props.Text({ name: "Journal eyebrow", group: G_MEGA, defaultValue: "Latest from the Journal" }),
 
@@ -68,14 +69,15 @@ export default declareComponent(Navbar, {
     destinationsList: props.Slot({
       name: "Destinations list",
       group: G_CMS,
-      tooltip: "Genelde BOŞ bırakılır; listeler sayfadaki [data-nav-destinations] kutusundan okunur.",
+      tooltip:
+        "Genelde BOŞ bırakılır; listeler sayfadaki [data-nav-destinations] kutusundan okunur. Mega menünün sol kolonu her item'ın data-region (Region Option alanı) değerinden türetilir.",
     }),
     dataUrl: props.Text({
       name: "Data page URL",
       group: G_CMS,
       defaultValue: "/",
       tooltip:
-        "CMS kutularını ([data-nav-capabilities] / [data-nav-destinations] / [data-nav-journal]) içeren sayfa; component bu sayfanın HTML'ini fetch edip okur. Varsayılan ana sayfa (/). Boş bırakılırsa mevcut sayfa okunur.",
+        "CMS kutularını ([data-nav-capabilities] / [data-nav-destinations] / [data-nav-regions] / [data-nav-journal]) içeren sayfa; component bu sayfanın HTML'ini fetch edip okur. Varsayılan ana sayfa (/). Boş bırakılırsa mevcut sayfa okunur.",
     }),
 
     // --- Davranış ---

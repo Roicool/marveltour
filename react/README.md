@@ -80,6 +80,7 @@ başlar, scroll'da / panel açıkken off-white zemine oturur. §0 etkileşim-gü
 |---|---|---|
 | `links.{…}`, `labels.{…}` nesneleri | Düz prop'lar, Designer'da gruplar | Webflow prop'ları iç içe nesne desteklemez |
 | `capabilities[]`, `destinations[]` dizi prop'ları | Sayfadaki gizli kutular (`[data-nav-*]`) DOM'dan / HTML fetch ile okunur | Dizi/CMS prop tipi yok; Code Functions kapalı; API token client'a gömülemez; component içine nested Collection List konamaz |
+| Mega menü sol kolonu = Capabilities, filtre `related-capabilities` multi-reference | Sol kolon = Destinations'ın **`region` Option alanı**; filtre `destination.region === satır` | Multi-reference kaldırıldı, region Option alanına geçildi. Option alanının koleksiyonu (dolayısıyla açıklama/görsel/sıra alanı) olmadığı için satır metası `[data-nav-regions]` statik kutusundan gelir |
 | `activePath` prop'u | `barba-init.js` v1.6.0 `marveltour:page` / `marveltour:leave` + `popstate` | Kalıcı component'e dışarıdan prop basılamaz |
 | `body.mt-lock` class'ı | `document.body.style.overflow` inline | Shadow DOM CSS'i `body`'ye ulaşamaz |
 
@@ -93,9 +94,20 @@ başlar, scroll'da / panel açıkken off-white zemine oturur. §0 etkileşim-gü
      Item: **Link Block** (link → capability sayfası, metin → `name`, custom attribute
      `data-cap` → `slug`) + açıklama için Text Block (`data-cap-desc`, CMS description alanı)
      + Image (`data-cap-image` ya da item'daki ilk görsel; mega menünün sağ kolonu).
-   - `<div data-nav-destinations>` → Destinations Collection List (sort: `sort-order` asc).
-     Item: Link Block (`data-dest` → `slug`, metin → `name`) + `related-capabilities` için
-     **nested Collection List**, nested item'a `data-cap` → capability `slug`.
+   - `<div data-nav-destinations>` → Destinations Collection List (sort: `region` asc, sonra
+     `sort-order` asc). Item: Link Block (`data-dest` → `slug`, metin → `name`, custom attribute
+     **`data-region` → `Region` Option alanı**). Option alanları custom attribute value'suna
+     bağlanabiliyor; mega menünün sol kolonu bu değerden türetilir. (Alternatif: item içinde
+     `data-dest-region` Text Block.) Eski `related-capabilities` nested list'i hâlâ yedek olarak
+     okunuyor — region verisi gelmezse menü ona düşer.
+   - `<div data-nav-regions>` → **statik kutu, koleksiyon DEĞİL.** Region Option alanı açıklama
+     ve görsel taşıyamadığı için satır metası buradan gelir. Her region için bir div:
+     `data-region` → region adı ya da slug (iki taraf da slug'lanıp eşleştirilir, Türkçe
+     karakterler dâhil), içinde opsiyonel Link (satırın Explore hedefi; yoksa
+     `All destinations` linkine düşer), `data-region-name` (başlık; yoksa link metni),
+     `data-region-desc` (açıklama), `data-region-image` ya da ilk Image (sağ kolon görseli).
+     **Sıra bu kutudan gelir**; kutuda olmayan bir region gizlenmez, listenin sonuna eklenir.
+     Kutu hiç yoksa satırlar yalnız isim + destinasyon tag'leriyle çalışır.
    - `<div data-nav-journal>` → Journals Collection List (**limit 1**, tarih desc). Item: Link
      Block (`data-journal`, link → yazı, metin → başlık) + Image (kapak) + opsiyonel Text
      (`data-journal-meta`, örn. kategori · tarih). Capabilities menüsünün sağ kolonu.
@@ -109,7 +121,7 @@ başlar, scroll'da / panel açıkken off-white zemine oturur. §0 etkileşim-gü
    `/destinations`, `/contact-us` (spec §9 açık kararlar).
 
 **Teşhis:** yayında Console'da host element üzerinde `__mtNav` (okuma sayısı, kaynak,
-caps/dests/journal sayıları, hatalar):
+caps/dests/regions/journal sayıları, hatalar):
 `[...document.querySelectorAll('*')].find(e=>e.shadowRoot?.querySelector('.mt-nav')).__mtNav`
 
 ### Hero Carousel — `react/components/HeroCarousel/`
