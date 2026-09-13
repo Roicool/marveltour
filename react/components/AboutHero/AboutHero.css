@@ -25,6 +25,7 @@
 
   position: relative;
   width: 100%;
+  padding-inline: var(--mt-ah-pad-x);
   color: var(--mt-ah-fg);
   background: transparent;
   font: inherit;
@@ -37,13 +38,20 @@
   --mt-ah-btn-arrow: var(--mt-ah-accent-fg);
 }
 
+/* Sayfa container'ı: değer sitenin RC token'ından gelir (custom property'ler
+   Shadow DOM'a sızar). Token akışkandır (clamp + --layout--fluid-min/max);
+   buradaki sayı yalnız token hiç tanımlı değilse devreye giren üst sınırdır. */
+/* Sitedeki yapı: önce section kenar boşluğu, sonra container.
+   Padding'i container kutusunun İÇİNE koyarsak içerik kenarı kayıyor. */
 .mt-ah__inner {
   width: 100%;
   max-width: var(--mt-ah-container, 80rem);
   margin-inline: auto;
-  padding-inline: var(--mt-ah-pad-x);
   padding-block: var(--mt-ah-pad-y);
 }
+.mt-ah--full .mt-ah__inner { max-width: none; }
+.mt-ah--bleed .mt-ah__inner { max-width: none; }
+.mt-ah--bleed { padding-inline: 0; }
 .mt-ah__wrap {
   display: flex;
   flex-flow: column;

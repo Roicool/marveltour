@@ -62,6 +62,14 @@ export default declareComponent(AboutHero, {
       tooltip:
         "cover: karo oranı referans mozaikteki gibi sabit, fotoğraf kırpılarak oturur (mozaik her fotoğrafla aynı durur). natural: fotoğrafın kendi en-boy oranı kullanılır.",
     }),
+    container: props.Variant({
+      name: "Container",
+      group: G_LOOK,
+      defaultValue: "2xl",
+      options: ["lg", "xl", "2xl", "full", "bleed"],
+      tooltip:
+        "Sayfa container'ı (RC --container--* token'ı): section diğer section'larla aynı hizada durur. full: container yok, yalnız kenar boşluğu. bleed: tam kenara dayanır.",
+    }),
     align: props.Variant({ name: "Align", group: G_LOOK, defaultValue: "center", options: ["center", "left"] }),
     colorMode: props.Variant({ name: "Color mode", group: G_LOOK, defaultValue: "light", options: ["light", "dark"], tooltip: "dark: açık zemin üstü metin (koyu arka planlı section)." }),
     headerWidth: props.Number({ name: "Header width (rem)", group: G_LOOK, defaultValue: 49.875, min: 20, max: 80, decimals: 3 }),
