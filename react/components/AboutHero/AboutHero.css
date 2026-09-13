@@ -155,18 +155,25 @@
 }
 
 .mt-ah__item { position: absolute; }
-.mt-ah__photo-inner { width: 100%; }
+
+/* Sarmalayıcı kırpar, içindeki görsel kayar (parallax.js preset'i):
+   hareket layout'u etkilemez, yalnız transform animasyonu olur. */
+.mt-ah__photo-inner {
+  width: 100%;
+  border-radius: var(--mt-ah-radius);
+  overflow: clip;
+}
 .mt-ah__photo {
   display: block;
   width: 100%;
-  border-radius: var(--mt-ah-radius);
+  border-radius: inherit;
 }
 
 /* Karo en-boy oranları — referans mozaikten ölçüldü. Fotoğrafın kendi oranı
    ne olursa olsun mozaik bozulmasın diye karo oranı sabit, görsel cover. */
+.mt-ah--cover .mt-ah__photo-inner { aspect-ratio: var(--mt-ah-ar, 1); }
 .mt-ah--cover .mt-ah__photo {
-  aspect-ratio: var(--mt-ah-ar, 1);
-  height: auto;
+  height: 100%;
   object-fit: cover;
   object-position: center;
 }
@@ -242,8 +249,14 @@
   .mt-ah__item--5, .mt-ah__item--8 { top: 67.2%; }
 }
 
+/* ── Parallax (parallax.ts kurar) ──
+   Kayan görselin üstte sabit kalan karoyla çakışmaması için sarmalayıcı
+   compositor katmanı alır; hareket yalnız transform. */
+.mt-ah--parallax .mt-ah__photo { will-change: transform; }
+
 /* ── Erişilebilirlik ── */
 @media (prefers-reduced-motion: reduce) {
+  .mt-ah--parallax .mt-ah__photo { will-change: auto; transform: none; }
   .mt-ah--reveal .mt-ah__photo-inner,
   .mt-ah--reveal.is-in .mt-ah__photo-inner {
     animation: none;

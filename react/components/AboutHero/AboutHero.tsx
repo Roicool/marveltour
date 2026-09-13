@@ -1,5 +1,8 @@
 /**
- * AboutHero — v1.0.1
+ * AboutHero — v1.1.0
+ * v1.1.0 — Fotoğraflarda projenin parallax preset'i (parallax.ts;
+ *          js/animations/parallax.js portu): karo kırpar, içindeki fotoğraf
+ *          scroll'la kayar. Doz karo derinliğine göre ölçeklenir.
  * v1.0.1 — Karo en-boy oranları referanstan ölçülüp sabitlendi (Photo fit
  *          cover); kaynaktaki px max-width sınırları kaldırıldı. Mozaik artık
  *          hangi fotoğraf konursa konsun referanstaki şekilde duruyor.
@@ -20,6 +23,8 @@
  * Barba container'ının DIŞINDA ya da data-barba-prevent sayfalarda kullan.
  */
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { acquireGsap } from "../HeroCarousel/engine";
+import { createCollageParallax, depthFactor, type CollageParallaxApi, type ParallaxDose } from "./parallax";
 import "./AboutHero.css";
 
 export type NavLink = { href: string; target?: string; preload?: string };
@@ -56,6 +61,8 @@ export interface AboutHeroProps {
   revealTrigger?: "inView" | "load";
   duration?: number; // ms
   stagger?: number; // ms
+  parallax?: boolean;
+  parallaxDose?: ParallaxDose;
   attributes?: Record<string, string>;
 }
 
@@ -89,6 +96,8 @@ export function AboutHero({
   revealTrigger = "inView",
   duration = 650,
   stagger = 100,
+  parallax = true,
+  parallaxDose = "soft",
   attributes,
 }: AboutHeroProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -146,6 +155,60 @@ export function AboutHero({
     };
   }, [reveal, revealTrigger]);
 
+  // ── Parallax: karo kırpar, içindeki görsel kayar (js/animations/parallax.js preset'i)
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !parallax) return;
+
+    const doc = root.ownerDocument;
+    const win = doc?.defaultView;
+    if (!doc || !win) return;
+    if (typeof win.matchMedia === "function" && win.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let api: CollageParallaxApi | null = null;
+    let cancelled = false;
+    let onLoad: (() => void) | null = null;
+
+    (async () => {
+      let libs: { gsap: any; ScrollTrigger?: any };
+      try {
+        libs = await acquireGsap(doc);
+      } catch (e) {
+        return; // GSAP yok → fotoğraflar sabit, mozaik yine doğru
+      }
+      if (cancelled || !libs.ScrollTrigger) return;
+
+      const items: Array<{ wrap: HTMLElement; media: HTMLElement; depth: number }> = [];
+      const wraps = root.querySelectorAll<HTMLElement>(".mt-ah__item");
+      wraps.forEach((item) => {
+        const wrap = item.querySelector<HTMLElement>(".mt-ah__photo-inner");
+        const media = item.querySelector<HTMLElement>(".mt-ah__photo");
+        if (!wrap || !media) return;
+        const n = Number(item.getAttribute("data-mt-ah-n") || 0);
+        items.push({ wrap, media, depth: depthFactor(ORDER[n] ?? 0) });
+      });
+
+      api = createCollageParallax({ items, dose: parallaxDose, gsap: libs.gsap, ScrollTrigger: libs.ScrollTrigger, win });
+
+      // Görseller yüklendikçe karo yükseklikleri kesinleşir → ölçümü tazele
+      if (api) {
+        const refresh = api.refresh;
+        onLoad = () => refresh();
+        win.addEventListener("load", onLoad);
+        root.querySelectorAll("img").forEach((img) => {
+          if (!img.complete) img.addEventListener("load", onLoad as () => void, { once: true });
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (onLoad) win.removeEventListener("load", onLoad);
+      if (api) api.destroy();
+      api = null;
+    };
+  }, [parallax, parallaxDose, fit]);
+
   const primaryHref = primaryLink?.href && primaryLink.href !== "#" ? primaryLink.href : "";
   const secondaryHref = secondaryLink?.href && secondaryLink.href !== "#" ? secondaryLink.href : "";
   const hasPrimary = !!primaryLabel.trim();
@@ -164,6 +227,7 @@ export function AboutHero({
     fit === "cover" ? "mt-ah--cover" : "mt-ah--natural",
     colorMode === "dark" ? "mt-ah--dark" : "mt-ah--light",
     reveal ? "mt-ah--reveal" : "",
+    parallax ? "mt-ah--parallax" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -217,7 +281,7 @@ export function AboutHero({
                 if (!img?.src) return null;
                 const itemStyle: CSSProperties = { ["--mt-ah-i" as string]: String(ORDER[n] ?? i) };
                 return (
-                  <div className={`mt-ah__item mt-ah__item--${n}`} key={n}>
+                  <div className={`mt-ah__item mt-ah__item--${n}`} data-mt-ah-n={n} key={n}>
                     <div className="mt-ah__photo-inner" style={itemStyle}>
                       <img className={`mt-ah__photo mt-ah__photo--${n}`} src={img.src} alt={img.alt || ""} loading="eager" decoding="async" />
                     </div>

@@ -204,9 +204,23 @@ her adım `Stagger` kadar gecikir. JS'in tek işi section görüş alanına giri
 koymak (`IntersectionObserver`; yoksa ya da `Reveal trigger = load` ise hemen). GSAP gerekmez.
 `prefers-reduced-motion` → animasyon kapalı, her şey statik görünür.
 
+**Parallax** (`parallax.ts`): `js/animations/parallax.js` v1.1.0 preset'inin component içi portu —
+vanilla modül sayfa seviyesinde `[data-parallax]` tarar, Shadow DOM'un içine giremez. Davranış
+birebir: karo sarmalayıcısı hareketi kırpar (layout kaymaz, sıfır CLS), içindeki fotoğraf
+`yPercent -shift → +shift` ile kayar (`ease: none`, `scrub`, `start: top bottom`,
+`end: bottom top`, `refreshPriority: -1`), medya drift'i örtsün diye
+`scale = 1 + (shift*2 + 1)/100` ile büyütülür. Dozlar preset'ten: soft 6 / medium 12 / strong 20,
+küçük ekranda (≤ 47.9375em) yarılanır, `prefers-reduced-motion`'da hiç kurulmaz.
+
+Tek fark: burada tek medya değil 10 karo var. Hepsi aynı dozla kayarsa mozaik tek parça gibi
+hareket eder, o yüzden her karo reveal sırasındaki derinliğiyle ölçeklenmiş doz alır —
+merkez ×0.60, en dış karo ×1.14. GSAP sayfanın `window.gsap`'inden alınır (`acquireGsap`);
+ScrollTrigger yoksa fotoğraflar sabit kalır, mozaik yine doğru durur.
+
 **Prop'lar:** Content (heading **slot**, body, extra actions slot), Buttons (primary/secondary
-etiket + link), Photos (Photo 1–10; boş bırakılan karo hiç render edilmez), Look (align, color
-mode, header width rem, photo radius), Motion (reveal, trigger inView/load, duration, stagger).
+etiket + link), Photos (Photo 1–10; boş bırakılan karo hiç render edilmez), Look (photo fit,
+align, color mode, header width rem, photo radius), Motion (reveal, trigger inView/load,
+duration, stagger, parallax, parallax dose).
 CSS ile ezilebilir: `--mt-ah-px`, `--mt-ah-py`, `--mt-ah-wrap-gap`, `--mt-ah-container`,
 `--mt-ah-body-size`.
 
