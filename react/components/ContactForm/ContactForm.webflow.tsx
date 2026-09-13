@@ -60,7 +60,6 @@ export default declareComponent(ContactForm, {
       tooltip: "Action URL boşsa: POST https://webflow.com/api/v1/form/{siteId}. Gönderiler Site Settings → Forms'a düşer (resmi belgelenmemiş uç).",
     }),
     formName: props.Text({ name: "Form name", group: G_SUBMIT, defaultValue: "Contact", tooltip: "Webflow Forms listesinde görünen ad." }),
-    redirectUrl: props.Text({ name: "Redirect URL (optional)", group: G_SUBMIT, defaultValue: "", tooltip: "Başarılı gönderimde yönlendirme, örn. /thank-you. Boşsa yerinde teşekkür mesajı." }),
 
     // --- Görünüm ---
     inverted: props.Boolean({ name: "Inverted (light text)", group: G_LOOK, defaultValue: false, trueLabel: "Light", falseLabel: "Dark" }),
