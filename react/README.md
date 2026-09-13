@@ -120,6 +120,53 @@ başlar, scroll'da / panel açıkken off-white zemine oturur. §0 etkileşim-gü
 5. Linkler boş bırakılırsa default yollar: `/`, `/how-we-work`, `/journals`, `/about`,
    `/destinations`, `/contact-us` (spec §9 açık kararlar).
 
+**Region satırları — hazır içerik.** Aşağıdaki blok `[data-nav-regions]` kutusunun
+doldurulmuş hâli: CMS'teki altı region, Destinations hub sırasıyla (her region'ın en küçük
+`sort-order`'ı: Marmara 1 · Central Anatolia 2 · Aegean 3 · Mediterranean 4 · Eastern & SE 7 ·
+Black Sea 8). Page Wrapper'a `display:none` bir **HTML Embed** olarak yapıştırılabilir;
+görsel `src`'leri Webflow Assets URL'leriyle değiştirilir (boş bırakılırsa satır
+`All destinations` görseline düşer). Metinler marka sesine göre yazıldı (§6: az kelime,
+kanıtlanmamış sıfat yok, B2C dili yok).
+
+```html
+<div data-nav-regions style="display:none">
+  <div data-region="Marmara Region">
+    <div data-region-desc>Istanbul, Bursa and the Dardanelles — the arrival point for most programmes, and the first day that has to work.</div>
+    <img data-region-image src="">
+  </div>
+  <div data-region="Central Anatolia">
+    <div data-region-desc>Cappadocia, Konya and Ankara across the plateau: long transfers, early light, and the logistics that hold them together.</div>
+    <img data-region-image src="">
+  </div>
+  <div data-region="Aegean Region">
+    <div data-region-desc>Seven destinations between Ayvalık and Bodrum: classical cities, faith routes and the coast on a single overland line.</div>
+    <img data-region-image src="">
+  </div>
+  <div data-region="Mediterranean Region">
+    <div data-region-desc>Antalya, Antioch and the St. Paul route — the south coast where classical touring and pilgrimage share one road.</div>
+    <img data-region-image src="">
+  </div>
+  <div data-region="Eastern &amp; Southeastern Anatolia">
+    <div data-region-desc>Upper Mesopotamia and the eastern highlands: long distances, early civilisations, ground that rewards careful scheduling.</div>
+    <img data-region-image src="">
+  </div>
+  <div data-region="Black Sea">
+    <div data-region-desc>Green valleys and the coast road east — the quieter north, usually a second or third visit to Türkiye.</div>
+    <img data-region-image src="">
+  </div>
+</div>
+```
+
+Satır başlıkları CMS'teki Option etiketleridir; başka bir başlık istenirse bloğa
+`<div data-region-name>…</div>` eklenir. Region'ların kendi landing sayfası yok, o yüzden
+satır linki verilmedi — başlık `All destinations`'a gider. İleride `/destinations` hub'ı
+region filtresi alırsa bloğa `<a href="…">` eklemek yeterli.
+
+> **Binding kontrolü:** Webflow'un Option alanını custom attribute'a bastığında **etiketi**
+> mi yoksa option **id**'sini mi yazdığını ilk publish'te doğrula (Console: `__mtNav.regions`
+> ya da menüdeki satır adları). Id yazıyorsa satırlarda hex görürsün; bu durumda bu bloktaki
+> `data-region` değerlerini o id'lerle değiştir — açıklamalar ve sıra yine bu bloktan gelir.
+
 **Teşhis:** yayında Console'da host element üzerinde `__mtNav` (okuma sayısı, kaynak,
 caps/dests/regions/journal sayıları, hatalar):
 `[...document.querySelectorAll('*')].find(e=>e.shadowRoot?.querySelector('.mt-nav')).__mtNav`
