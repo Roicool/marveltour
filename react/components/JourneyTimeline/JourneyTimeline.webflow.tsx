@@ -63,6 +63,14 @@ export default declareComponent(JourneyTimeline, {
 
     // --- Görünüm ---
     colorMode: props.Variant({ name: "Color mode", group: G_LOOK, defaultValue: "dark", options: ["dark", "light"], tooltip: "dark: burgundy zemin, off-white metin. light: off-white zemin, koyu metin." }),
+    container: props.Variant({
+      name: "Container",
+      group: G_LOOK,
+      defaultValue: "xl",
+      options: ["lg", "xl", "2xl", "full", "bleed"],
+      tooltip:
+        "Sayfa container'ı (RC --container--* token'ı): panel diğer section'larla aynı hizada durur. full: container yok, yalnız kenar boşluğu. bleed: tam kenara dayanır.",
+    }),
     attributes: props.Attributes({ name: "Attributes", group: G_LOOK }),
   },
 });

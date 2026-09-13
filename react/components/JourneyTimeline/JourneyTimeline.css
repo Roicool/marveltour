@@ -14,17 +14,31 @@
   --jt-card-bg: var(--neutral--off-white, #f5f5ec);
   --jt-card-fg: var(--color-text--primary, #1a1a18);
   --jt-card-muted: color-mix(in srgb, var(--jt-card-fg) 66%, transparent);
+  /* Sayfa container'ı: RC token'ı (Shadow DOM'a sızar), yoksa 80rem */
+  --jt-container: var(--container--xl, 80rem);
   --jt-pad-x: var(--jt-px, clamp(1.25rem, 5vw, 4rem));
-  --jt-radius: var(--jt-corner, 1rem);
+  --jt-py: var(--jt-pad-y, clamp(3rem, 8vh, 6rem));
+  --jt-panel-pad: var(--jt-panel-px, clamp(1.5rem, 4vw, 4rem));
+  --jt-radius: var(--jt-corner, var(--radius--2xl, 1rem));
   --jt-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --jt-move: 800ms;                 /* orbit dönüşü — kaynakla aynı */
   --jt-rotation: 0deg;
 
   position: relative;
   width: 100%;
+  padding-block: var(--jt-py);
+  padding-inline: var(--jt-pad-x);
   color: var(--jt-fg);
   font: inherit;
 }
+/* Container: panel sayfanın diğer section'larıyla aynı hizada dursun */
+.mt-jt__shell {
+  width: 100%;
+  max-width: var(--jt-container);
+  margin-inline: auto;
+}
+.mt-jt--full { --jt-container: none; }
+.mt-jt--bleed { padding-inline: 0; }
 .mt-jt--light {
   --jt-bg: var(--neutral--off-white, #f5f5ec);
   --jt-fg: var(--color-text--primary, #1a1a18);
@@ -47,7 +61,7 @@
   flex-flow: column;
   gap: 0.75rem;
   max-width: 36.625rem;
-  padding: 6rem var(--jt-pad-x) 0;
+  padding: 6rem var(--jt-panel-pad) 0;
 }
 .mt-jt__eyebrow {
   margin: 0;
@@ -262,11 +276,11 @@
 /* ── Tablet & mobil: yörünge akışta, daha alçak şerit ── */
 @media (max-width: 61.9375rem) {
   .mt-jt__wrap { gap: 3.75rem; padding-bottom: 2.5rem; min-height: 0; }
-  .mt-jt__content { padding: 3rem var(--jt-pad-x) 0; max-width: none; }
+  .mt-jt__content { padding: 3rem var(--jt-panel-pad) 0; max-width: none; }
   /* Şerit tam genişlik: yan yıllar panel kenarına takılmasın (kaynakta da
      collage gibi taşar). Yatay boşluk yalnız kartlara. */
   .mt-jt__animation { gap: 3rem; }
-  .mt-jt__cards { max-width: 19rem; margin-inline: var(--jt-pad-x); width: auto; }
+  .mt-jt__cards { max-width: 19rem; margin-inline: var(--jt-panel-pad); width: auto; }
   .mt-jt__card { padding: 0.5rem; border-radius: 0.5rem; }
   .mt-jt__card-inner { gap: 0.5rem; padding: 1.125rem 1rem; border-radius: 0.5rem; }
 }
