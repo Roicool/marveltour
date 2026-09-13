@@ -39,8 +39,7 @@
 
 .mt-ah__inner {
   width: 100%;
-  /* Sayfa container'ı: RC token'ı (Shadow DOM'a sızar), yoksa 80rem */
-  max-width: var(--mt-ah-container, var(--container--xl, 80rem));
+  max-width: var(--mt-ah-container, 80rem);
   margin-inline: auto;
   padding-inline: var(--mt-ah-pad-x);
   padding-block: var(--mt-ah-pad-y);

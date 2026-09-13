@@ -66,7 +66,7 @@ export default declareComponent(JourneyTimeline, {
     container: props.Variant({
       name: "Container",
       group: G_LOOK,
-      defaultValue: "xl",
+      defaultValue: "2xl",
       options: ["lg", "xl", "2xl", "full", "bleed"],
       tooltip:
         "Sayfa container'ı (RC --container--* token'ı): panel diğer section'larla aynı hizada durur. full: container yok, yalnız kenar boşluğu. bleed: tam kenara dayanır.",

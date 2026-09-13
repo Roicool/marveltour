@@ -1,5 +1,7 @@
 /**
- * JourneyTimeline — v1.1.0
+ * JourneyTimeline — v1.1.1
+ * v1.1.1 — Container varsayılanı 2xl; fallback sayıları sitenin gerçek
+ *          ölçeğine göre düzeltildi (2xl üst sınırı 86rem).
  * v1.1.0 — Section artık sayfa container'ını kullanıyor (RC --container--*
  *          token'ı); panel diğer section'larla aynı hizada durur. Dikey
  *          section boşluğu ve panel içi yatay boşluk ayrı token'larda.
@@ -102,7 +104,7 @@ export function JourneyTimeline({
   startAt = "first",
 
   colorMode = "dark",
-  container = "xl",
+  container = "2xl",
   attributes,
 }: JourneyTimelineProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -251,10 +253,11 @@ export function JourneyTimeline({
     .filter(Boolean)
     .join(" ");
   // Sayfa container'ı RC token'ından; "full"/"bleed" sınıfla ezer
-  const sectionStyle: CSSProperties =
-    container === "lg" || container === "xl" || container === "2xl"
-      ? { ["--jt-container" as string]: `var(--container--${container}, ${container === "lg" ? "64rem" : container === "xl" ? "80rem" : "96rem"})` }
-      : {};
+  // Değer sitenin RC token'ından; buradaki sayı token hiç yoksa devreye giren üst sınır.
+  const CONTAINER_FALLBACK: Record<string, string> = { lg: "64rem", xl: "80rem", "2xl": "86rem" };
+  const sectionStyle: CSSProperties = CONTAINER_FALLBACK[container]
+    ? { ["--jt-container" as string]: `var(--container--${container}, ${CONTAINER_FALLBACK[container]})` }
+    : {};
   const orbitStyle: CSSProperties = { ["--mt-jt-rotation" as string]: `${rotation}deg` };
 
   return (
