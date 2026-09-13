@@ -1,0 +1,239 @@
+/* ============================================================
+   Marveltour — AboutHero.css v1.0.0
+   glean.com/about "section-hero-about" portu: ortalanmış başlık bloğu +
+   10 fotoğraflı collage, merkezden dışa açılan PURE CSS reveal.
+   Geometri (yüzdeler, max-width'ler, breakpoint'ler) kaynaktan birebir.
+   Token'lar RC/BRAND (custom property'ler Shadow DOM'a sızar).
+   ============================================================ */
+:host { display: block; }
+.mt-ah, .mt-ah * { box-sizing: border-box; }
+
+.mt-ah {
+  --mt-ah-fg: var(--color-text--primary, #1a1a18);
+  --mt-ah-fg-muted: var(--color-text--secondary, color-mix(in srgb, var(--mt-ah-fg) 66%, transparent));
+  --mt-ah-accent: var(--brand--primary, #2b0a1c);
+  --mt-ah-accent-fg: var(--color-text--inverted, #f5f5ec);
+  --mt-ah-btn-arrow: var(--mt-ah-accent-fg);
+  --mt-ah-pad-x: var(--mt-ah-px, clamp(1.25rem, 5vw, 5rem));
+  --mt-ah-pad-y: var(--mt-ah-py, clamp(3.5rem, 10vh, 7.5rem));
+  --mt-ah-gap: var(--mt-ah-wrap-gap, clamp(2.5rem, 6vw, 4.5rem));
+  --mt-ah-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mt-ah-duration: 650ms;
+  --mt-ah-step: 100ms;
+  --mt-ah-header-w: 49.875rem;
+  --mt-ah-radius: 12px;
+
+  position: relative;
+  width: 100%;
+  color: var(--mt-ah-fg);
+  background: transparent;
+  font: inherit;
+  overflow: hidden;
+}
+.mt-ah--dark {
+  --mt-ah-fg: var(--color-text--inverted, #f5f5ec);
+  --mt-ah-accent: var(--color-text--inverted, #f5f5ec);
+  --mt-ah-accent-fg: var(--neutral--950, #111110);
+  --mt-ah-btn-arrow: var(--mt-ah-accent-fg);
+}
+
+.mt-ah__inner {
+  width: 100%;
+  max-width: var(--mt-ah-container, 80rem);
+  margin-inline: auto;
+  padding-inline: var(--mt-ah-pad-x);
+  padding-block: var(--mt-ah-pad-y);
+}
+.mt-ah__wrap {
+  display: flex;
+  flex-flow: column;
+  gap: var(--mt-ah-gap);
+}
+
+/* ── Başlık bloğu (başlık SLOT: Webflow'daki gerçek H1) ── */
+.mt-ah__header {
+  display: flex;
+  flex-flow: column;
+  gap: var(--mt-ah-header-gap, 1rem);
+  max-width: var(--mt-ah-header-w);
+  margin-inline: auto;
+  width: 100%;
+  text-align: center;
+}
+.mt-ah--left .mt-ah__header { margin-inline: 0; text-align: left; }
+
+.mt-ah__heading { display: block; }
+.mt-ah__heading > * { margin: 0; }
+
+.mt-ah__body {
+  margin: 0;
+  color: var(--mt-ah-fg-muted);
+  font-size: var(--mt-ah-body-size, clamp(1rem, 1.2vw, 1.1875rem));
+  line-height: 1.55;
+}
+
+/* ── Butonlar ── */
+.mt-ah__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.75rem;
+}
+.mt-ah--left .mt-ah__actions { justify-content: flex-start; }
+
+.mt-ah__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  line-height: 1;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.mt-ah__btn--primary {
+  padding: 0.875rem 1.5rem;
+  border-radius: 999px;
+  background: var(--mt-ah-accent);
+  color: var(--mt-ah-accent-fg);
+  overflow: hidden;
+}
+/* Metin maskesi: hover'da iki kopyalı track yukarı kayar */
+.mt-ah__btn-mask {
+  display: block;
+  overflow: hidden;
+  height: 1em;
+}
+.mt-ah__btn-track {
+  display: flex;
+  flex-flow: column;
+  transform: translateY(0);
+  transition: transform 420ms var(--mt-ah-ease);
+}
+.mt-ah__btn-line { display: block; height: 1em; }
+.mt-ah__btn--primary:hover .mt-ah__btn-track,
+.mt-ah__btn--primary:focus-visible .mt-ah__btn-track { transform: translateY(-1em); }
+
+.mt-ah__btn--secondary { color: var(--mt-ah-fg); }
+.mt-ah__btn-icon {
+  display: inline-flex;
+  width: 1.375rem;
+  height: 1.375rem;
+  color: var(--mt-ah-accent);
+  transition: transform 380ms var(--mt-ah-ease);
+}
+.mt-ah__btn--secondary:hover .mt-ah__btn-icon,
+.mt-ah__btn--secondary:focus-visible .mt-ah__btn-icon { transform: translateX(4px); }
+.mt-ah__btn-text {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 380ms var(--mt-ah-ease);
+}
+.mt-ah__btn--secondary:hover .mt-ah__btn-text,
+.mt-ah__btn--secondary:focus-visible .mt-ah__btn-text { background-size: 100% 1px; }
+.mt-ah__btn:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ── Collage ── */
+.mt-ah__collage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-inline: 1.3rem;
+}
+.mt-ah__grid {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3;
+}
+
+.mt-ah__item { position: absolute; }
+.mt-ah__photo-inner { width: 100%; }
+.mt-ah__photo {
+  display: block;
+  width: 100%;
+  border-radius: var(--mt-ah-radius);
+}
+
+/* Konumlar — kaynaktan birebir */
+.mt-ah__item--1  { width: 17%; top: 28%;   left: 0%; }
+.mt-ah__item--2  { width: 13%; top: 0%;    left: 16.9%; margin-left: 0.5rem; }
+.mt-ah__item--3  { width: 13%; top: 49%;   left: 16.9%; margin-left: 0.5rem; margin-top: 0.5rem; }
+.mt-ah__item--4  { width: 9%;  top: 28.7%; left: 30.5%; margin-left: 0.5rem; }
+.mt-ah__item--5  { width: 18%; top: 68.3%; left: 30.4%; margin-left: 0.5rem; margin-top: 0.5rem; }
+.mt-ah__item--6  { width: 17%; top: 0%;    left: 40%;   margin-left: 0.5rem; }
+.mt-ah__item--7  { width: 23%; top: 29.9%; left: 57.55%; margin-left: 0.5rem; }
+.mt-ah__item--8  { width: 14%; top: 68.2%; left: 57.55%; margin-left: 0.5rem; margin-top: 0.5rem; }
+.mt-ah__item--9  { width: 27%; top: 68.2%; left: 72.1%; margin-left: 0.5rem; margin-top: 0.5rem; }
+.mt-ah__item--10 { width: 18%; top: 16.5%; left: 81.1%; margin-left: 0.5rem; }
+
+/* Görsel üst sınırları — kaynaktan birebir */
+.mt-ah__photo--1, .mt-ah__photo--6 { max-width: 227px; }
+.mt-ah__photo--2, .mt-ah__photo--3 { max-width: 173px; }
+.mt-ah__photo--4  { max-width: 120px; }
+.mt-ah__photo--5  { max-width: 240px; }
+.mt-ah__photo--7  { max-width: 307px; }
+.mt-ah__photo--8  { max-width: 187px; }
+.mt-ah__photo--9  { max-width: 240px; }
+.mt-ah__photo--10 { max-width: 360px; }
+
+/* ── Center-out reveal (pure CSS) ──
+   Karolar .is-in gelene kadar gizli; sonra sıraya bağlı gecikmeyle açılır. */
+.mt-ah--reveal .mt-ah__photo-inner {
+  --start-x: 0rem;
+  --start-y: 0rem;
+  --mt-ah-i: 0;
+  transform-origin: center;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+.mt-ah--reveal.is-in .mt-ah__photo-inner {
+  animation: mt-ah-pan-out var(--mt-ah-duration) var(--mt-ah-ease) both;
+  animation-delay: calc(var(--mt-ah-i) * var(--mt-ah-step));
+}
+
+/* Başlangıç offset'leri — kaynaktan birebir (sıra ORDER ile TSX'te) */
+.mt-ah__item--6 .mt-ah__photo-inner  { --start-x: 0rem;      --start-y: 0rem; }
+.mt-ah__item--4 .mt-ah__photo-inner  { --start-x: 0.875rem;  --start-y: 0rem; }
+.mt-ah__item--7 .mt-ah__photo-inner  { --start-x: -0.875rem; --start-y: 0rem; }
+.mt-ah__item--2 .mt-ah__photo-inner  { --start-x: 1.25rem;   --start-y: 0.625rem; }
+.mt-ah__item--5 .mt-ah__photo-inner  { --start-x: 1rem;      --start-y: -0.75rem; }
+.mt-ah__item--8 .mt-ah__photo-inner  { --start-x: -1rem;     --start-y: -0.75rem; }
+.mt-ah__item--10 .mt-ah__photo-inner { --start-x: -1.5rem;   --start-y: -0.375rem; }
+.mt-ah__item--3 .mt-ah__photo-inner  { --start-x: 1.25rem;   --start-y: -0.625rem; }
+.mt-ah__item--1 .mt-ah__photo-inner  { --start-x: 1.5rem;    --start-y: -0.75rem; }
+.mt-ah__item--9 .mt-ah__photo-inner  { --start-x: -1.5rem;   --start-y: -0.75rem; }
+
+@keyframes mt-ah-pan-out {
+  0%   { opacity: 0; filter: blur(5px); transform: translate(var(--start-x), var(--start-y)) scale(0.72); }
+  100% { opacity: 1; filter: blur(0);   transform: translate(0, 0) scale(1); }
+}
+
+/* ── Responsive — kaynaktan birebir ── */
+@media (max-width: 991px) {
+  .mt-ah__header { max-width: 22.5rem; }
+  .mt-ah__collage { width: 120%; margin-left: -10%; padding-inline: 0; }
+  .mt-ah__photo { max-width: none; }
+}
+@media (max-width: 479px) {
+  .mt-ah__collage { width: 210%; margin-left: -42%; }
+  .mt-ah__item--3 { top: 47%; }
+  .mt-ah__item--5, .mt-ah__item--8 { top: 67.2%; }
+}
+
+/* ── Erişilebilirlik ── */
+@media (prefers-reduced-motion: reduce) {
+  .mt-ah--reveal .mt-ah__photo-inner,
+  .mt-ah--reveal.is-in .mt-ah__photo-inner {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  .mt-ah__btn-track, .mt-ah__btn-icon, .mt-ah__btn-text { transition: none; }
+}

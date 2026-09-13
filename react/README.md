@@ -177,8 +177,30 @@ form JS'i tarafından yakalanmadığı için component kendisi POST eder:
 | `Action URL` boş + `Webflow Site ID` dolu | `POST https://webflow.com/api/v1/form/{siteId}` (Webflow native formlarının kullandığı uç; resmi belgelenmemiş). Gönderiler Site Settings → Forms'a düşer, e-posta bildirimleri çalışır. |
 
 Payload alanları: `firstName`, `lastName`, `name`, `email`, `phoneCountry` (ISO), `phoneDial`,
-`phone` (`+90 5321234567`), `page`. `Redirect URL` doluysa başarıda yönlendirir; boşsa yerinde
-teşekkür kartı. Tüm etiketler/mesajlar prop. `Inverted` koyu zemin için açık metin.
+`phone` (`+90 5321234567`), `page`. Başarıda yerinde teşekkür kartı gösterilir (yönlendirme yok). Tüm etiketler/mesajlar prop. `Inverted` koyu zemin için açık metin.
+
+### About Hero — `react/components/AboutHero/`
+
+glean.com/about `section-hero-about` portu: ortalanmış başlık bloğu (başlık + gövde + iki buton),
+altında **10 fotoğraflı collage** ve merkezden dışa (center-out) açılan reveal.
+
+**Başlık bilerek `Slot`**: Designer'da slot'un içine kendi **H1** elementini koyarsın. Böylece
+başlık sayfanın sunucu HTML'inde kalır ve JS çalışmasa da görünür (SEO + ilk boyama). TextNode
+olsaydı başlık yalnız hydrate sonrası görünürdü.
+
+Collage geometrisi (yüzdesel `top`/`left`/`width`, görsel `max-width` sınırları, 991px/479px
+breakpoint davranışı) kaynaktan birebir portlandı. Reveal **saf CSS**: `@keyframes mt-ah-pan-out`
+— `opacity 0 + blur(5px) + translate(--start-x,--start-y) + scale(.72)` → tam boy, 650ms
+`cubic-bezier(.22,1,.36,1)`. Sıra merkezden dışa: 6 → 4 → 7 → 2 → 5 → 8 → 10 → 3 → 1 → 9,
+her adım `Stagger` kadar gecikir. JS'in tek işi section görüş alanına girince `.is-in` sınıfını
+koymak (`IntersectionObserver`; yoksa ya da `Reveal trigger = load` ise hemen). GSAP gerekmez.
+`prefers-reduced-motion` → animasyon kapalı, her şey statik görünür.
+
+**Prop'lar:** Content (heading **slot**, body, extra actions slot), Buttons (primary/secondary
+etiket + link), Photos (Photo 1–10; boş bırakılan karo hiç render edilmez), Look (align, color
+mode, header width rem, photo radius), Motion (reveal, trigger inView/load, duration, stagger).
+CSS ile ezilebilir: `--mt-ah-px`, `--mt-ah-py`, `--mt-ah-wrap-gap`, `--mt-ah-container`,
+`--mt-ah-body-size`.
 
 **Barba köprüsü** (`js/core/barba-init.js` v1.6.0): `runPage` her sayfa kurulumunda
 `marveltour:page` (`detail.path`, `detail.container`), `leave` hook'u `marveltour:leave`

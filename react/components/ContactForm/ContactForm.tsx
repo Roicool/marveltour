@@ -1,5 +1,5 @@
 /**
- * ContactForm — v1.0.0
+ * ContactForm — v1.0.1 (redirect yok; başarı her zaman yerinde teşekkür kartı)
  * Minimal iletişim formu (Webflow React Code Component):
  *   Ad · Soyad · E-posta · [Ülke kodu ▾] Telefon · Gönder
  *
@@ -43,7 +43,6 @@ export interface ContactFormProps {
   method?: "json" | "form";
   siteId?: string;
   formName?: string;
-  redirectUrl?: string;
   defaultCountry?: string;
   inverted?: boolean;
   attributes?: Record<string, string>;
@@ -75,7 +74,6 @@ export function ContactForm({
   method = "json",
   siteId = "",
   formName = "Contact",
-  redirectUrl = "",
   defaultCountry = "TR",
   inverted = false,
   attributes,
@@ -164,7 +162,6 @@ export function ContactForm({
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setStatus("success");
-      if (redirectUrl.trim() && typeof window !== "undefined") window.location.assign(redirectUrl.trim());
     } catch (err) {
       console.error("[Marveltour ContactForm] submit failed:", err);
       setStatus("error");
