@@ -75,7 +75,14 @@ export default declareComponent(NotFound, {
 
     // --- Görünüm ---
     colorMode: props.Variant({ name: "Color mode", group: G_LOOK, defaultValue: "light", options: ["light", "dark"], tooltip: "light: off-white zemin, burgundy metin. dark: burgundy zemin, off-white metin." }),
-    minHeight: props.Variant({ name: "Min height", group: G_LOOK, defaultValue: "100svh", options: ["100svh", "80svh", "auto"] }),
+    height: props.Variant({
+      name: "Height",
+      group: G_LOOK,
+      defaultValue: "100svh",
+      options: ["100svh", "100dvh", "100vh", "auto"],
+      tooltip:
+        "Sayfa tam ekrana sabitlenir, scroll çıkmaz. 100svh mobilde tarayıcı çubuğu açıkken de taşmaz (100vh'nin güvenli hali). auto: akışa döner, uzun çevirilerde kullan.",
+    }),
     attributes: props.Attributes({ name: "Attributes", group: G_LOOK }),
   },
 });

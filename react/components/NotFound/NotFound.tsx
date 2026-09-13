@@ -1,5 +1,8 @@
 /**
- * NotFound — v1.0.0
+ * NotFound — v1.1.0
+ * v1.1.0 — Tam ekran yükseklik, scroll yok: sayfa viewport'a sabit
+ *          (height + overflow hidden), yönlendirme listesi dikey
+ *          satırlardan tek satıra alındı, dikey boşluklar sıkıldı.
  *
  * Marveltour 404 sayfası: aşırı minimal navbar (logotype + tek CTA), ortada
  * editorial bir mesaj ve yönlendirme listesi, altta sade footer.
@@ -48,7 +51,7 @@ export interface NotFoundProps {
   legalLine?: string;
 
   colorMode?: "light" | "dark";
-  minHeight?: "100svh" | "80svh" | "auto";
+  height?: "100svh" | "100dvh" | "100vh" | "auto";
   attributes?: Record<string, string>;
 }
 
@@ -87,7 +90,7 @@ export function NotFound({
   legalLine = "© Marveltour. All rights reserved.",
 
   colorMode = "light",
-  minHeight = "100svh",
+  height = "100svh",
   attributes,
 }: NotFoundProps) {
   const routes: Array<{ label: string; to: string; link?: NavLink }> = [
@@ -103,8 +106,14 @@ export function NotFound({
   const mail = email.trim();
   const tel = phone.trim();
 
-  const style: CSSProperties = { ["--nf-min-h" as string]: minHeight };
-  const cls = ["mt-nf", colorMode === "dark" ? "mt-nf--dark" : "mt-nf--light"].join(" ");
+  const style: CSSProperties = height === "auto" ? {} : { ["--nf-h" as string]: height };
+  const cls = [
+    "mt-nf",
+    colorMode === "dark" ? "mt-nf--dark" : "mt-nf--light",
+    height === "auto" ? "mt-nf--auto" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={cls} style={style} {...attributes}>

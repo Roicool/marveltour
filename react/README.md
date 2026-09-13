@@ -240,10 +240,17 @@ boşaltılan satır hiç render edilmez.
 **E-posta ve telefon bilerek boş.** Gerçek değerleri repoda olmadığı için uydurulmadı; Designer'da
 doldurulana kadar footer'da hiç görünmezler.
 
+**Tam ekran, scroll yok.** Sayfa viewport yüksekliğine sabit (`height` + `overflow: hidden`),
+içerik taşarsa sıkışır. Bunu tutturmak için yönlendirme listesi dikey satırlar yerine tek satır,
+başlık ölçüsü genişliğin yanında yüksekliği de sayar (`clamp(2rem, min(5.5vw, 7.5vh), 4rem)`),
+çok alçak pencerede (≤ 34rem) gövde metni ve liste eyebrow'u gizlenir. `Height` varsayılanı
+`100svh`: mobilde tarayıcı çubuğu açıkken taşmadığı için `100vh`'nin güvenli hali; `100vh` ve
+`100dvh` de seçilebilir, `auto` akışa döndürür.
+
 **Prop'lar:** Content (code, title, body), Links (CTA + home etiket/link), Routes (5 satırın
 etiket ve linkleri + liste eyebrow'u), Footer (footer line, email, phone, legal line),
-Look (color mode, min height). CSS ile ezilebilir: `--nf-px`, `--nf-title`, `--nf-body`,
-`--nf-logo-h`.
+Look (color mode, height). CSS ile ezilebilir: `--nf-px`, `--nf-title`, `--nf-body`,
+`--nf-logo-h`, `--nf-h`.
 
 Not: sayfanın tamamı component olduğu için içerik JS ile gelir. 404 indekslenmediğinden bu SEO
 sorunu değil, ama Webflow'un 404 sayfasında Barba container'ının DIŞINDA kullan.
