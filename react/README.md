@@ -262,11 +262,12 @@ DOM'da okunamazsa `Data URL`'in HTML'i fetch edilip ayrıştırılır — Navbar
 teşhis için host elementte `__mtJourney`. Kutu yoksa `Milestone 1–8` prop'ları kullanılır,
 biçim `yıl | başlık | metin`.
 
-**Container:** section sayfa container'ını kullanır — genişlik RC token'ından
-(`--container--xl`, Shadow DOM'a sızar), yoksa 80rem. `Container` prop'u lg / xl / 2xl / full /
-bleed. Böylece panel sayfanın diğer section'larıyla aynı hizada durur; `full` container'ı kaldırır
-ama kenar boşluğunu korur, `bleed` tam kenara dayar. Panel içi yatay boşluk ayrı
-(`--jt-panel-px`), sayfa gutter'ıyla karışmaz.
+**Container:** section sayfa container'ını kullanır; genişlik sitenin RC token'ından gelir
+(custom property'ler Shadow DOM'a sızar), varsayılan `--container--2xl`. Token akışkandır
+(`clamp` + `--layout--fluid-min/max`), component içindeki sayı yalnız token hiç tanımlı değilse
+devreye giren üst sınırdır — burada sabit genişlik tanımlanmaz. `Container` prop'u
+lg / xl / 2xl / full / bleed; `full` container'ı kaldırır ama kenar boşluğunu korur, `bleed` tam
+kenara dayar. Panel içi yatay boşluk ayrı (`--jt-panel-px`), sayfa gutter'ıyla karışmaz.
 
 **Prop'lar:** Content (eyebrow, title, body, link), Milestones (8 satır + Data URL),
 Motion (angle step, visible desktop/mobil, autoplay + gecikme, start at first/last),

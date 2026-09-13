@@ -14,8 +14,10 @@
   --jt-card-bg: var(--neutral--off-white, #f5f5ec);
   --jt-card-fg: var(--color-text--primary, #1a1a18);
   --jt-card-muted: color-mix(in srgb, var(--jt-card-fg) 66%, transparent);
-  /* Sayfa container'ı: RC token'ı (Shadow DOM'a sızar), yoksa 80rem */
-  --jt-container: var(--container--xl, 80rem);
+  /* Sayfa container'ı: değer sitenin RC token'ından gelir (custom property'ler
+     Shadow DOM'a sızar). Token akışkandır (clamp + --layout--fluid-min/max);
+     buradaki sayı yalnız token hiç tanımlı değilse devreye giren üst sınırdır. */
+  --jt-container: var(--container--2xl, 86rem);
   --jt-pad-x: var(--jt-px, clamp(1.25rem, 5vw, 4rem));
   --jt-py: var(--jt-pad-y, clamp(3rem, 8vh, 6rem));
   --jt-panel-pad: var(--jt-panel-px, clamp(1.5rem, 4vw, 4rem));
