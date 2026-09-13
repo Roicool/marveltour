@@ -224,6 +224,30 @@ duration, stagger, parallax, parallax dose).
 CSS ile ezilebilir: `--mt-ah-px`, `--mt-ah-py`, `--mt-ah-wrap-gap`, `--mt-ah-container`,
 `--mt-ah-body-size`.
 
+### 404 Page — `react/components/NotFound/`
+
+Aşırı minimal 404: üstte logotype + tek "Start a Conversation" linki (başka nav yok), ortada
+editorial mesaj, altında gerçek sayfalara giden çizgili liste, en altta tek satır footer.
+Off-white zemin / burgundy metin; `Color mode = dark` ile burgundy zemin / off-white metin.
+Logotype `Navbar/MarveltourLogotype` ile aynı kaynaktan gelir.
+
+Metinler yer tutucu değil: marka dili ve konumlandırma `docs/BRAND-BRIEF.md` ve
+`docs/SITE-PLAN.md`'den yazıldı (B2B DMC, 1982'den beri İstanbul, booking değil inquiry).
+Liste hedefleri site planındaki slug'lar: `/turkiye`, `/capabilities`, `/how-we-work`,
+`/journals`, `/about`, CTA `/start-a-conversation`. Hepsi Link prop'u ile ezilebilir, etiketi
+boşaltılan satır hiç render edilmez.
+
+**E-posta ve telefon bilerek boş.** Gerçek değerleri repoda olmadığı için uydurulmadı; Designer'da
+doldurulana kadar footer'da hiç görünmezler.
+
+**Prop'lar:** Content (code, title, body), Links (CTA + home etiket/link), Routes (5 satırın
+etiket ve linkleri + liste eyebrow'u), Footer (footer line, email, phone, legal line),
+Look (color mode, min height). CSS ile ezilebilir: `--nf-px`, `--nf-title`, `--nf-body`,
+`--nf-logo-h`.
+
+Not: sayfanın tamamı component olduğu için içerik JS ile gelir. 404 indekslenmediğinden bu SEO
+sorunu değil, ama Webflow'un 404 sayfasında Barba container'ının DIŞINDA kullan.
+
 **Barba köprüsü** (`js/core/barba-init.js` v1.6.0): `runPage` her sayfa kurulumunda
 `marveltour:page` (`detail.path`, `detail.container`), `leave` hook'u `marveltour:leave`
 yayınlar. Navbar `leave`'de açık menüleri kapatır, `page`'de aktif linki `location.pathname`'den
