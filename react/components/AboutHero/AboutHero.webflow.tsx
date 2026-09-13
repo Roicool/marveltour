@@ -72,6 +72,22 @@ export default declareComponent(AboutHero, {
     revealTrigger: props.Variant({ name: "Reveal trigger", group: G_MOTION, defaultValue: "inView", options: ["inView", "load"], tooltip: "inView: section görüş alanına girince. load: sayfa açılır açılmaz." }),
     duration: props.Number({ name: "Duration (ms)", group: G_MOTION, defaultValue: 650, min: 120, max: 2000, decimals: 0 }),
     stagger: props.Number({ name: "Stagger (ms)", group: G_MOTION, defaultValue: 100, min: 0, max: 400, decimals: 0 }),
+    parallax: props.Boolean({
+      name: "Scroll parallax",
+      group: G_MOTION,
+      defaultValue: true,
+      trueLabel: "On",
+      falseLabel: "Off",
+      tooltip:
+        "Projenin parallax preset'i (js/animations/parallax.js): karo kırpar, içindeki fotoğraf scroll'la kayar. Merkezdeki karolar az, dıştakiler çok kayar. GSAP + ScrollTrigger gerekir; yoksa fotoğraflar sabit kalır.",
+    }),
+    parallaxDose: props.Variant({
+      name: "Parallax dose",
+      group: G_MOTION,
+      defaultValue: "soft",
+      options: ["soft", "medium", "strong"],
+      tooltip: "Preset dozları: soft 6, medium 12, strong 20 (yPercent). Küçük ekranda otomatik yarılanır. Mozaik karoları küçük olduğu için soft önerilir.",
+    }),
     attributes: props.Attributes({ name: "Attributes", group: G_MOTION }),
   },
 });
