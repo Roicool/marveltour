@@ -1,5 +1,8 @@
 /**
- * JourneyTimeline — v1.0.0
+ * JourneyTimeline — v1.1.0
+ * v1.1.0 — Section artık sayfa container'ını kullanıyor (RC --container--*
+ *          token'ı); panel diğer section'larla aynı hizada durur. Dikey
+ *          section boşluğu ve panel içi yatay boşluk ayrı token'larda.
  *
  * glean.com/about "section-journey" portu: yılların yarım-daire yörüngede
  * döndüğü interaktif zaman çizelgesi + eşleşen anlatı kartları.
@@ -57,6 +60,7 @@ export interface JourneyTimelineProps {
   startAt?: "first" | "last";
 
   colorMode?: "dark" | "light";
+  container?: "lg" | "xl" | "2xl" | "full" | "bleed";
   attributes?: Record<string, string>;
 }
 
@@ -98,6 +102,7 @@ export function JourneyTimeline({
   startAt = "first",
 
   colorMode = "dark",
+  container = "xl",
   attributes,
 }: JourneyTimelineProps) {
   const rootRef = useRef<HTMLElement>(null);
@@ -237,11 +242,24 @@ export function JourneyTimeline({
   };
 
   const href = link?.href && link.href !== "#" ? link.href : "";
-  const cls = ["mt-jt", colorMode === "light" ? "mt-jt--light" : "mt-jt--dark"].join(" ");
+  const cls = [
+    "mt-jt",
+    colorMode === "light" ? "mt-jt--light" : "mt-jt--dark",
+    container === "full" ? "mt-jt--full" : "",
+    container === "bleed" ? "mt-jt--full mt-jt--bleed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  // Sayfa container'ı RC token'ından; "full"/"bleed" sınıfla ezer
+  const sectionStyle: CSSProperties =
+    container === "lg" || container === "xl" || container === "2xl"
+      ? { ["--jt-container" as string]: `var(--container--${container}, ${container === "lg" ? "64rem" : container === "xl" ? "80rem" : "96rem"})` }
+      : {};
   const orbitStyle: CSSProperties = { ["--mt-jt-rotation" as string]: `${rotation}deg` };
 
   return (
-    <section className={cls} ref={rootRef} {...attributes}>
+    <section className={cls} style={sectionStyle} ref={rootRef} {...attributes}>
+      <div className="mt-jt__shell">
       <div className="mt-jt__wrap">
         {/* ── Sol: anlatı ── */}
         <div className="mt-jt__content">
@@ -317,6 +335,7 @@ export function JourneyTimeline({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

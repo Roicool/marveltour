@@ -250,10 +250,16 @@ DOM'da okunamazsa `Data URL`'in HTML'i fetch edilip ayrıştırılır — Navbar
 teşhis için host elementte `__mtJourney`. Kutu yoksa `Milestone 1–8` prop'ları kullanılır,
 biçim `yıl | başlık | metin`.
 
+**Container:** section sayfa container'ını kullanır — genişlik RC token'ından
+(`--container--xl`, Shadow DOM'a sızar), yoksa 80rem. `Container` prop'u lg / xl / 2xl / full /
+bleed. Böylece panel sayfanın diğer section'larıyla aynı hizada durur; `full` container'ı kaldırır
+ama kenar boşluğunu korur, `bleed` tam kenara dayar. Panel içi yatay boşluk ayrı
+(`--jt-panel-px`), sayfa gutter'ıyla karışmaz.
+
 **Prop'lar:** Content (eyebrow, title, body, link), Milestones (8 satır + Data URL),
 Motion (angle step, visible desktop/mobil, autoplay + gecikme, start at first/last),
-Look (color mode dark/light). CSS ile ezilebilir: `--jt-px`, `--jt-title`, `--jt-body`,
-`--jt-corner`.
+Look (color mode dark/light, container). CSS ile ezilebilir: `--jt-px`, `--jt-pad-y`,
+`--jt-panel-px`, `--jt-title`, `--jt-body`, `--jt-corner`.
 
 ### 404 Page — `react/components/NotFound/`
 
