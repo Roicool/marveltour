@@ -224,6 +224,37 @@ duration, stagger, parallax, parallax dose).
 CSS ile ezilebilir: `--mt-ah-px`, `--mt-ah-py`, `--mt-ah-wrap-gap`, `--mt-ah-container`,
 `--mt-ah-body-size`.
 
+### Journey Timeline — `react/components/JourneyTimeline/`
+
+glean.com/about `section-journey` portu: yılların **yarım-daire yörüngede** döndüğü interaktif
+zaman çizelgesi + eşleşen anlatı kartları. Solda eyebrow + başlık + gövde + opsiyonel link,
+sağda üst üste yığılı kartlar ve orbit.
+
+**Mekanizma kaynakla birebir:** her öğe bir `--angle` taşır (adım varsayılan 25°, dizi ortalanır);
+aktif öğe seçilince orbit'e `--rotation = -angle` yazılır ve seçili yıl merkeze döner
+(800ms `cubic-bezier(.22,1,.36,1)`). Yıl + nokta ters döndürülür
+(`rotate(calc(0deg - var(--angle) - var(--rotation)))`), böylece orbit dönse de yazı hep dik kalır.
+Görünürlük `|angle + rotation| ≤ limit`: desktop 5 yıl, ≤991px 3 yıl; dışındakiler gizlenir,
+`tabindex -1` ve `aria-hidden` alır, tıklanamaz. Autoplay 2s, uçlarda yön ters çevrilir (en yeniden
+en eskiye büyük dönüş yok), section %35 görününce başlar, pointer ya da klavye focus'unda durur.
+GSAP gerekmez; dönüş CSS custom property + transition.
+
+**Kaynaktan bilinçli sapmalar:** durum class yerine React state; yarım daire PNG yerine CSS ile
+çizili daire (renk token'dan gelsin, her ölçekte net kalsın diye); upright'lar `div[role=button]`
+değil gerçek `<button>`; mobil çap sabit `rem` yerine panel genişliğine oranlı
+(`clamp(22rem, 175%, 78rem)`) — sabit değer dar panelde komşu yılı kenardan taşırıyordu.
+
+**Veri:** öncelik sayfadaki CMS kutusu `[data-journey-items]` (Collection Item içinde
+`[data-jt-year]`, `[data-jt-title]`, `[data-jt-text]`; attribute yoksa ilk üç metin bloğu sırayla).
+DOM'da okunamazsa `Data URL`'in HTML'i fetch edilip ayrıştırılır — Navbar'daki kalıbın aynısı,
+teşhis için host elementte `__mtJourney`. Kutu yoksa `Milestone 1–8` prop'ları kullanılır,
+biçim `yıl | başlık | metin`.
+
+**Prop'lar:** Content (eyebrow, title, body, link), Milestones (8 satır + Data URL),
+Motion (angle step, visible desktop/mobil, autoplay + gecikme, start at first/last),
+Look (color mode dark/light). CSS ile ezilebilir: `--jt-px`, `--jt-title`, `--jt-body`,
+`--jt-corner`.
+
 ### 404 Page — `react/components/NotFound/`
 
 Aşırı minimal 404: üstte logotype + tek "Start a Conversation" linki (başka nav yok), ortada
