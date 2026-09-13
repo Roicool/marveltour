@@ -54,6 +54,14 @@ export default declareComponent(AboutHero, {
     image10: props.Image({ name: "Photo 10 (far right)", group: G_PHOTOS }),
 
     // --- Görünüm ---
+    fit: props.Variant({
+      name: "Photo fit",
+      group: G_LOOK,
+      defaultValue: "cover",
+      options: ["cover", "natural"],
+      tooltip:
+        "cover: karo oranı referans mozaikteki gibi sabit, fotoğraf kırpılarak oturur (mozaik her fotoğrafla aynı durur). natural: fotoğrafın kendi en-boy oranı kullanılır.",
+    }),
     align: props.Variant({ name: "Align", group: G_LOOK, defaultValue: "center", options: ["center", "left"] }),
     colorMode: props.Variant({ name: "Color mode", group: G_LOOK, defaultValue: "light", options: ["light", "dark"], tooltip: "dark: açık zemin üstü metin (koyu arka planlı section)." }),
     headerWidth: props.Number({ name: "Header width (rem)", group: G_LOOK, defaultValue: 49.875, min: 20, max: 80, decimals: 3 }),

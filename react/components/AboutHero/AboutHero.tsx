@@ -1,5 +1,8 @@
 /**
- * AboutHero — v1.0.0
+ * AboutHero — v1.0.1
+ * v1.0.1 — Karo en-boy oranları referanstan ölçülüp sabitlendi (Photo fit
+ *          cover); kaynaktaki px max-width sınırları kaldırıldı. Mozaik artık
+ *          hangi fotoğraf konursa konsun referanstaki şekilde duruyor.
  *
  * glean.com/about "section-hero-about" portu: ortalanmış başlık + gövde +
  * iki buton, altında 10 fotoğraflı collage ve merkezden dışa (center-out)
@@ -43,6 +46,7 @@ export interface AboutHeroProps {
   image9?: NavImage;
   image10?: NavImage;
 
+  fit?: "cover" | "natural";
   align?: "center" | "left";
   headerWidth?: number; // rem
   radius?: number; // px
@@ -76,6 +80,7 @@ export function AboutHero({
   image8,
   image9,
   image10,
+  fit = "cover",
   align = "center",
   headerWidth = 49.875,
   radius = 12,
@@ -156,6 +161,7 @@ export function AboutHero({
   const cls = [
     "mt-ah",
     align === "left" ? "mt-ah--left" : "mt-ah--center",
+    fit === "cover" ? "mt-ah--cover" : "mt-ah--natural",
     colorMode === "dark" ? "mt-ah--dark" : "mt-ah--light",
     reveal ? "mt-ah--reveal" : "",
   ]

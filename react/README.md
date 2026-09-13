@@ -188,8 +188,16 @@ altında **10 fotoğraflı collage** ve merkezden dışa (center-out) açılan r
 başlık sayfanın sunucu HTML'inde kalır ve JS çalışmasa da görünür (SEO + ilk boyama). TextNode
 olsaydı başlık yalnız hydrate sonrası görünürdü.
 
-Collage geometrisi (yüzdesel `top`/`left`/`width`, görsel `max-width` sınırları, 991px/479px
-breakpoint davranışı) kaynaktan birebir portlandı. Reveal **saf CSS**: `@keyframes mt-ah-pan-out`
+Collage geometrisi (yüzdesel `top`/`left`/`width`, 991px/479px breakpoint davranışı) kaynaktan
+birebir portlandı. İki bilinçli sapma:
+
+- **Karo en-boy oranları sabit** (`Photo fit = cover`, varsayılan). Kaynakta mozaiğin şeklini
+  fotoğrafların kendi oranları kurar; bizde hangi fotoğrafı koyarsan koy mozaik referanstaki gibi
+  dursun diye her karonun oranı referanstan ölçülüp CSS'e yazıldı, görsel `object-fit: cover` ile
+  oturuyor. `natural` seçilirse fotoğrafın kendi oranı kullanılır (kaynak davranışı).
+- **Kaynaktaki px `max-width` sınırları taşınmadı.** Onlar görsellerin kendi çözünürlüklerinin
+  üstüne büyümesini engelliyor; bizde karo genişlikleri tamamen yüzdesel olduğu için px sınırı
+  container genişliğine göre bazı karoları erken kilitleyip mozaiğin oranını bozuyordu. Reveal **saf CSS**: `@keyframes mt-ah-pan-out`
 — `opacity 0 + blur(5px) + translate(--start-x,--start-y) + scale(.72)` → tam boy, 650ms
 `cubic-bezier(.22,1,.36,1)`. Sıra merkezden dışa: 6 → 4 → 7 → 2 → 5 → 8 → 10 → 3 → 1 → 9,
 her adım `Stagger` kadar gecikir. JS'in tek işi section görüş alanına girince `.is-in` sınıfını

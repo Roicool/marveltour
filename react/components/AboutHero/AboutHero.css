@@ -144,6 +144,8 @@
   justify-content: center;
   align-items: flex-start;
   padding-inline: 1.3rem;
+  /* Alt sıra (item 5/9) grid kutusunun ~%3 dışına taşar — kaynakta da öyle. */
+  padding-bottom: 4%;
 }
 .mt-ah__grid {
   position: relative;
@@ -160,6 +162,25 @@
   border-radius: var(--mt-ah-radius);
 }
 
+/* Karo en-boy oranları — referans mozaikten ölçüldü. Fotoğrafın kendi oranı
+   ne olursa olsun mozaik bozulmasın diye karo oranı sabit, görsel cover. */
+.mt-ah--cover .mt-ah__photo {
+  aspect-ratio: var(--mt-ah-ar, 1);
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+}
+.mt-ah__item--1  { --mt-ah-ar: 0.746; }  /* portre 3:4 */
+.mt-ah__item--2  { --mt-ah-ar: 0.803; }  /* portre 4:5 */
+.mt-ah__item--3  { --mt-ah-ar: 1.03; }   /* kare */
+.mt-ah__item--4  { --mt-ah-ar: 0.656; }  /* dar portre 2:3 */
+.mt-ah__item--5  { --mt-ah-ar: 1.31; }   /* yatay 4:3 */
+.mt-ah__item--6  { --mt-ah-ar: 0.73; }   /* portre 3:4 (merkez) */
+.mt-ah__item--7  { --mt-ah-ar: 1.86; }   /* geniş yatay */
+.mt-ah__item--8  { --mt-ah-ar: 1.73; }   /* geniş yatay */
+.mt-ah__item--9  { --mt-ah-ar: 2.14; }   /* en geniş yatay */
+.mt-ah__item--10 { --mt-ah-ar: 1.06; }   /* kare-ye yakın */
+
 /* Konumlar — kaynaktan birebir */
 .mt-ah__item--1  { width: 17%; top: 28%;   left: 0%; }
 .mt-ah__item--2  { width: 13%; top: 0%;    left: 16.9%; margin-left: 0.5rem; }
@@ -172,15 +193,11 @@
 .mt-ah__item--9  { width: 27%; top: 68.2%; left: 72.1%; margin-left: 0.5rem; margin-top: 0.5rem; }
 .mt-ah__item--10 { width: 18%; top: 16.5%; left: 81.1%; margin-left: 0.5rem; }
 
-/* Görsel üst sınırları — kaynaktan birebir */
-.mt-ah__photo--1, .mt-ah__photo--6 { max-width: 227px; }
-.mt-ah__photo--2, .mt-ah__photo--3 { max-width: 173px; }
-.mt-ah__photo--4  { max-width: 120px; }
-.mt-ah__photo--5  { max-width: 240px; }
-.mt-ah__photo--7  { max-width: 307px; }
-.mt-ah__photo--8  { max-width: 187px; }
-.mt-ah__photo--9  { max-width: 240px; }
-.mt-ah__photo--10 { max-width: 360px; }
+/* Not: kaynakta her görselin px cinsinden max-width'i var (kendi çözünürlüğünün
+   üstüne büyümesin diye). Bizde karo genişlikleri tamamen yüzdesel; px sınırı
+   koyarsak container genişliğine göre bazı karolar erken kilitlenip mozaiğin
+   oranı bozuluyor. Bu yüzden sınırlar taşınmadı — mozaik her genişlikte
+   referanstaki oranı korur. */
 
 /* ── Center-out reveal (pure CSS) ──
    Karolar .is-in gelene kadar gizli; sonra sıraya bağlı gecikmeyle açılır. */
@@ -218,7 +235,6 @@
 @media (max-width: 991px) {
   .mt-ah__header { max-width: 22.5rem; }
   .mt-ah__collage { width: 120%; margin-left: -10%; padding-inline: 0; }
-  .mt-ah__photo { max-width: none; }
 }
 @media (max-width: 479px) {
   .mt-ah__collage { width: 210%; margin-left: -42%; }
