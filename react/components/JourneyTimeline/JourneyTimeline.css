@@ -1,0 +1,296 @@
+/* ============================================================
+   Marveltour — JourneyTimeline.css v1.0.0
+   glean.com/about "section-journey" portu: yarım-daire yörünge zaman
+   çizelgesi + eşleşen anlatı kartları. Geometri ve süreler kaynaktan
+   birebir; renkler RC/BRAND token'larından.
+   ============================================================ */
+:host { display: block; }
+.mt-jt, .mt-jt * { box-sizing: border-box; }
+
+.mt-jt {
+  --jt-bg: var(--brand-primary--burgundy, #470e2d);
+  --jt-fg: var(--color-text--inverted, #f5f5ec);
+  --jt-fg-muted: color-mix(in srgb, var(--jt-fg) 74%, transparent);
+  --jt-card-bg: var(--neutral--off-white, #f5f5ec);
+  --jt-card-fg: var(--color-text--primary, #1a1a18);
+  --jt-card-muted: color-mix(in srgb, var(--jt-card-fg) 66%, transparent);
+  --jt-pad-x: var(--jt-px, clamp(1.25rem, 5vw, 4rem));
+  --jt-radius: var(--jt-corner, 1rem);
+  --jt-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --jt-move: 800ms;                 /* orbit dönüşü — kaynakla aynı */
+  --jt-rotation: 0deg;
+
+  position: relative;
+  width: 100%;
+  color: var(--jt-fg);
+  font: inherit;
+}
+.mt-jt--light {
+  --jt-bg: var(--neutral--off-white, #f5f5ec);
+  --jt-fg: var(--color-text--primary, #1a1a18);
+  --jt-card-bg: #fff;
+}
+
+.mt-jt__wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 34rem;
+  border-radius: var(--jt-radius);
+  background: var(--jt-bg);
+  overflow: hidden;
+}
+
+/* ── Sol: anlatı ── */
+.mt-jt__content {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+  max-width: 36.625rem;
+  padding: 6rem var(--jt-pad-x) 0;
+}
+.mt-jt__eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--jt-fg-muted);
+}
+.mt-jt__title {
+  margin: 0;
+  font-size: var(--jt-title, clamp(1.875rem, 3.2vw, 3rem));
+  font-weight: 300;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.mt-jt__body {
+  margin: 0;
+  font-size: var(--jt-body, clamp(0.9375rem, 1.1vw, 1.0625rem));
+  line-height: 1.55;
+  color: var(--jt-fg-muted);
+}
+.mt-jt__link { margin: 0.5rem 0 0; font-size: 0.9375rem; }
+.mt-jt__link a {
+  color: inherit;
+  text-decoration: none;
+  padding-bottom: 2px;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 360ms var(--jt-ease);
+}
+.mt-jt__link a:hover, .mt-jt__link a:focus-visible { background-size: 0 1px; }
+
+/* ── Sağ: kartlar + yörünge ── */
+.mt-jt__animation {
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6.5rem;
+  height: 100%;
+}
+
+/* Kartlar tek hücrede üst üste — yükseklik en uzun karta göre sabit */
+.mt-jt__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 22.75rem;
+}
+.mt-jt__card {
+  grid-area: 1 / 1 / 2 / 2;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--jt-fg) 49%, transparent);
+  border-radius: var(--jt-radius);
+  background: color-mix(in srgb, var(--jt-fg) 12%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(1.5rem) scale(0.98);
+  transition: opacity 500ms ease, transform var(--jt-move) var(--jt-ease), visibility 0s linear var(--jt-move);
+}
+.mt-jt__card.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition: opacity 650ms ease 100ms, transform 900ms var(--jt-ease), visibility 0s linear;
+}
+.mt-jt__card-inner {
+  display: flex;
+  flex-flow: column;
+  gap: 0.875rem;
+  height: 100%;
+  padding: 1.5rem;
+  border-radius: var(--jt-radius);
+  background: var(--jt-card-bg);
+  color: var(--jt-card-fg);
+}
+.mt-jt__card-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.mt-jt__card-divider { height: 0.5px; background: currentColor; opacity: 0.35; }
+.mt-jt__card-text { margin: 0; font-size: 0.9375rem; line-height: 1.5; color: var(--jt-card-muted); }
+
+/* ── Yörünge ──
+   timeline: dairenin yalnız üst şeridini gösteren pencere.
+   orbit: kare (aspect-ratio 1), merkezi dairenin merkezi; --rotation ile döner. */
+.mt-jt__timeline {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: 54.1875rem;
+  min-height: 13.6rem;
+  margin-bottom: 2px;
+}
+.mt-jt__arc {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.mt-jt__circle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border: 1px solid color-mix(in srgb, var(--jt-fg) 45%, transparent);
+  border-radius: 50%;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--jt-fg) 10%, transparent), transparent 63%);
+}
+
+.mt-jt__orbit {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  transform: translateX(-50%) rotate(var(--mt-jt-rotation, 0deg));
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  transition: transform var(--jt-move) var(--jt-ease);
+  will-change: transform;
+}
+.mt-jt__item {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--mt-jt-angle, 0deg));
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+/* Yıl + nokta: item kendi açısıyla döner, upright ters döndürülüp dik tutulur */
+.mt-jt__upright {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5rem;
+  height: 4rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, calc(-100% + 0.5rem))
+             rotate(calc(0deg - var(--mt-jt-angle, 0deg) - var(--mt-jt-rotation, 0deg)));
+  transform-origin: 50% calc(100% - 0.5rem);
+  transition: transform var(--jt-move) var(--jt-ease), opacity 300ms ease, visibility 0s linear;
+  will-change: transform, opacity;
+}
+.mt-jt__item.is-outside .mt-jt__upright {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform var(--jt-move) var(--jt-ease), opacity 300ms ease, visibility 0s linear 300ms;
+}
+.mt-jt__upright:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 4px; }
+
+.mt-jt__year {
+  font-size: inherit;
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+.mt-jt__item:not(.is-active) .mt-jt__year { opacity: 0.7; }
+.mt-jt__item.is-active { font-size: 2rem; }
+
+.mt-jt__dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform 300ms ease;
+}
+.mt-jt__item.is-active .mt-jt__dot { transform: scale(1.3); }
+
+/* ── Desktop: iki sütun, yörünge sağda ── */
+@media (min-width: 62rem) {
+  .mt-jt__wrap { grid-template-columns: minmax(0, 1fr); }
+  .mt-jt__animation {
+    position: absolute;
+    inset: 0 48px 0 auto;
+    width: min(54.1875rem, 62%);
+  }
+  .mt-jt__content { position: relative; z-index: 1; padding-bottom: 6rem; }
+}
+
+/* ── Tablet & mobil: yörünge akışta, daha alçak şerit ── */
+@media (max-width: 61.9375rem) {
+  .mt-jt__wrap { gap: 3.75rem; padding-bottom: 2.5rem; min-height: 0; }
+  .mt-jt__content { padding: 3rem var(--jt-pad-x) 0; max-width: none; }
+  /* Şerit tam genişlik: yan yıllar panel kenarına takılmasın (kaynakta da
+     collage gibi taşar). Yatay boşluk yalnız kartlara. */
+  .mt-jt__animation { gap: 3rem; }
+  .mt-jt__cards { max-width: 19rem; margin-inline: var(--jt-pad-x); width: auto; }
+  .mt-jt__card { padding: 0.5rem; border-radius: 0.5rem; }
+  .mt-jt__card-inner { gap: 0.5rem; padding: 1.125rem 1rem; border-radius: 0.5rem; }
+}
+@media (max-width: 991px) {
+  /* Şerit sabit yükseklik, daire clamp'li çapa oturur (kaynakla aynı) */
+  .mt-jt__timeline {
+    /* Çap panel genişliğine oranlı: komşu yıl R·sin(step) kadar yana düşer,
+       sabit rem değeri dar panelde yılları kenardan taşırıyordu. */
+    --jt-diameter: clamp(22rem, 175%, 78rem);
+    min-height: 6.5rem;
+    height: 6.5rem;
+    margin-bottom: 0;
+  }
+  .mt-jt__arc { width: var(--jt-diameter); height: 6.5rem; }
+  .mt-jt__circle { width: var(--jt-diameter); }
+  .mt-jt__orbit { width: var(--jt-diameter); }
+  .mt-jt__item { font-size: 1rem; }
+  .mt-jt__item.is-active { font-size: 1.25rem; }
+  .mt-jt__upright { height: 3rem; }
+}
+
+/* ── Erişilebilirlik ── */
+@media (prefers-reduced-motion: reduce) {
+  .mt-jt__orbit, .mt-jt__upright, .mt-jt__dot, .mt-jt__year, .mt-jt__card, .mt-jt__link a {
+    transition: none;
+  }
+}
