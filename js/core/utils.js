@@ -1,6 +1,6 @@
 /*!
  * Marveltour — core/utils.js
- * v1.2.0  (adapted from Sestek utils.js v1.0.0 + blog-utils.js v1.5.0 +
+ * v1.3.0  (adapted from Sestek utils.js v1.0.0 + blog-utils.js v1.5.0 +
  *          search.js v1.4.0 + pagination.js v1.7.0 + dropdown.js v1.3.0 +
  *          blog-slider-pro.js v1.0.0)
  * ------------------------------------------------------------
@@ -43,6 +43,9 @@
  *       Marveltour.initBlogSliderPro(container) [data-blog-slider-pro] — Swiper
  *                                               kart carousel (fade/autoplay'li;
  *                                               Swiper 11 gerektirir)
+ *       Marveltour.initCurrentYear(container)   [data-current-year] — telif
+ *                                               satırındaki yıl (footer/site-wide;
+ *                                               document genelinde taranır)
  *
  *       Marveltour.initUtils(container)         HEPSİNİ birden çalıştırır —
  *                                               sayfada olmayanlar sessizce atlanır
@@ -1855,6 +1858,31 @@
     Array.prototype.forEach.call(roots, wireSlider);
   }
 
+  // ── 10. Current Year ─────────────────────────────────────────────
+
+  /**
+   * [data-current-year] elementlerine güncel yılı yazar — telif satırı yıl
+   * dönünce kendiliğinden güncellenir (2026 → 2027), elle müdahale gerekmez.
+   * Attribute değeri 4 haneli bir BAŞLANGIÇ yılıysa aralık basılır
+   * ("2015–2026"); aynı yılsa ya da değer boş/geçersizse yalnız güncel yıl.
+   * Footer container DIŞINDA olduğu için tarama document genelinde; her
+   * onEach'te aynı değeri yazar (idempotent, listener yok).
+   * @param {HTMLElement} [container] imza tutarlılığı için — kullanılmaz
+   */
+  function initCurrentYear(container) {   // eslint-disable-line no-unused-vars
+    var els = document.querySelectorAll("[data-current-year]");
+    if (!els.length) return;
+
+    var year = new Date().getFullYear();
+
+    els.forEach(function (el) {
+      var start = parseInt(el.getAttribute("data-current-year"), 10);
+      el.textContent = (start && start < year)
+        ? (start + "–" + year)
+        : String(year);
+    });
+  }
+
   // ── Umbrella init — hepsi birden ─────────────────────────────────
 
   function initUtils(container) {
@@ -1868,6 +1896,7 @@
     initPagination(container);
     initDropdown(container);
     initBlogSliderPro(container);
+    initCurrentYear(container);
   }
 
   // ── Public API ───────────────────────────────────────────────────
@@ -1881,6 +1910,7 @@
   Marveltour.initPagination    = initPagination;
   Marveltour.initDropdown      = initDropdown;
   Marveltour.initBlogSliderPro = initBlogSliderPro;
+  Marveltour.initCurrentYear   = initCurrentYear;
   Marveltour.initUtils         = initUtils;
 
 })(typeof window !== "undefined" ? window : this);

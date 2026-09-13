@@ -30,9 +30,9 @@ sadece o parça uyarıp atlanır).
 
 ## Init (Barba `onEach`)
 
-On parçanın hepsi container-scoped'dur (Ask AI ve Search site-wide da
-çalışsın diye document genelinde tarar) ve sayfada ilgili DOM yoksa
-**sessizce atlanır** — tek çağrı her sayfada güvenlidir:
+On bir parçanın hepsi container-scoped'dur (Ask AI, Current Year ve Search
+site-wide da çalışsın diye document genelinde tarar) ve sayfada ilgili DOM
+yoksa **sessizce atlanır** — tek çağrı her sayfada güvenlidir:
 
 ```js
 Marveltour.initBarba({
@@ -45,7 +45,8 @@ Marveltour.initBarba({
 
 Tek tek de çağrılabilir (hepsi `(container)` imzalı): `initAiSummarize`,
 `initAiAsk`, `initSocialShare`, `initToc`, `initReadTime`, `initReadProgress`,
-`initSearch`, `initPagination`, `initDropdown`, `initBlogSliderPro`.
+`initSearch`, `initPagination`, `initDropdown`, `initBlogSliderPro`,
+`initCurrentYear`.
 
 **Barba güvenliği (kendiliğinden hallolur):**
 - TOC observer'ları, read-progress/dropdown'ın window-document listener'ları
@@ -351,6 +352,26 @@ utils.js'ten önce yüklenmeli.**
   dışına çıkınca IntersectionObserver'la tamamen durdurulur.
 - `prefers-reduced-motion` altında geçişler anlık, autoplay kapalı.
 - Pre-init flash koruması utils.css'te (dikey yığın parlamaz).
+
+## 10. Current Year — `[data-current-year]`
+
+Telif satırındaki yılı otomatik yazar; 2027'ye geçince elle güncelleme
+gerekmez. Footer site-wide olduğu için document genelinde taranır.
+
+```html
+<p>© <span data-current-year>2026</span> Marveltour. Tüm hakları saklıdır.</p>
+
+<!-- aralık: kuruluş yılını attribute'a yaz → "2015–2026" -->
+<p>© <span data-current-year="2015">2015–2026</span> Marveltour</p>
+```
+
+- Element içindeki metin Designer'da ne yazarsa yazsın init'te değiştirilir —
+  JS kapalıysa görünen yedek olduğu için oraya güncel yılı yazmak iyi olur.
+- Değer boş / 4 haneli yıl değil / güncel yıla eşit veya büyükse yalnız
+  güncel yıl basılır (`data-current-year="2026"` → `2026`).
+- Ayırıcı en-dash (`–`). Listener kurmaz, her `onEach`'te aynı değeri yazar.
+- Kullanıcının saat diliminden okur (`new Date().getFullYear()`) — 1 Ocak'ta
+  cihaz saatiyle döner.
 
 ---
 
