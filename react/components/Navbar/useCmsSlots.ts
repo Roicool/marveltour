@@ -1,5 +1,6 @@
 /**
- * useCmsSlots — v2.1.2 (DOM okuması ref.ownerDocument üzerinden)
+ * useCmsSlots — v2.2.0 (mega menü satırları Destinations'ın `region` Option
+ * alanından; capability multi-reference'ı kalktı)
  * Designer'daki Collection List'lerden navbar veri modeli çıkarır.
  *
  * Webflow Code Component prop'larında dizi/CMS tipi yok; CMS verisi sayfadaki
@@ -13,10 +14,21 @@
  *           <div data-cap-desc>{description}</div>        (opsiyonel)
  *           <img data-cap-image src="{image}">            (opsiyonel; yoksa item'daki ilk <img>)
  *
- *   <div data-nav-destinations>   Destinations Collection List (sort-order asc)
- *     item: <a href="/destinations/{slug}" data-dest="{slug}">{name}</a>
- *           related-capabilities nested list → her nested item'da [data-cap="{slug}"]
- *           (ya da <a data-caps="a b c">)
+ *   <div data-nav-destinations>   Destinations Collection List (region asc, sonra sort-order)
+ *     item: <a href="/destinations/{slug}" data-dest="{slug}" data-region="{Region}">{name}</a>
+ *           `data-region` = Region Option alanının etiketi (custom attribute binding).
+ *           Alternatif: item içinde <div data-dest-region>{Region}</div>.
+ *           Eski `data-caps` / nested [data-cap] okuması yedek olarak duruyor.
+ *
+ *   <div data-nav-regions>        STATİK kutu (koleksiyon DEĞİL) — satır metası
+ *     item: <div data-region="{Region ya da slug}">
+ *             <a href="/destinations/ege">{başlık}</a>    (opsiyonel; satırın Explore linki)
+ *             <div data-region-name>{başlık}</div>        (opsiyonel; yoksa link metni)
+ *             <div data-region-desc>{açıklama}</div>      (opsiyonel)
+ *             <img data-region-image src="{görsel}">      (opsiyonel; yoksa ilk <img>)
+ *           </div>
+ *     Region Option alanı açıklama/görsel taşıyamadığı için bunlar buradan gelir.
+ *     Kutu yoksa satırlar yine destinasyonlardan türetilir (yalnız isim + tag'ler).
  *
  *   <div data-nav-journal>        Journals Collection List (limit 1, tarih desc)
  *     item: <a href="/journal/{slug}" data-journal>{title}</a>
@@ -28,15 +40,47 @@
 import { useEffect, useState, type RefObject } from "react";
 
 export type CapItem = { name: string; url: string; slug: string; description: string; image: string };
-export type DestItem = { name: string; url: string; slug: string; caps: string[] };
+/** Mega menünün sol kolon satırı. CapItem ile aynı şekil — eski capability
+ *  satırlarına yedek düşebilmek için ayrı isimlendirildi. */
+export type RegionItem = { name: string; url: string; slug: string; description: string; image: string };
+export type DestItem = {
+  name: string;
+  url: string;
+  slug: string;
+  /** Region Option alanının etiketi ("Ege"); yoksa "". */
+  region: string;
+  /** `region`'ın slug'ı; filtre anahtarı. */
+  regionSlug: string;
+  /** Eski multi-reference yedeği; region verisi yokken kullanılır. */
+  caps: string[];
+};
 export type JournalItem = { title: string; url: string; image: string; meta: string };
 
 export const PAGE_ATTR = {
   capabilitiesList: "data-nav-capabilities",
   destinationsList: "data-nav-destinations",
+  regionsList: "data-nav-regions",
   journalList: "data-nav-journal",
 } as const;
 type SourceName = keyof typeof PAGE_ATTR;
+
+/** Türkçe karakterleri de çözen slug'layıcı — Option alanlarında slug yok,
+ *  yalnız etiket var; iki taraf da buradan geçince eşleşme tutarlı olur. */
+const TR_MAP: Record<string, string> = {
+  ı: "i", İ: "i", i: "i", ş: "s", Ş: "s", ğ: "g", Ğ: "g",
+  ü: "u", Ü: "u", ö: "o", Ö: "o", ç: "c", Ç: "c", â: "a", î: "i", û: "u",
+};
+
+export function slugify(value: string): string {
+  return value
+    .trim()
+    .replace(/[ıİişŞğĞüÜöÖçÇâîû]/g, (ch) => TR_MAP[ch] ?? ch)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function slugFromHref(href: string): string {
   try {
@@ -116,6 +160,13 @@ export function parseDestinations(root: ParentNode | null): DestItem[] {
     const name = (a.textContent || "").trim();
     if (!slug || !name || seen.has(slug)) return;
     seen.add(slug);
+    const region = (
+      a.getAttribute("data-region") ||
+      item.getAttribute("data-region") ||
+      item.querySelector("[data-dest-region]")?.textContent ||
+      ""
+    ).trim();
+    /* Yedek: multi-reference dönemindeki capability bağları. */
     const caps = new Set<string>();
     const inline = a.getAttribute("data-caps") || item.getAttribute("data-caps") || "";
     inline.split(/[\s,]+/).filter(Boolean).forEach((c) => caps.add(c));
@@ -123,8 +174,69 @@ export function parseDestinations(root: ParentNode | null): DestItem[] {
       const c = el.getAttribute("data-cap");
       if (c) caps.add(c);
     });
-    out.push({ name, url, slug, caps: Array.from(caps) });
+    out.push({ name, url, slug, region, regionSlug: slugify(region), caps: Array.from(caps) });
   });
+  return out;
+}
+
+/** `[data-nav-regions]` statik kutusu: satır başlığı/açıklaması/görseli. */
+export function parseRegions(root: ParentNode | null): RegionItem[] {
+  if (!root) return [];
+  const out: RegionItem[] = [];
+  const seen = new Set<string>();
+  root.querySelectorAll<HTMLElement>("[data-region]").forEach((item) => {
+    const slug = slugify(item.getAttribute("data-region") || "");
+    if (!slug || seen.has(slug)) return;
+    const a = item.querySelector("a");
+    const name = (
+      item.querySelector("[data-region-name]")?.textContent ||
+      a?.textContent ||
+      item.getAttribute("data-region") ||
+      ""
+    ).trim();
+    if (!name) return;
+    seen.add(slug);
+    out.push({
+      name,
+      url: a?.getAttribute("href") || "",
+      slug,
+      description: (item.querySelector("[data-region-desc]")?.textContent || "").trim(),
+      image: imgSrc(item.querySelector("[data-region-image]") || item.querySelector("img")),
+    });
+  });
+  return out;
+}
+
+/** Destinasyonların Region değerlerinden satır listesi (DOM sırası, benzersiz). */
+export function regionsFromDests(dests: DestItem[]): RegionItem[] {
+  const out: RegionItem[] = [];
+  const seen = new Set<string>();
+  dests.forEach((d) => {
+    if (!d.regionSlug || seen.has(d.regionSlug)) return;
+    seen.add(d.regionSlug);
+    out.push({ name: d.region, url: "", slug: d.regionSlug, description: "", image: "" });
+  });
+  return out;
+}
+
+/**
+ * Hangi region'ların VAR olduğunu destinasyonlar söyler (CMS tek doğru kaynak);
+ * meta kutusu yalnız sıra/başlık/açıklama/görsel getirir. Kutuda olmayan bir
+ * region gizlenmez — sona eklenir. Destinasyon okunamadıysa kutu tek başına
+ * satırları taşır.
+ */
+export function mergeRegions(derived: RegionItem[], meta: RegionItem[]): RegionItem[] {
+  if (!derived.length) return meta;
+  if (!meta.length) return derived;
+  const bySlug = new Map(derived.map((r) => [r.slug, r]));
+  const out: RegionItem[] = [];
+  meta.forEach((m) => {
+    const d = bySlug.get(m.slug);
+    if (!d) return;
+    bySlug.delete(m.slug);
+    out.push({ ...m, name: m.name || d.name });
+  });
+  bySlug.forEach((d) => out.push(d));
   return out;
 }
 
@@ -149,12 +261,19 @@ export type CmsDebug = {
   lastSource: string;
   caps: number;
   dests: number;
+  regions: number;
   journal: boolean;
   errors: string[];
   fetched: string[];
 };
 
-export type CmsData = { caps: CapItem[]; dests: DestItem[]; journal: JournalItem | null };
+export type CmsData = {
+  caps: CapItem[];
+  dests: DestItem[];
+  /** Mega menü sol kolonu: destinasyonların region'ları + opsiyonel meta kutusu. */
+  regions: RegionItem[];
+  journal: JournalItem | null;
+};
 
 /**
  * Veri modeli. Kaynak sırası:
@@ -168,20 +287,21 @@ export function useCmsSlots(
   destsRef: RefObject<HTMLDivElement | null>,
   dataUrl?: string
 ): CmsData {
-  const [data, setData] = useState<CmsData>({ caps: [], dests: [], journal: null });
+  const [data, setData] = useState<CmsData>({ caps: [], dests: [], regions: [], journal: null });
 
   useEffect(() => {
     let raf = 0;
     let disposed = false;
     const observers: MutationObserver[] = [];
     const watched = new WeakSet<Node>();
-    const have = { caps: 0, dests: 0, journal: false };
+    const have = { caps: 0, dests: 0, regions: 0, journal: false };
     const debug: CmsDebug = {
-      version: "2.1.2",
+      version: "2.2.0",
       reads: 0,
       lastSource: "",
       caps: 0,
       dests: 0,
+      regions: 0,
       journal: false,
       errors: [],
       fetched: [],
@@ -204,23 +324,30 @@ export function useCmsSlots(
       setData((prev) => ({
         caps: next.caps.length ? next.caps : prev.caps,
         dests: next.dests.length ? next.dests : prev.dests,
+        regions: next.regions.length ? next.regions : prev.regions,
         journal: next.journal ?? prev.journal,
       }));
       if (next.caps.length) have.caps = next.caps.length;
       if (next.dests.length) have.dests = next.dests.length;
+      if (next.regions.length) have.regions = next.regions.length;
       if (next.journal) have.journal = true;
       debug.reads += 1;
-      if (next.caps.length || next.dests.length || next.journal) debug.lastSource = source;
+      if (next.caps.length || next.dests.length || next.regions.length || next.journal) debug.lastSource = source;
       debug.caps = have.caps;
       debug.dests = have.dests;
+      debug.regions = have.regions;
       debug.journal = have.journal;
     };
 
-    const parseFrom = (doc: Document, capsW: HTMLElement | null, destsW: HTMLElement | null): CmsData => ({
-      caps: parseCapabilities(findSource(capsW, "capabilitiesList", doc)),
-      dests: parseDestinations(findSource(destsW, "destinationsList", doc)),
-      journal: parseJournal(findSource(null, "journalList", doc)),
-    });
+    const parseFrom = (doc: Document, capsW: HTMLElement | null, destsW: HTMLElement | null): CmsData => {
+      const dests = parseDestinations(findSource(destsW, "destinationsList", doc));
+      return {
+        caps: parseCapabilities(findSource(capsW, "capabilitiesList", doc)),
+        dests,
+        regions: mergeRegions(regionsFromDests(dests), parseRegions(findSource(null, "regionsList", doc))),
+        journal: parseJournal(findSource(null, "journalList", doc)),
+      };
+    };
 
     const observe = (el: Node | null | undefined) => {
       if (!el || watched.has(el)) return;
@@ -253,7 +380,8 @@ export function useCmsSlots(
         debug.fetched.push(`${url} ${res.status} ${html.length}b`);
         const doc = new DOMParser().parseFromString(html, "text/html");
         const next = parseFrom(doc, null, null);
-        if (!disposed && (next.caps.length || next.dests.length || next.journal)) apply(next, "fetch:" + url);
+        if (!disposed && (next.caps.length || next.dests.length || next.regions.length || next.journal))
+          apply(next, "fetch:" + url);
       } catch (e) {
         fail("fetch", e);
       } finally {

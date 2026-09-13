@@ -57,9 +57,23 @@ Koleksiyonlar ve alanları mevcut; navbar bunları **okur**. Component'in kullan
 - Mega-menü sol sütunundaki **4 capability satırı** ve **Capabilities dropdown**'ının kaynağı (`nav-order` asc).
 - "All destinations" satırı CMS'te DEĞİL — statik (bkz. §3.1).
 
-**`Destinations`** — `name`, `slug`, `sort-order` (asc), `related-capabilities` (multi-reference → Capabilities; sağ panel filtresinin anahtarı), varsa `thumbnail`.
+**`Destinations`** — `name`, `slug`, `sort-order` (asc), **`region` (Option alanı)**, varsa `thumbnail`.
 - 18 destination bu koleksiyonda.
-- Sağ panel filtresi: `related-capabilities` seçili capability'i **içeriyorsa** o panelde listelenir.
+- Sağ panel filtresi: `destination.region` seçili satıra **eşitse** o panelde listelenir.
+
+> **Değişiklik (v2.2.0):** `related-capabilities` multi-reference'ı kaldırıldı, yerine
+> Destinations'a **`region` Option alanı** eklendi. Mega menünün sol kolonu artık capability
+> değil **region** listeler. Sonuçları:
+> - Region'ların ayrı bir koleksiyonu yok → satırlar destinasyonların `region` değerlerinden
+>   **türetilir** (benzersiz, DOM sırası). Option alanında slug olmadığı için etiket
+>   client tarafında slug'lanır (Türkçe karakter haritası dâhil).
+> - Option alanı açıklama/görsel/sıra taşıyamadığı için satır metası sayfadaki **statik**
+>   `[data-nav-regions]` kutusundan gelir (koleksiyon değil; `data-region`, opsiyonel link,
+>   `data-region-name` / `-desc` / `-image`). Sıra bu kutudan; kutuda olmayan region
+>   gizlenmez, sona eklenir.
+> - Capabilities menüsü (2. dropdown) **değişmedi** — hâlâ `Capabilities` koleksiyonundan.
+> - Geri uyumluluk: region verisi hiç okunamazsa component eski capability satırlarına ve
+>   `data-caps` filtresine düşer.
 
 ---
 
