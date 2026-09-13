@@ -1,5 +1,7 @@
 /**
- * AboutHero — v1.1.0
+ * AboutHero — v1.2.0
+ * v1.2.0 — Container prop'u: genişlik sitenin RC --container--* token'ından
+ *          (varsayılan 2xl); full/bleed ile container kaldırılabilir.
  * v1.1.0 — Fotoğraflarda projenin parallax preset'i (parallax.ts;
  *          js/animations/parallax.js portu): karo kırpar, içindeki fotoğraf
  *          scroll'la kayar. Doz karo derinliğine göre ölçeklenir.
@@ -52,6 +54,7 @@ export interface AboutHeroProps {
   image10?: NavImage;
 
   fit?: "cover" | "natural";
+  container?: "lg" | "xl" | "2xl" | "full" | "bleed";
   align?: "center" | "left";
   headerWidth?: number; // rem
   radius?: number; // px
@@ -88,6 +91,7 @@ export function AboutHero({
   image9,
   image10,
   fit = "cover",
+  container = "2xl",
   align = "center",
   headerWidth = 49.875,
   radius = 12,
@@ -214,7 +218,12 @@ export function AboutHero({
   const hasPrimary = !!primaryLabel.trim();
   const hasSecondary = !!secondaryLabel.trim();
 
+  // Container genişliği sitenin RC token'ından; sayı token hiç yoksa devreye giren üst sınır.
+  const CONTAINER_FALLBACK: Record<string, string> = { lg: "64rem", xl: "80rem", "2xl": "86rem" };
   const style: CSSProperties = {
+    ...(CONTAINER_FALLBACK[container]
+      ? { ["--mt-ah-container" as string]: `var(--container--${container}, ${CONTAINER_FALLBACK[container]})` }
+      : {}),
     ["--mt-ah-duration" as string]: `${Math.max(0, duration)}ms`,
     ["--mt-ah-step" as string]: `${Math.max(0, stagger)}ms`,
     ["--mt-ah-header-w" as string]: `${headerWidth}rem`,
@@ -225,6 +234,8 @@ export function AboutHero({
     "mt-ah",
     align === "left" ? "mt-ah--left" : "mt-ah--center",
     fit === "cover" ? "mt-ah--cover" : "mt-ah--natural",
+    container === "full" ? "mt-ah--full" : "",
+    container === "bleed" ? "mt-ah--bleed" : "",
     colorMode === "dark" ? "mt-ah--dark" : "mt-ah--light",
     reveal ? "mt-ah--reveal" : "",
     parallax ? "mt-ah--parallax" : "",

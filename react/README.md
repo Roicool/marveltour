@@ -229,10 +229,15 @@ hareket eder, o yüzden her karo reveal sırasındaki derinliğiyle ölçeklenmi
 merkez ×0.60, en dış karo ×1.14. GSAP sayfanın `window.gsap`'inden alınır (`acquireGsap`);
 ScrollTrigger yoksa fotoğraflar sabit kalır, mozaik yine doğru durur.
 
+**Container:** section sayfa container'ını kullanır; genişlik sitenin RC token'ından gelir
+(varsayılan `--container--2xl`). Yapı sitedekiyle aynı: önce section kenar boşluğu, sonra
+container — padding container kutusunun içine konursa içerik kenarı kayıyor. `Container` prop'u
+lg / xl / 2xl / full / bleed.
+
 **Prop'lar:** Content (heading **slot**, body, extra actions slot), Buttons (primary/secondary
 etiket + link), Photos (Photo 1–10; boş bırakılan karo hiç render edilmez), Look (photo fit,
-align, color mode, header width rem, photo radius), Motion (reveal, trigger inView/load,
-duration, stagger, parallax, parallax dose).
+container, align, color mode, header width rem, photo radius), Motion (reveal, trigger
+inView/load, duration, stagger, parallax, parallax dose).
 CSS ile ezilebilir: `--mt-ah-px`, `--mt-ah-py`, `--mt-ah-wrap-gap`, `--mt-ah-container`,
 `--mt-ah-body-size`.
 
