@@ -90,7 +90,28 @@ Her sayfada, bu sırayla:
 
 ## CSS
 
-Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
+> **Tek istek kuralı (performans).** CSS `<link>`'leri **render-blocking**'tir: her dosya
+> ayrı bir istek ve ilk boyamayı bekletir. Modül başına bir `<link>` koyma — sayfanın
+> ihtiyaç duyduğu dosyaları jsDelivr'ın `/combine/` uç noktasıyla **tek isteğe** indir.
+> Dosyalar toplamda ~40 KB (gzip ~8 KB); maliyet byte değil istek sayısı.
+>
+> Biçim: `https://cdn.jsdelivr.net/combine/` + virgülle ayrılmış `gh/<repo>@<ref>/<yol>`
+> listesi. **Sıra = cascade sırası**, aşağıdaki liste sırasını koru.
+>
+> Ana sayfa için (utils · stagger-button · parallax · hero-cinematic · h-scroll · noise ·
+> accordion) tek satır:
+>
+> ```html
+> <link rel="preconnect" href="https://cdn.jsdelivr.net">
+> <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@main/css/core/utils.css,gh/roicool/marveltour@main/css/components/stagger-button.css,gh/roicool/marveltour@main/css/animations/parallax.css,gh/roicool/marveltour@main/css/components/hero-cinematic.css,gh/roicool/marveltour@main/css/components/h-scroll.css,gh/roicool/marveltour@main/css/effects/noise.css,gh/roicool/marveltour@main/css/components/accordion.css">
+> ```
+>
+> Her sayfa kendi listesini kurar; kullanılmayan modülü ekleme. Purge gerekiyorsa
+> `https://purge.jsdelivr.net/` + aynı `combine/...` yolu (tek tek dosyaları purge etmek
+> combine çıktısını tazelemez).
+
+Aşağıdaki tek tek linkler **referans** içindir — modülün yolunu buradan alıp yukarıdaki
+combine listesine ekle:
 
 ```html
 <!-- utils v1.1.0 — rich-text marker, TOC, search, pagination, dropdown, blog-slider-pro görünümleri (core; utils.js ile birlikte; blog-slider-pro için swiper-bundle.min.css de gerekli) -->
@@ -155,6 +176,69 @@ Yalnız sayfada kullanılan modüllerin CSS'i yüklenir:
   });
 </script>
 ```
+
+## Performans (Lighthouse)
+
+### Render-blocking istekler
+
+| Kaynak | Ne yapılır |
+|---|---|
+| jsDelivr CSS modülleri | Yukarıdaki `/combine/` tek satırı — N istek yerine 1 |
+| `webfont.js` (ajax.googleapis.com) | Webflow bunu **yalnız** Project Settings → Fonts'ta bir Google Font tanımlıysa basar. Site Basel Grotesk (self-host) kullanıyor; Google Font'lar kaldırılırsa bu render-blocking istek tamamen kalkar |
+| `marveltour.webflow.shared.*.min.css` | Webflow'un kendi CSS'i; sayfanın temel stili, ertelenmez. Kullanılmayan Designer class'larını temizlemek dışında yapılacak bir şey yok |
+
+Script'ler zaten `defer` (Kural: istisna yok), o yüzden render'ı bloklamıyorlar.
+
+> Component CSS'lerini `media="print" onload="this.media='all'"` ile non-blocking yapmak
+> cazip ama **yapma**: pinli ScrollTrigger bölümleri (hero-cinematic, h-scroll, manifesto,
+> stat-counter…) CSS geç geldiğinde yanlış ölçüp layout kaydırıyor. Tek combine isteği
+> hem güvenli hem yeterli.
+
+### LCP — hero videosu
+
+Ana sayfanın LCP öğesi `[data-hero-media] video`'nun **poster görseli** — mp4 değil.
+Ayrım önemli, çünkü `<video>` üzerindeki `fetchpriority` **poster'a değil medya
+kaynağına (mp4) uygulanır**. Yani:
+
+| Attribute | Değer | Neden |
+|---|---|---|
+| `fetchpriority` | `low` — **öyle kalsın** | mp4 LCP değil; `high` yapmak onu poster'la yarıştırır. Lighthouse'un "fetchpriority=high uygulanmalıdır" satırı jenerik bir kontrol, bu durumda yanıltıcı |
+| `preload` | `auto` → `metadata` | `auto` tüm videoyu baştan çekip poster'ın bandını yiyor |
+
+Poster'a öncelik vermenin **tek** yolu `<head>`'e preload koymak (Webflow → Site
+Settings → Custom Code); bu aynı zamanda onu ilk dokümandan keşfedilebilir yapar:
+
+```html
+<link rel="preconnect" href="https://customer-ntnfh5smratjqd6k.cloudflarestream.com">
+<link rel="preload" as="image" fetchpriority="high"
+      href="https://customer-ntnfh5smratjqd6k.cloudflarestream.com/56a7b419862048ce505e6d686e96e05c/thumbnails/thumbnail.jpg?height=600">
+```
+
+İkisinde de **`crossorigin` YOK**: poster normal (no-CORS) bir görsel isteği. `crossorigin`
+eklemek ayrı bir CORS bağlantısı açar, preload eşleşmez ve görsel **iki kez** inar.
+(`crossorigin` yalnız font preload/preconnect'inde gerekir.) Aynı sebeple
+`cdn.jsdelivr.net` preconnect'i de `crossorigin`'siz — stylesheet de no-CORS.
+
+`href`, video elemanının `poster` değerinin **birebir aynısı** olmalı: `?height=600`
+dâhil, tek karakter farkı ikinci bir indirme demek. Poster'ın 600 px yüksekliğinde
+tutulması LCP için iyi; büyütme. Hero videosu değişirse bu satır da güncellenir,
+yalnız ana sayfada kullanılır.
+
+Düzeltilmiş eleman:
+
+```html
+<video autoplay muted loop playsinline webkit-playsinline preload="metadata" fetchpriority="low"
+  poster="https://customer-ntnfh5smratjqd6k.cloudflarestream.com/56a7b419862048ce505e6d686e96e05c/thumbnails/thumbnail.jpg?height=600">
+  <source src="https://customer-ntnfh5smratjqd6k.cloudflarestream.com/56a7b419862048ce505e6d686e96e05c/downloads/default.mp4" type="video/mp4">
+</video>
+```
+
+> `autoplay` varken tarayıcılar `preload`'u büyük ölçüde tavsiye sayar ve oynatmayı
+> başlatmak için yine indirmeye başlar; `metadata` erken byte'ları azaltır ama tek
+> başına yetmez. LCP'yi gerçekten taşıyan şey yukarıdaki poster preload'u.
+
+Hero'nun kendi CSS'i (`hero-cinematic.css`) medyayı gizlemiyor, LCP'yi geciktiren bir
+şey yapmıyor — bu uyarının kaynağı tamamen Designer'daki attribute'lar.
 
 ## Yeni dosya eklerken
 
