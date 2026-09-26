@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — navbar.css v3.0.0
+   Marveltour — navbar.css v3.1.0
    js/components/navbar.js'in companion CSS'i.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
@@ -26,6 +26,26 @@
 /* Mobil menü açıkken sayfa kilidi — YALNIZ mobilde (spec §0.3).
    Shadow DOM yok, o yüzden inline style yerine sınıf. */
 body.mt-nav-lock { overflow: hidden; }
+
+/* ---------- BAŞLANGIÇ DURUMU: GİZLİ ----------
+   DİKKAT: bu üç blok bilerek Designer'da DEĞİL. Webflow canvas'ı bu dosyayı
+   yüklemediği için, gizleme Designer class'ına yazılırsa paneller ve içlerindeki
+   Collection List'ler canvas'ta da görünmez olur ve düzenlenemez. Burada
+   kalınca: canvas'ta her şey açık ve düzenlenebilir, yayında kapalı. */
+.mt-nav__panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+}
+.mt-nav__stack > .mt-nav__stack-item {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.mt-nav__mobile {
+  transform: translateX(100%);
+  visibility: hidden;
+}
 
 /* ---------- DURUM SINIFLARI (JS ekler) ---------- */
 
