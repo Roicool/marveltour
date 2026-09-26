@@ -40,12 +40,15 @@ Her sayfada, bu sırayla:
 ## JS — Components / Effects / Animations
 
 ```html
-<!-- navbar v2.0.0 — kalıcı navbar — YALNIZ DAVRANIŞ. Navbar'ın tamamı (bar, mega
+<!-- navbar v2.1.1 — kalıcı navbar — YALNIZ DAVRANIŞ. Navbar'ın tamamı (bar, mega
      menü, paneller, Collection List'ler, mobil görünümler) Designer'da gerçek
      element; JS hiçbir DOM üretmez, yalnız açar/kapar, satır seçer, drill-in
      yürütür ve Barba ile senkronlar. Barba container'ının DIŞINDA yaşar ve BİR
      KEZ, kendi kendine kurulur → init YAZMA, onEach'e KOYMA (bkz. Init).
      GSAP gerekmez; Lenis varsa mobil menüde durdurulur.
+     Destinasyonlar hem masaüstünde hem mobilde TEK Collection List'ten gelir:
+     her link data-region ile Region alanına bağlı, JS aktif satıra göre
+     eşleşmeyeni gizler. Sayfa başına 20 Collection List sınırı için şart.
      Designer DOM sözleşmesi dosyanın başındaki yorumda. -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/navbar.js" defer></script>
 

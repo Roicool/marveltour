@@ -1,7 +1,10 @@
 /*!
- * navbar.js v2.1.0
+ * navbar.js v2.1.1
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.1.1 — Mobilde tek region görünümü: mgo satırındaki data-nav-mtitle,
+ *          görünümün kendi başlığını ezer. 7 ayrı region görünümü yerine tek
+ *          görünüm + satırdan gelen başlık.
  * v2.1.0 — Destinasyon tag'leri TEK Collection List'ten: her link data-region
  *          ile Region alanına bağlı, JS aktif satıra göre eşleşmeyen item'ı
  *          gizliyor. Region başına ayrı liste kurmaya gerek yok (Webflow'un
@@ -73,9 +76,11 @@
  * data-nav-mgo: mobil satırın gideceği görünüm; hedef [data-nav-mview] olmalı.
  * data-nav-row: mgo satırında opsiyonel — görünüme geçerken aktif satırı da
  *               seçer (mobilde tek region görünümü kullanıldığında gerekir).
+ * data-nav-mtitle: drill-in'de Back'in yanında görünen başlık. Görünümün
+ *               üstünde sabit başlık; mgo satırında da verilirse o satırın
+ *               başlığı görünümünkini ezer (tek görünüm, çok region).
  * data-nav-tags: içindeki TEK Collection List'in item'ları filtrelenir; her
  *               destinasyon linkinde data-region → Region alanı binding'i.
- * data-nav-mtitle: drill-in'de Back'in yanında görünen başlık.
  *
  * Trigger'lar ve burger Webflow'da Div Block olabilir (gerçek <button> native
  * bir Webflow elemanı değil); JS onları role="button" + tabindex + Enter/Space
@@ -361,9 +366,15 @@
       Array.prototype.forEach.call(mobile.querySelectorAll("[data-nav-mview]"), function (v) {
         views[v.getAttribute("data-nav-mview")] = v;
       });
+      /* Emniyet: satırlı bir görünüme data-nav-row taşımayan bir yoldan
+         girilirse hiçbir parça aktif olmaz ve görünüm boş kalır. Başlangıçta
+         bir varsayılan seçiliyor; goTo zaten üstüne yazıyor. */
+      var first = mobile.querySelector("[data-nav-mview] .mt-nav__stack > [data-row]");
+      if (first) setActiveRow(mobile, attr(mobile, "data-row-default") || first.getAttribute("data-row"));
     }
 
     function currentView() { return stack[stack.length - 1]; }
+    var titleOverride = "";
 
     function renderViews() {
       var view = currentView();
@@ -378,7 +389,7 @@
       if (brand) brand.hidden = deep;
       if (backLabel) {
         backLabel.textContent = deep
-          ? (attr(views[view], "data-nav-mtitle") || cfg.backLabel)
+          ? (titleOverride || attr(views[view], "data-nav-mtitle") || cfg.backLabel)
           : "";
       }
     }
@@ -389,6 +400,9 @@
     function goTo(node) {
       var row = node.getAttribute("data-nav-row");
       if (row && mobile) setActiveRow(mobile, row);
+      /* Tek region görünümü 7 region'a hizmet ettiği için başlık görünümün
+         kendisinden değil, tıklanan satırdan gelir. */
+      titleOverride = node.getAttribute("data-nav-mtitle") || "";
       goView(node.getAttribute("data-nav-mgo"));
     }
 
@@ -399,6 +413,7 @@
     }
     function popView() {
       if (stack.length > 1) stack.pop();
+      titleOverride = "";   // geri dönünce görünümün kendi başlığına düş
       renderViews();
     }
 
