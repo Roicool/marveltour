@@ -27,25 +27,27 @@
  *         <a data-nav-brand class="mt-nav__brand" href="/" aria-label="Marveltour"></a>
  *       </div>
  *       <nav class="mt-nav__menu" aria-label="Main">
- *         <button type="button" data-nav-trigger="dest" class="mt-nav__item">Türkiye</button>
- *         <button type="button" data-nav-trigger="caps" class="mt-nav__item">Capabilities</button>
+ *         <div data-nav-trigger="dest" class="mt-nav__item">Türkiye</div>
+ *         <div data-nav-trigger="caps" class="mt-nav__item">Capabilities</div>
  *         <a class="mt-nav__item" href="/how-we-work">How We Work</a>
  *         <a class="mt-nav__item" href="/journals">Journal</a>
- *         <a class="mt-nav__item" href="/about">About</a>
+ *         <a class="mt-nav__item" href="/about-us">About</a>
  *       </nav>
  *       <div class="mt-nav__right">
  *         <span class="mt-nav__lang" hidden>EN</span>
  *         <a data-nav-cta class="mt-nav__cta" href="/contact-us">Start a Conversation</a>
- *         <button type="button" data-nav-burger class="mt-nav__burger" aria-label="Menu">
- *           <span></span><span></span>
- *         </button>
+ *         <div data-nav-burger class="mt-nav__burger" aria-label="Menu"></div>
  *       </div>
  *     </div>
  *   </header>
  *
+ *   Trigger'lar ve burger Webflow'da **Div Block**: gerçek <button> native bir
+ *   Webflow elemanı değil (Button elemanı <a> basar) ve amaç Designer'da yalnız
+ *   native eleman kullanmak. JS bunları role="button" + tabindex + Enter/Space
+ *   ile butona yükseltir; zaten <button> iseler dokunmaz.
  *   [data-nav-brand] boşsa logotype SVG'si JS tarafından basılır (tek kaynak);
- *   içine kendi markup'ını koyarsan ona dokunulmaz.
- *   [data-nav-trigger] butonlarındaki caret ikonu JS tarafından eklenir.
+ *   içine kendi markup'ını koyarsan ona dokunulmaz. Burger boşsa çizgileri,
+ *   trigger'lara caret ikonu JS tarafından eklenir.
  *
  * KÖK AYARLARI (hepsi opsiyonel, [data-navbar] üzerinde):
  *   data-nav-variant="inverted|base"   varsayılan inverted
@@ -181,6 +183,24 @@
 
   function getLenis() {
     return (global.Marveltour && global.Marveltour.lenis) || global.lenis;
+  }
+
+  /**
+   * Webflow'da gerçek <button> native bir eleman değil (Button elemanı <a> basar),
+   * o yüzden Designer'daki trigger'lar ve burger Div Block olabiliyor. Div ise
+   * klavyeye kapalıdır — burada butona yükseltilir: rol, odaklanabilirlik ve
+   * Enter/Space. Zaten <button> ise hiçbir şey yapılmaz.
+   */
+  function asButton(node, onActivate) {
+    if (!node || node.tagName === "BUTTON") return;
+    node.setAttribute("role", "button");
+    if (!node.hasAttribute("tabindex")) node.setAttribute("tabindex", "0");
+    if (!onActivate) return;   // Enter/Space'i çağıran zaten ele alıyorsa
+    node.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+      e.preventDefault();
+      onActivate(e);
+    });
   }
 
   /* ------------------------------------------------------------ CMS parse */
@@ -661,14 +681,18 @@
       t.addEventListener("click", function () { clearClose(); setOpen(open === key ? null : key); });
       /* Klavye: panel DOM'da bar'dan sonra olduğu için Tab ile içine girilemiyordu
          (React sürümündeki erişilebilirlik hatası). ↓ / Enter odağı panele taşır. */
-      t.addEventListener("keydown", function (e) {
-        if (e.key !== "ArrowDown" && e.key !== "Enter" && e.key !== " ") return;
+      function intoPanel(e) {
         var panel = panels[key];
         clearClose();
         setOpen(key);
         var first = panel.querySelector("a[href], button:not([disabled])");
-        if (first) { e.preventDefault(); first.focus(); }
+        if (first) { if (e) e.preventDefault(); first.focus(); }
+      }
+      t.addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowDown" && e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+        intoPanel(e);
       });
+      asButton(t);   // Enter/Space yukarıdaki keydown'da; burada yalnız rol/tabindex
     });
 
     Object.keys(panels).forEach(function (key) {
@@ -862,10 +886,12 @@
     }
 
     if (burger) {
-      burger.addEventListener("click", function () {
+      var toggleMobile = function () {
         if (mobileOpen) closeMobile();
         else openMobile();
-      });
+      };
+      burger.addEventListener("click", toggleMobile);
+      asButton(burger, toggleMobile);
     }
 
     /* ---- şeffaf → zeminli; passive + rAF ---- */
