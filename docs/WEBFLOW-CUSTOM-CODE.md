@@ -95,6 +95,7 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
 
     Marveltour.initBarba({
       logo: 'Marveltour',
+      introOnLoad: true,   // F5/ilk yuklemede de perde oynasin (varsayilan: KAPALI)
       onEach: function (container) {
         /* Hepsi container-scoped; sayfada olmayan modül sessizce atlanır. */
         Marveltour.initUtils(container);   // 9 sayfa yardımcısını birlikte kurar
