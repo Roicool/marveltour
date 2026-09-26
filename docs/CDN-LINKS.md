@@ -40,9 +40,10 @@ Her sayfada, bu sırayla:
 ## JS — Components / Effects / Animations
 
 ```html
-<!-- navbar v1.0.0 — kalıcı navbar: Türkiye mega menüsü (CMS region satırları, 3 kolon),
+<!-- navbar v1.1.0 — kalıcı navbar: Türkiye mega menüsü (CMS region satırları, 3 kolon),
      Capabilities menüsü + son Journal yazısı, burgundy CTA, mobil drill-in. Barba
-     container'ının DIŞINDA yaşar ve BİR KEZ kurulur → onEach'e KOYMA (bkz. Init).
+     container'ının DIŞINDA yaşar ve BİR KEZ, kendi kendine kurulur → init YAZMA,
+     onEach'e KOYMA (bkz. Init).
      GSAP gerekmez; Lenis varsa mobil menüde durdurulur. Bar Designer'da, panelleri JS kurar. -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/navbar.js" defer></script>
 
@@ -159,10 +160,11 @@ combine listesine ekle:
   document.addEventListener('DOMContentLoaded', function () {
     gsap.registerPlugin(ScrollTrigger, SplitText);
     Marveltour.initLenis();
-    // Navbar Barba container'ının DIŞINDA yaşar: BİR KEZ, onEach'in dışında
-    // kurulur. Geçişte remount olmaz; aktif link ve menü kapatma
-    // marveltour:page / marveltour:leave event'leriyle senkronlanır.
-    Marveltour.initNavbar();
+    // Navbar için init YOK: container dışında yaşayan ve bir kez kurulan tek
+    // modül olduğu için kendi kendine kurulur (navbar.js v1.1.0). onEach'e
+    // KOYMA. Aktif link ve menü kapatma marveltour:page / marveltour:leave
+    // event'leriyle senkronlanır. Gerekirse Marveltour.initNavbar(root) elle
+    // çağrılabilir — idempotent.
     Marveltour.initBarba({
       logo: 'Marveltour', // veya SVG string / logo URL'i
       onEach: function (container) {
