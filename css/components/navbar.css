@@ -1,11 +1,12 @@
 /* ============================================================
-   Marveltour — navbar.css v2.0.0
+   Marveltour — navbar.css v3.0.0
    js/components/navbar.js'in companion CSS'i.
 
-   BÖLÜŞÜM (v2.0.0'da değişti): düzen, renk, boşluk, tipografi, hover ve
-   breakpoint'ler artık WEBFLOW DESIGNER'daki mt-nav__* class'larında —
-   canvas'ta doğru görünsün ve editör düzenleyebilsin diye. Bu dosyada
-   yalnız Webflow'un style panelinden YAZILAMAYAN parçalar kaldı:
+   BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
+   DESIGNER'daki mt-nav__* class'larında — canvas'ta doğru görünsün ve editör
+   düzenleyebilsin diye. Navbar'ın DOM'u da tamamen Designer'da (v3.0.0: JS
+   hiçbir şey üretmiyor). Bu dosyada yalnız Webflow'un style panelinden
+   YAZILAMAYAN parçalar kaldı:
 
      - JS'in eklediği durum sınıfları (.is-open, .is-scrolled, .is-active,
        .is-mobile-open): Webflow combo class'ı iki sınıfın da Designer'da
@@ -13,8 +14,8 @@
      - :not() zincirleri ve descendant seçiciler
      - !important emniyet kuralları
      - @keyframes ve prefers-reduced-motion
-     - JS'in bastığı elemanlar (logotype SVG, caret, burger çizgileri)
-     - [hidden] ve [data-nav-*] gizleme
+     - Durum sınıfına bağlı gizleme ([hidden], mobil görünümler)
+     - Buton reset'i ve ikon dönüşleri
 
    Designer'daki class'lar BOŞ DEĞİL: property'ler orada. Buradaki kurallar
    yalnız üstüne biner. İkisi aynı property'yi yazmıyor — çakışma yok.
@@ -83,6 +84,24 @@ body.mt-nav-lock { overflow: hidden; }
 
 /* ---------- JS'İN BASTIĞI ELEMANLAR (Designer'da class'ları yok) ---------- */
 
+/* Buton reset'i. Designer'da bu satırlar Div Block ise gereksiz ama zararsız;
+   gerçek <button> kullanılırsa tarayıcının gri zemini, çerçevesi ve kendi
+   font-family'si gelir — ekranda gri kutular olarak görünür.
+   `font` KISAYOLU KULLANMA: Designer'daki font-size'ı (mrow 19px, row 17px)
+   ezer; yalnız family devralınıyor. */
+.mt-nav__row,
+.mt-nav__mrow,
+.mt-nav__back {
+  background: none;
+  border: 0;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.mt-nav__back { font-size: inherit; }
+/* Yukarıdaki `border: 0` mobil satırın ayracını da siliyor, geri veriliyor */
+.mt-nav__mrow { border-bottom: 1px solid rgba(71, 14, 45, 0.14); }
+
 /* Logotype: sabit width/height yok, boyut buradan; renk currentColor */
 .mt-nav__brand svg { height: clamp(16px, 1.4vw, 22px); width: auto; display: block; }
 .mt-nav__brand svg path, .mt-nav__brand svg rect { fill: currentColor; }
@@ -129,11 +148,13 @@ body.mt-nav-lock { overflow: hidden; }
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* ---------- CMS KUTULARI: yalnız veri kaynağı, görünmez ---------- */
-[data-nav-capabilities],
-[data-nav-destinations],
-[data-nav-regions],
-[data-nav-journal] { display: none !important; }
+/* ---------- MOBİL GÖRÜNÜMLER ---------- */
+/* Drill-in görünümleri Designer'da yan yana durur; JS yalnız birini açık
+   bırakır. `hidden` attribute'u display:none üretir ama .mt-nav altındaki
+   display kuralları onu ezebileceği için açıkça yazılıyor. */
+[data-nav-mview][hidden],
+[data-nav-back][hidden],
+.mt-nav__brand[hidden] { display: none !important; }
 
 /* ---------- REDUCED MOTION (proje kuralı — her modülde zorunlu) ---------- */
 @media (prefers-reduced-motion: reduce) {
