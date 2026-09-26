@@ -1,5 +1,5 @@
 /*!
- * navbar.js v1.0.0
+ * navbar.js v1.1.0
  * Marveltour kalıcı navbar — react/components/Navbar (v2.2.0) vanilla portu.
  *
  * NEDEN PORT: site React code component kullanmıyor. Shadow DOM kalkınca
@@ -380,11 +380,34 @@
     });
   }
 
-  function rowBySlug(cms, slug) {
-    for (var i = 0; i < cms.rows.length; i++) {
-      if (cms.rows[i].slug === slug) return cms.rows[i];
+  function rowBySlug(rows, slug, fallback) {
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].slug === slug) return rows[i];
     }
-    return cms.allRow;
+    return fallback || rows[0];
+  }
+
+  /**
+   * Designer'da kurulmuş mega menü satırlarını oku. Satırlar Designer'da
+   * gerçek element olduğunda başlık/açıklama/görsel oradan düzenlenir ve
+   * CMS'ten türetilmeye gerek kalmaz; JS yalnız destinasyon tag'lerini doldurur.
+   */
+  function rowsFromDom(panel) {
+    if (!panel) return [];
+    var out = [];
+    Array.prototype.forEach.call(panel.querySelectorAll(".mt-nav__row[data-row]"), function (node) {
+      var slug = node.getAttribute("data-row");
+      var item = panel.querySelector('.mt-nav__stack-item[data-row="' + slug + '"]');
+      var title = item && item.querySelector(".mt-nav__explore-title");
+      out.push({
+        name: text(node),
+        url: title ? title.getAttribute("href") || "" : "",
+        slug: slug,
+        description: item ? text(item.querySelector(".mt-nav__explore-desc")) : "",
+        image: imgSrc(panel.querySelector('img.mt-nav__media[data-row="' + slug + '"]'))
+      });
+    });
+    return out;
   }
 
   /** Explore bloğu: başlık-link + açıklama + destinasyon tag'leri. */
@@ -599,20 +622,94 @@
 
     var cms = readCms(cfg);
 
-    /* Panelleri kur — bar'dan SONRA, kökün içinde (kendi stacking context'i) */
-    var mega = buildMega(cms, cfg);
-    var caps = buildCaps(cms, cfg);
-    var mobile = buildMobile(
-      cfg,
-      ctaEl ? ctaEl.getAttribute("href") || "/contact-us" : "/contact-us",
-      ctaEl ? text(ctaEl) || "Start a Conversation" : "Start a Conversation"
-    );
-    root.appendChild(mega);
-    root.appendChild(caps);
-    root.appendChild(mobile);
+    /* Designer'da kurulmuş paneller varsa ONLAR kullanılır (yapı ve metinler
+       Designer'da düzenlenebilir kalsın); yoksa JS kendi kurar. İkisi bir arada
+       olursa panel çiftlenirdi — bu yüzden önce aranır. */
+    var mega = root.querySelector('[data-nav-panel="dest"]');
+    var caps = root.querySelector('[data-nav-panel="caps"]');
+    var mobile = root.querySelector("[data-nav-mobile]");
+    var fromDesigner = !!(mega && caps && mobile);
+
+    if (!fromDesigner) {
+      mega = mega || buildMega(cms, cfg);
+      caps = caps || buildCaps(cms, cfg);
+      mobile = mobile || buildMobile(
+        cfg,
+        ctaEl ? ctaEl.getAttribute("href") || "/contact-us" : "/contact-us",
+        ctaEl ? text(ctaEl) || "Start a Conversation" : "Start a Conversation"
+      );
+      if (!mega.parentNode) root.appendChild(mega);
+      if (!caps.parentNode) root.appendChild(caps);
+      if (!mobile.parentNode) root.appendChild(mobile);
+    }
+
+    /* Satırların kaynağı: Designer DOM'u varsa o, yoksa CMS'ten türetilen. */
+    var rows = fromDesigner ? rowsFromDom(mega) : cms.rows;
+    if (!rows.length) rows = cms.rows;
+    var allRow = rows[0] || cms.allRow;
+
+    if (fromDesigner) hydrate();
+
+    /** Designer iskeletini CMS verisiyle doldur: tag'ler, caps linkleri, journal. */
+    function hydrate() {
+      mega.id = mega.id || "mt-nav-mega";
+      caps.id = caps.id || "mt-nav-caps";
+      mobile.id = mobile.id || "mt-nav-mobile";
+      [mega, caps].forEach(function (p) {
+        p.setAttribute("role", "region");
+        p.setAttribute("aria-hidden", "true");
+      });
+      mobile.setAttribute("aria-hidden", "true");
+
+      /* Destinasyon tag'leri — Designer'da ifade edilemeyen tek parça:
+         her satırın listesi CMS'ten filtrelenir. */
+      Array.prototype.forEach.call(mega.querySelectorAll("[data-nav-tags]"), function (box) {
+        var slug = box.getAttribute("data-nav-tags");
+        box.innerHTML = "";
+        destsFor(cms, slug).forEach(function (d) {
+          var a = el("a", "mt-nav__tag");
+          a.href = d.url;
+          a.textContent = d.name;
+          box.appendChild(a);
+        });
+      });
+
+      /* Explore başlıklarına ok ikonu */
+      Array.prototype.forEach.call(mega.querySelectorAll(".mt-nav__explore-title"), function (a) {
+        if (!a.querySelector(".mt-nav__arrow")) a.insertAdjacentHTML("beforeend", ARROW);
+      });
+
+      /* Görseli verilmemiş satır "all" görseline düşer (React'teki davranış) */
+      var fallbackSrc = imgSrc(mega.querySelector('img.mt-nav__media[data-row="all"]'));
+      if (fallbackSrc) {
+        Array.prototype.forEach.call(mega.querySelectorAll("img.mt-nav__media[data-row]"), function (img) {
+          if (!img.getAttribute("src")) img.setAttribute("src", fallbackSrc);
+        });
+      }
+
+      var linksBox = caps.querySelector("[data-nav-caps-links]");
+      if (linksBox) {
+        linksBox.innerHTML = "";
+        cms.caps.forEach(function (c) {
+          var a = el("a", "mt-nav__list-link");
+          a.href = c.url;
+          a.appendChild(doc.createTextNode(c.name));
+          a.insertAdjacentHTML("beforeend", ARROW);
+          linksBox.appendChild(a);
+        });
+      }
+
+      var journalBox = caps.querySelector("[data-nav-journal-card]");
+      if (journalBox) {
+        journalBox.innerHTML = "";
+        var card = journalCard(cms.journal);
+        if (card) journalBox.appendChild(card);
+      }
+    }
 
     var panels = { dest: mega, caps: caps };
-    var mobileScroll = mobile.querySelector(".mt-nav__mobile-scroll");
+    var mobileScroll = mobile.querySelector("[data-nav-mobile-scroll]") ||
+      mobile.querySelector(".mt-nav__mobile-scroll");
 
     /* ---- durum ---- */
     var open = null;             // null | "dest" | "caps"
@@ -740,7 +837,7 @@
       if (view === "dest") return cfg.destLabel;
       if (view === "caps") return cfg.capsLabel;
       if (view.indexOf(REGION_PREFIX) === 0) {
-        return rowBySlug(cms, view.slice(REGION_PREFIX.length)).name;
+        return rowBySlug(rows, view.slice(REGION_PREFIX.length), allRow).name;
       }
       return "";
     }
@@ -804,7 +901,7 @@
       if (view === "dest") {
         list = el("div", "mt-nav__mlist");
         list.appendChild(el("p", "mt-nav__eyebrow", "")).textContent = cfg.destLabel;
-        cms.rows.forEach(function (row) {
+        rows.forEach(function (row) {
           list.appendChild(mrow(row.name, function () {
             pushView(REGION_PREFIX + row.slug);
           }, null, caret("right", 18)));
@@ -833,11 +930,11 @@
       }
 
       /* region:{slug} */
-      var row = rowBySlug(cms, view.slice(REGION_PREFIX.length));
+      var row = rowBySlug(rows, view.slice(REGION_PREFIX.length), allRow);
       var wrap = el("div", "mt-nav__mexplore");
       wrap.appendChild(el("p", "mt-nav__eyebrow", "")).textContent = cfg.exploreEyebrow;
-      wrap.appendChild(exploreBlock(row, destsFor(cms, row.slug), cms.allRow.url));
-      var src = row.image || cms.allRow.image;
+      wrap.appendChild(exploreBlock(row, destsFor(cms, row.slug), allRow.url));
+      var src = row.image || allRow.image;
       if (src) {
         var img = el("img", "mt-nav__media mt-nav__media--mobile");
         img.src = src;
@@ -939,4 +1036,16 @@
 
   global.Marveltour = global.Marveltour || {};
   global.Marveltour.initNavbar = initNavbar;
+
+  /* Otomatik kurulum. Navbar container DIŞINDA yaşayan ve BİR KEZ kurulan tek
+     modül, yani Barba'nın onEach'ine bağlanacak bir tarafı yok — elle init
+     yazdırmak hem gereksiz bir adım hem de yanlışlıkla onEach'e konma riski.
+     Script `defer` olduğu için DOM hazır; yine de readyState kontrol ediliyor.
+     initNavbar root._mtNavInit ile idempotent: elle çağırmak isteyen (ya da
+     navbar'ı sonradan ekleyen) Marveltour.initNavbar(root) diyebilir. */
+  if (doc.readyState === "loading") {
+    doc.addEventListener("DOMContentLoaded", function () { initNavbar(); });
+  } else {
+    initNavbar();
+  }
 })(window);
