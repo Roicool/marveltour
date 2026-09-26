@@ -88,6 +88,9 @@ Her sayfada, bu sırayla:
 <!-- accordion v1.0.0 — erişilebilir SSS/disclosure akordiyonu: tam ARIA + klavye, GSAP height 0↔auto, tekli/çoklu mod; toggle sonrası ScrollTrigger.refresh (gsap gerekir, ScrollTrigger opsiyonel; JS yokken tüm cevaplar açık; sestek'ten port) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/accordion.js" defer></script>
 
+<!-- lightbox v1.0.0 — CMS multi-image galerisini tam ekran lightbox'a çevirir: Collection List Wrapper'a data-lightbox yeter (içindeki her <img> item olur; .w-dyn-empty/.w-condition-invisible atlanır). ←/→ Home/End Esc, dokunmatikte yatay swipe = gez / dikey swipe = kapat, tam ARIA + odak kapanı, srcset devralınır, komşular önden yüklenir. Bağımlılık YOK (GSAP gerekmez); overlay ilk açılışta kurulur, kapalıyken display:none → çizime sıfır etki. INIT GEREKMEZ (DOMContentLoaded + marveltour:page ile kendi kurulur). Attribute sözleşmesi dosyanın başındaki yorumda. -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/lightbox.js" defer></script>
+
 <!-- text-reveal v1.0.0 — satır satır metin girişi preset'i: data-text-reveal, SplitText line-mask, bir kez oynar ve DOM orijinaline döner (gsap + ScrollTrigger + SplitText; CSS gerekmez; refreshPriority -1; pinli bölüm İÇİNDE ve data-reveal'lı elemanın KENDİSİNDE kullanılmaz) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/animations/text-reveal.js" defer></script>
 
@@ -154,6 +157,8 @@ combine listesine ekle:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/process-steps.css">
 <!-- accordion v1.1.0 — davranışsal kurallar + opt-in editoryal FAQ görünümü (root'a data-accordion="faq" ver; boş data-accordion = yalnız davranış) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/accordion.css">
+<!-- lightbox — yalnız galeri olan sayfalarda gerekir ama Barba'lı sitede site-wide combine listesine koy (Kural B4); overlay rengi/z-index'i .mt-lightbox üstünde --lb-bg / --lb-fg / --lb-accent / --lb-radius / --lb-z ile ezilebilir -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/lightbox.css">
 <!-- stat-counter -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stat-counter.css">
 ```
@@ -190,6 +195,8 @@ combine listesine ekle:
         Marveltour.initProcessSteps(container);
         Marveltour.initStatCounter(container);
         Marveltour.initAccordion(container);
+        // Lightbox için init GEREKMEZ (kendi kurulur). AJAX ile sonradan
+        // gelen görsellerin klavye erişimi için: Marveltour.initLightbox(el)
       }
     });
   });
