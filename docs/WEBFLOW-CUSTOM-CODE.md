@@ -86,37 +86,40 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
 ```html
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    gsap.registerPlugin(ScrollTrigger, SplitText);
-    Marveltour.initLenis();
+    /* Eksik bir GSAP eklentisi TUM init'i oldurmesin: registerPlugin bir
+       ReferenceError atarsa handler oracikta olur, initBarba hic cagrilmaz
+       ve sitede hicbir JS calismaz. */
+    try {
+      var plugins = [window.ScrollTrigger, window.SplitText].filter(Boolean);
+      if (window.gsap && plugins.length) gsap.registerPlugin.apply(gsap, plugins);
+      if (!window.SplitText) console.warn('[MT] SplitText yok - text-reveal statik kalir.');
+      if (!window.ScrollTrigger) console.warn('[MT] ScrollTrigger yok - scroll animasyonlari kapali.');
+    } catch (e) { console.error('[MT] registerPlugin:', e); }
 
-    /* Navbar için init YOK. Container dışında yaşayan ve bir kez kurulan tek
-       modül olduğu için kendi kendine kurulur; onEach'e koymak her geçişte
-       listener'ları çoğaltır. Aktif link ve menü kapatma marveltour:page /
-       marveltour:leave event'leriyle senkronlanır. Gerekirse
-       Marveltour.initNavbar(root) elle çağrılabilir — idempotent. */
+    if (!window.Marveltour) { console.error('[MT] Marveltour yuklenmedi - head blogunu kontrol et.'); return; }
+    try { Marveltour.initLenis(); } catch (e) { console.error('[MT] Lenis:', e); }
+
+    /* INIT YAZILMAYAN IKI MODUL - navbar ve lightbox. Ikisi de Barba
+       container'inin disinda yasar, dosya yuklenince kendi kurulur ve
+       marveltour:page / marveltour:leave ile senkronlanir. onEach'e
+       koymak her gecişte listener'lari cogaltir. */
 
     Marveltour.initBarba({
       logo: 'Marveltour',
+      introOnLoad: true,   // F5/ilk yuklemede de perde oynasin (varsayilan: KAPALI)
       onEach: function (container) {
-        /* Hepsi container-scoped; sayfada olmayan modül sessizce atlanır. */
-        Marveltour.initUtils(container);   // 9 sayfa yardımcısını birlikte kurar
-        Marveltour.initStaggerButton(container);
-        Marveltour.initParallax(container);
-        Marveltour.initReveal(container);
-        Marveltour.initTextReveal(container);
-        Marveltour.initHeroCinematic(container);
-        Marveltour.initHeroFrame(container);
-        Marveltour.initHeroCarousel(container);
-        Marveltour.initMarquee(container);
-        Marveltour.initStepScroll(container);
-        Marveltour.initHScroll(container);
-        Marveltour.initExpertiseShowcase(container);
-        Marveltour.initManifesto(container);
-        Marveltour.initProcessSteps(container);
-        Marveltour.initStatCounter(container);
-        Marveltour.initAccordion(container);
-        /* Lightbox için init YOK — DOMContentLoaded + marveltour:page ile
-           kendi kurulur. */
+        /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
+           eksik/hatali modulun adi konsola dusur. */
+        [
+          'initUtils','initStaggerButton','initParallax','initReveal','initTextReveal',
+          'initHeroCinematic','initHeroFrame','initHeroCarousel','initMarquee',
+          'initStepScroll','initHScroll','initExpertiseShowcase','initManifesto',
+          'initProcessSteps','initStatCounter','initAccordion'
+        ].forEach(function (name) {
+          var fn = Marveltour[name];
+          if (typeof fn !== 'function') { console.warn('[MT] eksik:', name); return; }
+          try { fn(container); } catch (e) { console.error('[MT] ' + name + ':', e); }
+        });
       }
     });
   });

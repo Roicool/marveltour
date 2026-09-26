@@ -183,6 +183,8 @@ combine listesine ekle:
     // çağrılabilir — idempotent.
     Marveltour.initBarba({
       logo: 'Marveltour', // veya SVG string / logo URL'i
+      introOnLoad: true,  // F5/ilk yüklemede de perde oynasın — VARSAYILAN KAPALI,
+                          // yazmazsan ilk açılışta geçiş perdesi hiç görünmez
       onEach: function (container) {
         // sayfa modüllerinin init'leri buraya — hepsi container-scoped
         Marveltour.initUtils(container);
