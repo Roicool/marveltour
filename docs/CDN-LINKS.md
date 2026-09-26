@@ -40,11 +40,13 @@ Her sayfada, bu sırayla:
 ## JS — Components / Effects / Animations
 
 ```html
-<!-- navbar v1.1.0 — kalıcı navbar: Türkiye mega menüsü (CMS region satırları, 3 kolon),
-     Capabilities menüsü + son Journal yazısı, burgundy CTA, mobil drill-in. Barba
-     container'ının DIŞINDA yaşar ve BİR KEZ, kendi kendine kurulur → init YAZMA,
-     onEach'e KOYMA (bkz. Init).
-     GSAP gerekmez; Lenis varsa mobil menüde durdurulur. Bar Designer'da, panelleri JS kurar. -->
+<!-- navbar v2.0.0 — kalıcı navbar — YALNIZ DAVRANIŞ. Navbar'ın tamamı (bar, mega
+     menü, paneller, Collection List'ler, mobil görünümler) Designer'da gerçek
+     element; JS hiçbir DOM üretmez, yalnız açar/kapar, satır seçer, drill-in
+     yürütür ve Barba ile senkronlar. Barba container'ının DIŞINDA yaşar ve BİR
+     KEZ, kendi kendine kurulur → init YAZMA, onEach'e KOYMA (bkz. Init).
+     GSAP gerekmez; Lenis varsa mobil menüde durdurulur.
+     Designer DOM sözleşmesi dosyanın başındaki yorumda. -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/navbar.js" defer></script>
 
 <!-- stagger-button v1.0.0 — buton hover'ında karakter bazlı text swap (gsap + SplitText gerekir) -->
