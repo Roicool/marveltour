@@ -1,5 +1,5 @@
 /*!
- * lightbox.css v1.0.0
+ * lightbox.css v1.1.0
  * CSS for js/components/lightbox.js
  *   1) Tetikleyiciler (galeri görselleri) — yalnız cursor + odak halkası;
  *      thumbnail'ın boyutuna/yerleşimine DOKUNMAZ (CLS/LCP etkisi sıfır)
@@ -15,6 +15,7 @@
  * Özelleştirme — .mt-lightbox üstünde ez:
  *   --lb-bg      zemin               --lb-fg      metin/ikon
  *   --lb-accent  odak halkası        --lb-radius  görsel köşesi (default 0)
+ *   --lb-thumb   şerit yüksekliği (default 64px; mobilde 52px)
  *   --lb-z       z-index (default 9000 — Webflow .w-nav 1000'in üstünde,
  *                Barba perdesi 9999'un altında)
  */
@@ -58,7 +59,7 @@ html.mt-lb-lock {
   inset: 0;
   z-index: var(--lb-z);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   box-sizing: border-box;
   color: var(--lb-fg);
   outline: none;
@@ -386,4 +387,78 @@ html.mt-lb-lock {
   .mt-lightbox {
     display: none !important;
   }
+}
+
+
+/* ── 4) Thumbnail şeridi ───────────────────────────────────────
+   Büyük görselin altında küçük kareler; tıklayınca o görsele atlar.
+   JS yalnız tek görselde ya da data-lightbox-thumbs="false" verildiğinde
+   şeridi hiç kurmaz — o durumda .has-thumbs sınıfı da basılmaz ve satır
+   grid'de sıfır yer kaplar. Sayfadaki thumbnail'a DOKUNULMAZ (CLS yok). */
+
+.mt-lightbox__thumbs {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  /* Az görselde ortalı; taşınca "safe" soldan başlatır (ortalı taşmada
+     ilk kareler erişilemez olurdu) */
+  justify-content: safe center;
+  align-items: center;
+  padding: 0 var(--lb-gutter) var(--lb-gutter);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  /* Overlay kökünde touch-action:none var (sürükleme JS'te) — şeridin
+     kendi yatay kaydırması için geri açılıyor. */
+  touch-action: pan-x;
+  scrollbar-width: none;
+  scroll-padding-inline: var(--lb-gutter);
+}
+.mt-lightbox__thumbs::-webkit-scrollbar { display: none; }
+
+/* Şerit yoksa satır hiç yer kaplamasın */
+.mt-lightbox:not(.has-thumbs) .mt-lightbox__thumbs { display: none; }
+
+.mt-lightbox__thumb {
+  flex: 0 0 auto;
+  width: var(--lb-thumb, 64px);
+  height: var(--lb-thumb, 64px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--lb-radius);
+  background: none;
+  cursor: pointer;
+  opacity: 0.45;
+  outline: none;
+  /* Aktif kareyi çerçeveleyen hairline; layout'u kaydırmasın diye inset */
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: opacity 0.25s var(--lb-ease), box-shadow 0.25s var(--lb-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.mt-lightbox__thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+.mt-lightbox__thumb:hover { opacity: 0.8; }
+.mt-lightbox__thumb.is-active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 2px var(--lb-fg);
+}
+.mt-lightbox__thumb:focus-visible {
+  opacity: 1;
+  box-shadow: inset 0 0 0 2px var(--lb-accent);
+}
+
+@media (max-width: 767px) {
+  .mt-lightbox__thumbs { --lb-thumb: 52px; gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mt-lightbox__thumb { transition: none; }
+  .mt-lightbox__thumbs { scroll-behavior: auto; }
 }

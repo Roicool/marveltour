@@ -1,9 +1,11 @@
 /*!
- * lightbox.js v1.0.0
+ * lightbox.js v1.1.0
  * CMS multi-image galerisini (ya da herhangi bir görsel grubunu) tam ekran
  * lightbox'a çeviren, data-attribute'lu, bağımlılıksız modül.
  *   - Sıfır kurulum: script + CSS + attribute yeter; init çağrısı GEREKMEZ
  *   - Tık/Enter ile açılır; ←/→ Home/End gezinme, Esc kapatma
+ *   - Altta thumbnail şeridi: tıklayınca o görsele atlar, aktif kare
+ *     çerçevelenip görünür alana kayar (v1.1.0)
  *   - Dokunmatikte yatay swipe = önceki/sonraki, dikey swipe = kapat
  *   - Tam ARIA: role=dialog + aria-modal, odak kapanı, odak iadesi,
  *     "Image 3 of 12" canlı duyurusu
@@ -42,6 +44,8 @@
  *                            kapak görseli + CMS galerisi). Boş = kendi grubu.
  *   data-lightbox-loop       "false" → uçlarda durur          (default: döner)
  *   data-lightbox-captions   "false" → caption gösterme       (default: açık)
+ *   data-lightbox-thumbs     "false" → thumbnail şeridi gösterme (default: açık;
+ *                            tek görsellik galeride zaten kurulmaz)
  *
  * Item attribute'ları (hepsi opsiyonel):
  *   data-lightbox-item       explicit item modu (yukarıya bak)
@@ -88,6 +92,8 @@
     open: "Open image",
     counter: "Image {i} of {n}",
     error: "This image could not be loaded.",
+    thumbs: "Gallery thumbnails",
+    goTo: "Go to image {i}",
   };
 
   var ICONS = {
@@ -113,6 +119,7 @@
     items: [],
     index: 0,
     loop: true,
+    thumbs: true,
     reduce: false,
     token: 0,        // her show()'da artar → bayat yüklemeler yok sayılır
     fig: null,       // ekrandaki figure
@@ -203,6 +210,10 @@
       srcset: srcset,
       alt: img ? (img.getAttribute("alt") || "").trim() : "",
       caption: captions ? captionOf(el, img) : "",
+      /* Seritte sayfadaki KUCUK gorsel kullanilir: zaten cache'te, aninda
+         cizilir. currentSrc parse aninda bos olabilir -> src'ye, o da
+         yoksa buyuk kaynaga duser. */
+      thumb: (img && (img.currentSrc || img.getAttribute("src"))) || src,
     };
   }
 
@@ -232,6 +243,7 @@
     return {
       items: items,
       loop: flag(root.getAttribute("data-lightbox-loop"), true),
+      thumbs: flag(root.getAttribute("data-lightbox-thumbs"), true),
     };
   }
 
@@ -327,6 +339,9 @@
     var foot = node("div", "mt-lightbox__foot", root);
     var caption = node("p", "mt-lightbox__caption", foot);
 
+    var thumbs = node("div", "mt-lightbox__thumbs", root);
+    thumbs.setAttribute("aria-label", LABELS.thumbs);
+
     var prev = button("mt-lightbox__nav mt-lightbox__prev", LABELS.prev, ICONS.prev, root);
     var next = button("mt-lightbox__nav mt-lightbox__next", LABELS.next, ICONS.next, root);
 
@@ -337,7 +352,9 @@
     ui = {
       root: root, backdrop: backdrop, counter: counter, close: close,
       stage: stage, caption: caption, prev: prev, next: next, live: live,
+      thumbs: thumbs, thumbBtns: [],
     };
+
 
     root.addEventListener("click", onDialogClick);
     root.addEventListener("animationend", onRootAnimEnd);
@@ -394,8 +411,11 @@
 
     var hasCaptions = false;
     for (var i = 0; i < n; i++) if (group.items[i].caption) { hasCaptions = true; break; }
+    state.thumbs = group.thumbs !== false;
     ui.root.classList.toggle("is-single", n < 2);
     ui.root.classList.toggle("has-captions", hasCaptions);
+    renderThumbs();
+    ui.root.classList.toggle("has-thumbs", ui.thumbBtns.length > 0);
 
     if (!state.open) {
       state.open = true;
@@ -459,6 +479,8 @@
     for (var i = 0; i < figs.length; i++) figs[i].parentNode.removeChild(figs[i]);
     ui.caption.textContent = "";
     ui.live.textContent = "";
+    ui.thumbs.textContent = "";
+    ui.thumbBtns = [];
     state.fig = null;
     state.items = [];
     state.preload = [];
@@ -561,12 +583,65 @@
     timer = setTimeout(remove, ANIM_FALLBACK);
   }
 
+  /** Serit butonlarini grubun item'larindan kurar. Her acilista yenilenir:
+      grup degisebilir, CMS ile yeni gorsel gelmis olabilir. */
+  function renderThumbs() {
+    ui.thumbs.textContent = "";
+    ui.thumbBtns = [];
+    var n = state.items.length;
+    if (!state.thumbs || n < 2) return;
+
+    var frag = doc.createDocumentFragment();
+    for (var i = 0; i < n; i++) {
+      var it = state.items[i];
+      var b = doc.createElement("button");
+      b.type = "button";
+      b.className = "mt-lightbox__thumb";
+      b.setAttribute("data-i", i);
+      b.setAttribute("aria-label", LABELS.goTo.replace("{i}", i + 1));
+      var im = doc.createElement("img");
+      im.src = it.thumb || it.src;
+      im.alt = "";                 // buton zaten aria-label tasiyor
+      im.loading = "lazy";
+      im.decoding = "async";
+      im.draggable = false;
+      b.appendChild(im);
+      frag.appendChild(b);
+      ui.thumbBtns.push(b);
+    }
+    ui.thumbs.appendChild(frag);
+  }
+
+  /** Aktif thumb'i isaretle ve gorunur alana getir. */
+  function syncThumbs() {
+    var btns = ui.thumbBtns;
+    if (!btns.length) return;
+    for (var i = 0; i < btns.length; i++) {
+      var on = i === state.index;
+      btns[i].classList.toggle("is-active", on);
+      /* Tek tab duragi kurali (bkz. focusables) */
+      btns[i].tabIndex = on ? 0 : -1;
+      if (on) btns[i].setAttribute("aria-current", "true");
+      else btns[i].removeAttribute("aria-current");
+    }
+    var act = btns[state.index];
+    if (!act || !act.scrollIntoView) return;
+    try {
+      act.scrollIntoView({
+        block: "nearest",
+        inline: "center",
+        behavior: state.reduce ? "auto" : "smooth",
+      });
+    } catch (e) { act.scrollIntoView(false); }
+  }
+
   function updateChrome() {
     var n = state.items.length;
     var i = state.index;
     ui.counter.textContent = pad(i + 1) + " / " + pad(n);
     ui.prev.setAttribute("aria-disabled", String(!state.loop && i === 0));
     ui.next.setAttribute("aria-disabled", String(!state.loop && i === n - 1));
+    syncThumbs();
   }
 
   function preloadAround(i) {
@@ -610,6 +685,10 @@
     if (t.closest(".mt-lightbox__close")) { close(); return; }
     if (t.closest(".mt-lightbox__prev")) { go(-1); return; }
     if (t.closest(".mt-lightbox__next")) { go(1); return; }
+    var th = t.closest(".mt-lightbox__thumb");
+    if (th) { goTo(+th.getAttribute("data-i")); return; }
+    /* Şeridin kendi boşluğu da kapatmasın */
+    if (t.closest(".mt-lightbox__thumbs")) return;
     if (t.closest(".mt-lightbox__img, .mt-lightbox__caption, .mt-lightbox__counter, .mt-lightbox__error")) return;
     close(); // görsel dışı boşluk
   }
@@ -617,6 +696,12 @@
   function focusables() {
     var list = [ui.close];
     if (state.items.length > 1) list.push(ui.prev, ui.next);
+    /* Serit acikken tab durgu; yalnizca AKTIF thumb tab sirasina girer
+       (12 gorselde 12 durak olmasin) — digerlerine ok tuslariyla gidilir. */
+    if (ui.thumbBtns.length) {
+      var act = ui.thumbBtns[state.index];
+      if (act) list.push(act);
+    }
     return list;
   }
 
