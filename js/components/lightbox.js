@@ -1,5 +1,5 @@
 /*!
- * lightbox.js v1.1.0
+ * lightbox.js v1.2.0
  * CMS multi-image galerisini (ya da herhangi bir görsel grubunu) tam ekran
  * lightbox'a çeviren, data-attribute'lu, bağımlılıksız modül.
  *   - Sıfır kurulum: script + CSS + attribute yeter; init çağrısı GEREKMEZ
@@ -46,6 +46,13 @@
  *   data-lightbox-captions   "false" → caption gösterme       (default: açık)
  *   data-lightbox-thumbs     "false" → thumbnail şeridi gösterme (default: açık;
  *                            tek görsellik galeride zaten kurulmaz)
+ *   data-lightbox-layout     OPT-IN sayfa yerleşimi (v1.2.0). Verilmezse
+ *                            galeriye HİÇ dokunulmaz (varsayılan davranış).
+ *                              "hero" → ilk görsel tam genişlik, kalanlar
+ *                                       altında küçük kareler
+ *                              "grid" → eşit kareli grid
+ *                            Ayar: --lbg-cols, --lbg-gap, --lbg-ratio,
+ *                            --lbg-hero-ratio (bkz. lightbox.css)
  *
  * Item attribute'ları (hepsi opsiyonel):
  *   data-lightbox-item       explicit item modu (yukarıya bak)
@@ -283,6 +290,35 @@
    * erişilebilir yapar. Tıklama bunsuz da çalışır. Idempotent.
    * @param {ParentNode} [container=document]
    */
+  var LAYOUTS = ["hero", "grid"];
+
+  /**
+   * OPT-IN sayfa yerlesimi. data-lightbox-layout VERILMEDIKCE galeri
+   * thumbnail'larina hic dokunulmaz (modulun CLS/LCP sozu — bkz. dosya
+   * basligi). Verilince item'larin ORTAK EBEVEYNINE grid sinifi basilir;
+   * boylece hem Webflow Collection List'te (.w-dyn-item sarmalayici) hem
+   * duz <img> yiginlarinda ayni kod calisir.
+   */
+  function applyLayout(root, items) {
+    var mode = (root.getAttribute("data-lightbox-layout") || "").trim().toLowerCase();
+    if (LAYOUTS.indexOf(mode) < 0) return;   // bilinmeyen deger -> sinif enjeksiyonu yok
+    if (!items.length) return;
+
+    var cells = [];
+    for (var i = 0; i < items.length; i++) {
+      var cell = items[i].el.closest(".w-dyn-item") || items[i].el;
+      if (cells.indexOf(cell) < 0) cells.push(cell);
+    }
+    var parent = cells[0].parentNode;
+    if (!parent || parent.nodeType !== 1) return;
+
+    parent.classList.add("mt-lb-grid", "mt-lb-grid--" + mode);
+    for (var j = 0; j < cells.length; j++) {
+      /* Yalniz dogrudan cocuklar: farkli ebeveyndeki item grid'i bozmasin */
+      if (cells[j].parentNode === parent) cells[j].classList.add("mt-lb-grid__item");
+    }
+  }
+
   function initLightbox(container) {
     container = container || doc;
     if (!container.querySelectorAll) return;
@@ -290,6 +326,7 @@
     var roots = container.querySelectorAll("[data-lightbox]");
     for (var i = 0; i < roots.length; i++) {
       var items = itemsOf(roots[i]);
+      applyLayout(roots[i], items);
       for (var j = 0; j < items.length; j++) prepTrigger(items[j].el, true);
     }
     var openers = container.querySelectorAll("[data-lightbox-open]");
