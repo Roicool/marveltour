@@ -54,7 +54,17 @@ body.mt-nav-lock { overflow: hidden; }
 .mt-nav__row.is-active { background: rgba(71, 14, 45, 0.06); color: #2b0a1c; }
 .mt-nav__mrow.is-active { color: #470e2d; }
 
-.mt-nav__panel.is-open { opacity: 1; visibility: visible; transform: translateY(0); }
+/* pointer-events: auto ŞART. Kök `pointer-events: none` (spec §0.1) olduğu
+   için açık panel bunu almazsa fare olaylarını hiç görmez: panelin
+   mouseenter'ı tetiklenmez, 140 ms'lik hover köprüsü iptal edilemez ve menü
+   daha içine girilmeden kapanır. Designer'daki .mt-nav__panel class'ında
+   YOK — durum sınıfına bağlı olduğu için burada kalıyor. */
+.mt-nav__panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
 .mt-nav.is-mobile-open .mt-nav__mobile { transform: translateX(0); visibility: visible; }
 
 /* Emniyet kemeri: kapalı panelin ve kapalı mobil menünün HİÇBİR çocuğu
