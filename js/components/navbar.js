@@ -1,7 +1,12 @@
 /*!
- * navbar.js v2.0.0
+ * navbar.js v2.1.0
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.1.0 — Destinasyon tag'leri TEK Collection List'ten: her link data-region
+ *          ile Region alanına bağlı, JS aktif satıra göre eşleşmeyen item'ı
+ *          gizliyor. Region başına ayrı liste kurmaya gerek yok (Webflow'un
+ *          sayfa başına 20 Collection List sınırı). Mobilde data-nav-row ile
+ *          satır seçimi + görünüm geçişi tek dokunuşta.
  * v2.0.0 — JS artık HİÇBİR DOM ÜRETMİYOR. Navbar'ın tamamı (bar, mega menü
  *          satırları, explore blokları, destinasyon listeleri, capabilities
  *          linkleri, journal kartı, mobil görünümler) Webflow Designer'da
@@ -66,6 +71,10 @@
  *           İlk satır varsayılan aktiftir; data-row-default ile başka satır
  *           seçilebilir.
  * data-nav-mgo: mobil satırın gideceği görünüm; hedef [data-nav-mview] olmalı.
+ * data-nav-row: mgo satırında opsiyonel — görünüme geçerken aktif satırı da
+ *               seçer (mobilde tek region görünümü kullanıldığında gerekir).
+ * data-nav-tags: içindeki TEK Collection List'in item'ları filtrelenir; her
+ *               destinasyon linkinde data-region → Region alanı binding'i.
  * data-nav-mtitle: drill-in'de Back'in yanında görünen başlık.
  *
  * Trigger'lar ve burger Webflow'da Div Block olabilir (gerçek <button> native
@@ -98,6 +107,24 @@
   var DESKTOP_MQ = "(min-width: 992px)";
 
   function text(el) { return el ? String(el.textContent || "").trim() : ""; }
+
+  /* Region Option alanının slug'ı yok; Collection List item'ı ham etiketi
+     basıyor ("Aegean Region"), Designer'daki data-row ise slug ("aegean-region").
+     Karşılaştırma iki tarafı da buradan geçirerek yapılır. */
+  var TR_MAP = {
+    "ı": "i", "İ": "i", "ş": "s", "Ş": "s", "ğ": "g", "Ğ": "g",
+    "ü": "u", "Ü": "u", "ö": "o", "Ö": "o", "ç": "c", "Ç": "c"
+  };
+  function slugify(value) {
+    return String(value || "")
+      .trim()
+      .replace(/[ıİşŞğĞüÜöÖçÇ]/g, function (ch) { return TR_MAP[ch] || ch; })
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
   function attr(el, name) { return el ? el.getAttribute(name) || "" : ""; }
 
   function getLenis() {
@@ -287,8 +314,22 @@
     /* ---- mega menü satırları: hangi [data-row] görünür ---- */
     var megaPanels = Object.keys(panels).map(function (k) { return panels[k]; });
 
-    function setActiveRow(panel, row) {
-      Array.prototype.forEach.call(panel.querySelectorAll("[data-row]"), function (node) {
+    /**
+     * Aktif satırı uygular. İki iş yapar:
+     *  1) [data-row] taşıyan parçalar (başlık/açıklama blokları, görseller)
+     *     — eşleşen görünür.
+     *  2) [data-nav-tags] içindeki TEK Collection List'in item'ları — her
+     *     destinasyon linki data-region ile Region alanına bağlı; eşleşmeyen
+     *     gizlenir. Böylece region başına ayrı liste kurmaya gerek kalmıyor
+     *     (Webflow'un sayfa başına 20 Collection List sınırı).
+     */
+    function setActiveRow(scope, row) {
+      Array.prototype.forEach.call(scope.querySelectorAll("[data-nav-tags] [data-region]"), function (node) {
+        var on = row === "all" || slugify(node.getAttribute("data-region")) === row;
+        var item = node.closest(".w-dyn-item") || node;
+        item.hidden = !on;
+      });
+      Array.prototype.forEach.call(scope.querySelectorAll("[data-row]"), function (node) {
         var on = node.getAttribute("data-row") === row;
         node.classList.toggle("is-active", on);
         if (node.classList.contains("mt-nav__row")) {
@@ -342,6 +383,15 @@
       }
     }
 
+    /* Satır da taşıyorsa (data-nav-row) önce onu seç: mobilde tek region
+       görünümü var, hangi başlık/açıklama ve hangi tag'lerin görüneceğini
+       bu belirliyor. */
+    function goTo(node) {
+      var row = node.getAttribute("data-nav-row");
+      if (row && mobile) setActiveRow(mobile, row);
+      goView(node.getAttribute("data-nav-mgo"));
+    }
+
     function goView(name) {
       if (!views[name]) return;
       stack.push(name);
@@ -357,11 +407,11 @@
         var go = e.target.closest("[data-nav-mgo]");
         if (go && mobile.contains(go)) {
           e.preventDefault();
-          goView(go.getAttribute("data-nav-mgo"));
+          goTo(go);
         }
       });
       Array.prototype.forEach.call(mobile.querySelectorAll("[data-nav-mgo]"), function (n) {
-        asButton(n, function () { goView(n.getAttribute("data-nav-mgo")); });
+        asButton(n, function () { goTo(n); });
       });
       mobile.setAttribute("aria-hidden", "true");
     }
