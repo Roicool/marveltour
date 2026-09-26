@@ -3,6 +3,12 @@
 Tüm dosyalar **jsDelivr** üzerinden, build step'siz servis edilir.
 Base URL: `https://cdn.jsdelivr.net/gh/roicool/marveltour@main/`
 
+> **Yayına yapıştırılacak blok burası değil.** Bu dosya modül referansı:
+> hangi modül ne yapar, neyi gerektirir, hangi sırayla yüklenir. Webflow'a
+> olduğu gibi kopyalanacak **tam head + footer** blokları, yayındaki commit
+> SHA'sına pinli hâlde → [WEBFLOW-CUSTOM-CODE.md](WEBFLOW-CUSTOM-CODE.md).
+> Yeni modül eklerken ikisini birlikte güncelle.
+
 > **Cache notu:** jsDelivr `@main` linklerini ~12 saat cache'ler. Push sonrası anında
 > güncelleme gerekiyorsa: `https://purge.jsdelivr.net/gh/roicool/marveltour@main/<dosya-yolu>`
 > adresini ziyaret et. Production'da `@main` yerine tag pinlemek daha güvenlidir
@@ -271,3 +277,6 @@ Hero'nun kendi CSS'i (`hero-cinematic.css`) medyayı gizlemiyor, LCP'yi geciktir
 1. Dosyayı push'la → `@main` linki otomatik çalışır (cache gecikmesine dikkat).
 2. Bu dosyaya ilgili bölüme linkini ekle.
 3. Script ise **mutlaka `defer`** ile listele — istisna yok.
+4. `WEBFLOW-CUSTOM-CODE.md`'deki head bloğuna da ekle (CSS ise combine
+   listesine, doğru cascade sırasına) ve pinli SHA'yı tazele — yoksa modül
+   repoda durur ama yayına hiç çıkmaz.
