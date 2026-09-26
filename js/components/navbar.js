@@ -366,6 +366,11 @@
       Array.prototype.forEach.call(mobile.querySelectorAll("[data-nav-mview]"), function (v) {
         views[v.getAttribute("data-nav-mview")] = v;
       });
+      /* Emniyet: satırlı bir görünüme data-nav-row taşımayan bir yoldan
+         girilirse hiçbir parça aktif olmaz ve görünüm boş kalır. Başlangıçta
+         bir varsayılan seçiliyor; goTo zaten üstüne yazıyor. */
+      var first = mobile.querySelector("[data-nav-mview] .mt-nav__stack > [data-row]");
+      if (first) setActiveRow(mobile, attr(mobile, "data-row-default") || first.getAttribute("data-row"));
     }
 
     function currentView() { return stack[stack.length - 1]; }
