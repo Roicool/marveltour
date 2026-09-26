@@ -62,6 +62,12 @@ Prop tipleri (`@webflow/data-types` → `props.*`): `Text`, `TextNode`, `RichTex
 
 ### Navbar — `react/components/Navbar/`
 
+> **Vanilla'ya çevrildi.** Yerini `js/components/navbar.js` v1.0.0 +
+> `css/components/navbar.css` aldı (aynı `[data-nav-*]` CMS sözleşmesi, bar Designer'da).
+> Bu React sürümü, Designer'da vanilla'ya geçiş yapılıp yayınlanana kadar **duruyor** —
+> şu an canlıda o kullanılıyor, önce silmek siteyi bozar. Geçiş doğrulandıktan sonra
+> bu klasör kaldırılacak.
+
 Spec: [`docs/NAVBAR-SPEC.md`](../docs/NAVBAR-SPEC.md). Kalıcı navbar (v2): ortalı bar
 (logo | menü | dil + CTA), Türkiye mega menüsü **3 kolon** (sol satırlar → orta "Explore":
 başlık-link + açıklama + destinasyon tag'leri → sağ görsel), Capabilities menüsü (linkler +

@@ -40,6 +40,12 @@ Her sayfada, bu sırayla:
 ## JS — Components / Effects / Animations
 
 ```html
+<!-- navbar v1.0.0 — kalıcı navbar: Türkiye mega menüsü (CMS region satırları, 3 kolon),
+     Capabilities menüsü + son Journal yazısı, burgundy CTA, mobil drill-in. Barba
+     container'ının DIŞINDA yaşar ve BİR KEZ kurulur → onEach'e KOYMA (bkz. Init).
+     GSAP gerekmez; Lenis varsa mobil menüde durdurulur. Bar Designer'da, panelleri JS kurar. -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/navbar.js" defer></script>
+
 <!-- stagger-button v1.0.0 — buton hover'ında karakter bazlı text swap (gsap + SplitText gerekir) -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/js/components/stagger-button.js" defer></script>
 
@@ -116,6 +122,8 @@ combine listesine ekle:
 ```html
 <!-- utils v1.1.0 — rich-text marker, TOC, search, pagination, dropdown, blog-slider-pro görünümleri (core; utils.js ile birlikte; blog-slider-pro için swiper-bundle.min.css de gerekli) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/core/utils.css">
+<!-- navbar — her sayfada (navbar site kabuğunda) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/navbar.css">
 <!-- stagger-button -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/roicool/marveltour@main/css/components/stagger-button.css">
 <!-- parallax -->
@@ -151,6 +159,10 @@ combine listesine ekle:
   document.addEventListener('DOMContentLoaded', function () {
     gsap.registerPlugin(ScrollTrigger, SplitText);
     Marveltour.initLenis();
+    // Navbar Barba container'ının DIŞINDA yaşar: BİR KEZ, onEach'in dışında
+    // kurulur. Geçişte remount olmaz; aktif link ve menü kapatma
+    // marveltour:page / marveltour:leave event'leriyle senkronlanır.
+    Marveltour.initNavbar();
     Marveltour.initBarba({
       logo: 'Marveltour', // veya SVG string / logo URL'i
       onEach: function (container) {
