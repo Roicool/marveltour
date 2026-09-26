@@ -10,10 +10,10 @@ sürükle-bırak kullanılır.
 ```
 react/
 └── components/
-    └── Button/
-        ├── Button.tsx           # saf React component (Webflow'dan habersiz)
-        ├── Button.css           # component CSS'i (Shadow DOM'a gömülür)
-        └── Button.webflow.tsx   # declareComponent() — Webflow kaydı + props
+    └── <Ad>/
+        ├── <Ad>.tsx           # saf React component (Webflow'dan habersiz)
+        ├── <Ad>.css           # component CSS'i (Shadow DOM'a gömülür)
+        └── <Ad>.webflow.tsx   # declareComponent() — Webflow kaydı + props
 ```
 
 Kural: her component kendi klasöründe; `*.webflow.tsx` yalnız kayıt işi yapar,
@@ -60,11 +60,13 @@ Prop tipleri (`@webflow/data-types` → `props.*`): `Text`, `TextNode`, `RichTex
 
 ## Component'ler
 
-### Button (starter)
-
-Label (TextNode), Link, Variant (Primary/Secondary/Ghost), Full width, Attributes.
-
 ### Navbar — `react/components/Navbar/`
+
+> **Vanilla'ya çevrildi.** Yerini `js/components/navbar.js` v1.0.0 +
+> `css/components/navbar.css` aldı (aynı `[data-nav-*]` CMS sözleşmesi, bar Designer'da).
+> Bu React sürümü, Designer'da vanilla'ya geçiş yapılıp yayınlanana kadar **duruyor** —
+> şu an canlıda o kullanılıyor, önce silmek siteyi bozar. Geçiş doğrulandıktan sonra
+> bu klasör kaldırılacak.
 
 Spec: [`docs/NAVBAR-SPEC.md`](../docs/NAVBAR-SPEC.md). Kalıcı navbar (v2): ortalı bar
 (logo | menü | dil + CTA), Türkiye mega menüsü **3 kolon** (sol satırlar → orta "Explore":
@@ -223,20 +225,6 @@ metin bloğu + Square'in reveal motoru). Motor GSAP (`reveal.ts`):
 align, min height), Motion (reveal, parallax, video/text yüzdeleri). CSS ile ezilebilir:
 `--vh-title`, `--vh-body`, `--vh-px`, `--vh-py`, `--vh-stack-w`, `--vh-obj-pos`.
 
-### Contact Form — `react/components/ContactForm/`
-
-Minimal iletişim formu: **Ad · Soyad · E-posta · [🇹🇷 +90 ▾] Telefon · Gönder**. Kendi doğrulaması
-(zorunlu, e-posta biçimi, telefon 6–14 rakam), honeypot, gönderim/başarı/hata durumları, ülke
-kodu seçicisi (50 ülke, bayrak + kod; varsayılan TR). Shadow DOM içindeki form Webflow'un kendi
-form JS'i tarafından yakalanmadığı için component kendisi POST eder:
-
-| Ayar | Davranış |
-|---|---|
-| `Action URL` dolu | Oraya POST; `Action method` json (`application/json`) ya da form (urlencoded). Webhook, Make, Zapier, Formspark, kendi API'n. |
-| `Action URL` boş + `Webflow Site ID` dolu | `POST https://webflow.com/api/v1/form/{siteId}` (Webflow native formlarının kullandığı uç; resmi belgelenmemiş). Gönderiler Site Settings → Forms'a düşer, e-posta bildirimleri çalışır. |
-
-Payload alanları: `firstName`, `lastName`, `name`, `email`, `phoneCountry` (ISO), `phoneDial`,
-`phone` (`+90 5321234567`), `page`. Başarıda yerinde teşekkür kartı gösterilir (yönlendirme yok). Tüm etiketler/mesajlar prop. `Inverted` koyu zemin için açık metin.
 
 ### About Hero — `react/components/AboutHero/`
 
