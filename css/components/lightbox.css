@@ -1,5 +1,5 @@
 /*!
- * lightbox.css v1.1.0
+ * lightbox.css v1.2.0
  * CSS for js/components/lightbox.js
  *   1) Tetikleyiciler (galeri görselleri) — yalnız cursor + odak halkası;
  *      thumbnail'ın boyutuna/yerleşimine DOKUNMAZ (CLS/LCP etkisi sıfır)
@@ -461,4 +461,54 @@ html.mt-lb-lock {
 @media (prefers-reduced-motion: reduce) {
   .mt-lightbox__thumb { transition: none; }
   .mt-lightbox__thumbs { scroll-behavior: auto; }
+}
+
+
+/* ── 5) OPT-IN sayfa yerleşimi ─────────────────────────────────
+   YALNIZ galeri köküne data-lightbox-layout verilirse devreye girer; JS
+   sınıfları item'ların ortak ebeveynine basar. Verilmeyen galerilerin
+   yerleşimine hiç dokunulmaz — modülün CLS/LCP sözü korunur.
+
+   Ayarlar (galeri kökünde ya da .mt-lb-grid üstünde ez):
+     --lbg-cols        küçük kare sütun sayısı        (default 4)
+     --lbg-gap         boşluk                          (default 8px)
+     --lbg-ratio       küçük karelerin oranı           (default 1 = kare)
+     --lbg-hero-ratio  büyük görselin oranı            (default 16/9) */
+
+.mt-lb-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--lbg-cols, 4), minmax(0, 1fr));
+  gap: var(--lbg-gap, 8px);
+}
+
+/* Webflow Collection List'te .w-dyn-items zaten flex olabilir — grid'e
+   geçerken o kurallar kalmasın */
+.mt-lb-grid.w-dyn-items { float: none; }
+.mt-lb-grid > .mt-lb-grid__item {
+  float: none;
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* Görseller kutuyu doldursun; oran sabit → CLS yok */
+.mt-lb-grid__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: var(--lbg-ratio, 1);
+}
+
+/* hero: ilk görsel tam genişlik, kalanlar altında şerit gibi */
+.mt-lb-grid--hero > .mt-lb-grid__item:first-child {
+  grid-column: 1 / -1;
+}
+.mt-lb-grid--hero > .mt-lb-grid__item:first-child img {
+  aspect-ratio: var(--lbg-hero-ratio, 16 / 9);
+}
+
+@media (max-width: 767px) {
+  .mt-lb-grid { --lbg-cols: 3; --lbg-gap: 6px; }
 }
