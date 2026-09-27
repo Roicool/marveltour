@@ -1,7 +1,16 @@
 /*!
- * navbar.js v2.4.0
+ * navbar.js v2.4.1
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.4.1 — Varyant önceliği ters çevrildi: SAYFA işaretçisi
+ *          ([data-nav-page-variant]) artık navbar'ın kendi attribute/sınıfını
+ *          eziyor. Navbar kalıcı (Barba yalnız wrap-main'i değiştirir), yani
+ *          üzerindeki değer sitenin VARSAYILANI; sayfaya özel değer ancak
+ *          swap edilen kaptan gelebilir. Eski sırada component root'una
+ *          basılı data-nav-variant="inverted" işaretçiyi tamamen etkisiz
+ *          bırakıyordu. Ayrıca init'te classList.add yerine applyVariant:
+ *          Designer'ın bastığı karşıt sınıf siliniyor (ikisi birlikte
+ *          kalırsa CSS'te sonra tanımlanan kazanıyordu).
  * v2.4.0 — Varyant SAYFADAN da belirlenebiliyor: [data-nav-page-variant]
  *          (örn. wrap-main üstünde). Webflow Component variant'ları yalnız
  *          CSS ezebildiği, prop'larda da attribute binding olmadığı için
@@ -193,12 +202,18 @@
    * arasında attribute binding yok. O yüzden varyant SAYFADAN belirlenir —
    * navbar tek bir component olarak kalır.
    *
-   * Öncelik:
-   *   1) Root'un kendi sınıfı (mt-nav--base / --inverted)
-   *   2) Root'un data-nav-variant attribute'u
-   *   3) SAYFA işaretçisi: herhangi bir yerde [data-nav-page-variant]
+   * Öncelik (sayfa > navbar — navbar kalıcı, sayfa değil):
+   *   1) SAYFA işaretçisi: herhangi bir yerde [data-nav-page-variant]
    *      (Designer'da wrap-main'e koy — navbar component'inin dışında)
-   *   4) Varsayılan: inverted
+   *   2) Root'un kendi sınıfı (mt-nav--base / --inverted) veya
+   *      data-nav-variant attribute'u → sitenin VARSAYILANI
+   *   3) Son çare: inverted
+   *
+   * Sıra neden böyle: navbar Body seviyesinde, wrap-page'in kardeşi. Barba
+   * yalnız wrap-main'i swap ettiği için navbar DOM'u sayfa geçişlerinde
+   * ÖLMEZ — üzerindeki değer ilk yüklenen sayfadan kalır. Sayfaya özel
+   * varyant bu yüzden yalnız swap edilen kaptan gelebilir ve navbar'ın
+   * kendi değerini ezmesi gerekir.
    */
   /** Designer'ın yazdığı varyant — BİR KEZ, JS sınıf basmadan önce. */
   function authoredVariant(root) {
@@ -220,7 +235,7 @@
        varyant ilk sayfada kilitlenir; sayfa işaretçisi bir daha kazanamaz.
        Designer'ın yazdığı değer init'te yakalanıp root._mtNavAuthored'da
        saklanıyor. */
-    return root._mtNavAuthored || pageVariant(root) || "inverted";
+    return pageVariant(root) || root._mtNavAuthored || "inverted";
   }
 
   /** Varyant sınıfını tazeler — Barba geçişinde sayfa değişebilir. */
@@ -267,7 +282,11 @@
       backLabel: attr(root, "data-nav-back-label") || "Back"
     };
 
-    root.classList.add("mt-nav", "mt-nav--" + cfg.variant);
+    /* add() DEĞİL: Designer'ın bastığı karşıt sınıf (örn. mt-nav--inverted)
+       sayfa işaretçisi base derken kalıyordu — ikisi birlikteyken CSS'te
+       sonra tanımlanan kazanıyor. applyVariant ikisini de toggle ediyor. */
+    root.classList.add("mt-nav");
+    applyVariant(root);
     root.style.setProperty("--mt-h", cfg.height + "px");
     root.style.setProperty("--mt-z", String(cfg.zIndex));
 
