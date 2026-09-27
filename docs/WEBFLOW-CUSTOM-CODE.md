@@ -106,7 +106,6 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
 
     Marveltour.initBarba({
       logo: 'Marveltour',
-      coverColor: '#470e2d',   // gecis perdesinin zemini (marka bordosu)
       introOnLoad: true,   // F5/ilk yuklemede de perde oynasin (varsayilan: KAPALI)
       onEach: function (container) {
         /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
