@@ -1,7 +1,12 @@
 /*!
- * navbar.js v2.3.0
+ * navbar.js v2.4.0
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.4.0 — Varyant SAYFADAN da belirlenebiliyor: [data-nav-page-variant]
+ *          (örn. wrap-main üstünde). Webflow Component variant'ları yalnız
+ *          CSS ezebildiği, prop'larda da attribute binding olmadığı için
+ *          navbar component'inin İÇİNDEN ayarlanamıyordu. Barba geçişinde
+ *          yeniden hesaplanıyor.
  * v2.3.0 — Variant, Designer'da basılmış mt-nav--base / --inverted sınıfından
  *          da okunabiliyor (data-nav-variant hâlâ geçerli). Açık zemin üstü
  *          için mt-nav--base artık scroll beklemeden zeminli duruyor.
@@ -178,10 +183,60 @@
     });
   }
 
+  var VARIANTS = { base: 1, inverted: 1 };
+
+  /**
+   * Navbar'ın açık/koyu zemin varyantı.
+   *
+   * Webflow Component'i İÇİNDEN ayarlanamıyor: variant'lar yalnız CSS
+   * property'si ezebiliyor (attribute/sınıf değiştiremiyor) ve prop tipleri
+   * arasında attribute binding yok. O yüzden varyant SAYFADAN belirlenir —
+   * navbar tek bir component olarak kalır.
+   *
+   * Öncelik:
+   *   1) Root'un kendi sınıfı (mt-nav--base / --inverted)
+   *   2) Root'un data-nav-variant attribute'u
+   *   3) SAYFA işaretçisi: herhangi bir yerde [data-nav-page-variant]
+   *      (Designer'da wrap-main'e koy — navbar component'inin dışında)
+   *   4) Varsayılan: inverted
+   */
+  /** Designer'ın yazdığı varyant — BİR KEZ, JS sınıf basmadan önce. */
+  function authoredVariant(root) {
+    if (root.classList.contains("mt-nav--base")) return "base";
+    if (root.classList.contains("mt-nav--inverted")) return "inverted";
+    var own = attr(root, "data-nav-variant");
+    return VARIANTS[own] ? own : "";
+  }
+
+  function pageVariant(root) {
+    var marker = (root.ownerDocument || doc).querySelector("[data-nav-page-variant]");
+    var page = marker ? (marker.getAttribute("data-nav-page-variant") || "").trim() : "";
+    return VARIANTS[page] ? page : "";
+  }
+
+  function resolveVariant(root) {
+    /* DİKKAT — root.classList'e BAKMA: applyVariant sınıfı kendisi basıyor,
+       yeniden okunursa JS'in bastığı değer "Designer'dan gelmiş" sanılır ve
+       varyant ilk sayfada kilitlenir; sayfa işaretçisi bir daha kazanamaz.
+       Designer'ın yazdığı değer init'te yakalanıp root._mtNavAuthored'da
+       saklanıyor. */
+    return root._mtNavAuthored || pageVariant(root) || "inverted";
+  }
+
+  /** Varyant sınıfını tazeler — Barba geçişinde sayfa değişebilir. */
+  function applyVariant(root) {
+    var v = resolveVariant(root);
+    root.classList.toggle("mt-nav--base", v === "base");
+    root.classList.toggle("mt-nav--inverted", v === "inverted");
+    return v;
+  }
+
   function initNavbar(root) {
     root = root || doc.querySelector("[data-navbar]");
     if (!root || root._mtNavInit) return;
     root._mtNavInit = true;
+    /* JS sınıf basmadan ÖNCE yakala (bkz. resolveVariant) */
+    root._mtNavAuthored = authoredVariant(root);
 
     var bar = root.querySelector(".mt-nav__bar");
     if (!bar) {
@@ -206,12 +261,7 @@
     });
 
     var cfg = {
-      /* Öncelik: Designer'da elle basılmış mt-nav--base/--inverted sınıfı >
-         data-nav-variant > varsayılan. Webflow Component Variant'ı attribute
-         değiştiremiyorsa sınıf üzerinden de kurulabilsin diye. */
-      variant: (root.classList.contains("mt-nav--base") ? "base"
-        : root.classList.contains("mt-nav--inverted") ? "inverted"
-        : attr(root, "data-nav-variant")) || "inverted",
+      variant: resolveVariant(root),
       height: parseInt(attr(root, "data-nav-height"), 10) || 64,
       zIndex: parseInt(attr(root, "data-nav-z"), 10) || 1000,
       backLabel: attr(root, "data-nav-back-label") || "Back"
@@ -544,6 +594,10 @@
     syncActive();
 
     doc.addEventListener("marveltour:page", syncActive);
+    /* Navbar container DIŞINDA yaşıyor: sayfa değişince varyant da
+       değişebilir (koyu hero'lu sayfadan açık zeminli sayfaya geçiş).
+       Sınıf her geçişte yeniden hesaplanıyor. */
+    doc.addEventListener("marveltour:page", function () { applyVariant(root); });
     doc.addEventListener("marveltour:leave", function () {
       setOpen(null);
       closeMobile();
