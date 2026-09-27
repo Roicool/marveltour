@@ -183,6 +183,9 @@ combine listesine ekle:
     // çağrılabilir — idempotent.
     Marveltour.initBarba({
       logo: 'Marveltour', // veya SVG string / logo URL'i
+      coverColor: '#470e2d', // geçiş perdesinin zemini. Verilmezse sırasıyla
+                          // --surface--page-transition → --surface--inverted
+                          // → koyu fallback kullanılır.
       introOnLoad: true,  // F5/ilk yüklemede de perde oynasın — VARSAYILAN KAPALI,
                           // yazmazsan ilk açılışta geçiş perdesi hiç görünmez
       onEach: function (container) {
