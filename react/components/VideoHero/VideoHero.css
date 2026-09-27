@@ -32,8 +32,22 @@
   --vh-fg: var(--color-text--primary, #2b0a1c);
   --vh-bg: var(--neutral--off-white, #f5f5ec);
 }
+/* ── Ortalı varyant ───────────────────────────────────────────
+   `align-items: center` KULLANILMIYOR: flex kolonunda ortalamak çocukları
+   içeriğe göre BÜZER (stretch kalkar). .vh__stack'in 40rem tavanı ve
+   .vh__body'nin 34ch'i buna eklenince metin ince bir şeride sıkışıyordu.
+   Çocuklar tam genişlikte bırakılıp metin text-align ile ortalanıyor;
+   ortalı düzen doğası gereği daha geniş bir kolon kaldırdığı için stack
+   tavanı da ayrı bir değişkenle açılıyor. */
 .vh--center { text-align: center; }
-.vh--center .vh__stack { align-items: center; margin-inline: auto; }
+.vh--center .vh__stack {
+  align-items: stretch;
+  max-width: var(--vh-stack-w-center, min(56rem, 100%));
+  margin-inline: auto;
+  text-indent: 0;            /* optik hizalama sola kaydırıyordu */
+}
+.vh--center .vh__body { max-width: 54ch; margin-inline: auto; }
+.vh--center .vh__links { align-items: center; }
 
 /* ── Wordmark ─────────────────────────────────────────────────
    Kaynak SVG'nin viewBox'ı (2124 × 1019) çizimden belirgin geniş: içerik
