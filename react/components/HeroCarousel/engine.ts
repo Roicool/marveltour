@@ -509,7 +509,25 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
       track.classList.add("is-dragging");
       track.setPointerCapture?.(pid);
     };
+    /* Capture'ı AÇIKÇA bırak: bırakılmazsa imleç ve sonraki pointer olayları
+       track'e kilitli kalıyor. */
+    const releaseCapture = () => {
+      if (pid === null) return;
+      try {
+        if (track.hasPointerCapture?.(pid)) track.releasePointerCapture?.(pid);
+      } catch { /* yoksay */ }
+      pid = null;
+    };
+
     const onMove = (e: PointerEvent) => {
+      /* EMNİYET — sürükleme yarıda kalabiliyor: pointerup track dışında
+         düşerse, pointercancel gelmezse ya da capture kaybolursa `dragging`
+         true kalıyordu. Sonuç: her fare hareketi track'i sürüklemeye devam
+         ediyor (imleç takılı kalmış gibi) ve onDown'daki pause()'a karşılık
+         play() hiç çağrılmadığı için autoplay ölüp start/pause düğmesi
+         durumla uyumsuzlaşıyor. Fare tuşu bırakılmışsa ilk harekette
+         kendini toparla. */
+      if (dragging && e.pointerType === "mouse" && e.buttons === 0) { onUp(e); return; }
       if (!dragging || e.pointerId !== pid) return;
       const dx = e.clientX - startX;
       const dt = e.timeStamp - lastT;
@@ -531,6 +549,7 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
       else if (left) step(1, true);
       if (right || left) resetTimer();
       gsap.to(track, { x: 0, duration: reduce ? 0 : D_DUR, ease: EASE_DRAG_END, overwrite: true });
+      releaseCapture();
       if (!manuallyPaused) play();
     };
     const onClick = (e: MouseEvent) => {
@@ -546,6 +565,8 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
     track.addEventListener("pointermove", onMove);
     track.addEventListener("pointerup", onUp);
     track.addEventListener("pointercancel", onUp);
+    /* Capture başka bir yere geçerse de sürüklemeyi kapat */
+    track.addEventListener("lostpointercapture", onUp);
     track.addEventListener("click", onClick, true);
     track.addEventListener("dragstart", preventDefault);
 
@@ -554,6 +575,7 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
       track.removeEventListener("pointermove", onMove);
       track.removeEventListener("pointerup", onUp);
       track.removeEventListener("pointercancel", onUp);
+      track.removeEventListener("lostpointercapture", onUp);
       track.removeEventListener("click", onClick, true);
       track.removeEventListener("dragstart", preventDefault);
       track.classList.remove("is-draggable", "is-dragging");
