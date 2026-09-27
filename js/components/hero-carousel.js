@@ -1,5 +1,5 @@
 /*!
- * hero-carousel.js v1.0.0
+ * hero-carousel.js v1.1.0
  * Hero + sonsuz (wrap-around) kart carousel'i — Squarespace
  * /solutions/education "#education-training-hero" bölümünün GSAP portu.
  * Orijinal React + Framer Motion; algoritma ve sabitler birebir korunur:
@@ -212,8 +212,12 @@
     function fill(el, slideIdx, isCenter) {
       el.innerHTML = "";
       var from = slideIdx * perView;
-      for (var i = from; i < from + perView && i < cards.length; i++) {
-        var clone = cards[i].cloneNode(true);
+      /* SARMALA — `i < cards.length` ile kesme YAPMA: kart sayısı perView'e
+         tam bölünmüyorsa (13 kart / 2) son slayt yarım kalır ve şeritte
+         gözle görülür bir boşluk açılır. Carousel zaten wrap-around; son
+         slaytın boş gözü baştaki kartla dolar. */
+      for (var i = from; i < from + perView; i++) {
+        var clone = cards[mod(i, cards.length)].cloneNode(true);
         clone.setAttribute("data-card-index", String(i - from));
         el.appendChild(clone);
       }
@@ -282,7 +286,31 @@
       /* en kısa yol */
       if (Math.abs(d) > total / 2) d = d > 0 ? d - total : d + total;
       var dir = d > 0 ? 1 : -1;
-      for (var i = 0; i < Math.abs(d); i++) step(dir);
+      if (Math.abs(d) === 1) { step(dir); return; }
+
+      /* UZAK SLAYT — step()'i aynı karede N kez çağırma: her çağrı
+         `overwrite: true` ile bir öncekinin tween'ini öldürür, araya N kez
+         innerHTML yeniden kurulur ve geçiş gözle görülür şekilde takılır.
+         Pencere hedefin etrafında bir kerede yeniden doldurulur, sonra
+         geliş yönünden tek slayt boyu kaydırılır — yön hissi korunur,
+         tek tween oynar. */
+      index = slide;
+      var act = active();
+      var dur = reduce ? 0 : T_DUR;
+      busy = true;
+      items.forEach(function (it, i) {
+        it.e = WINDOW[i];
+        gsap.killTweensOf(it.el);
+        gsap.set(it.el, { xPercent: 100 * (it.e + dir) });
+        fill(it.el, mod(act + it.e, total), it.e === 0);
+      });
+      items.forEach(function (it) {
+        gsap.to(it.el, { xPercent: 100 * it.e, duration: dur, ease: EASE_SLIDE,
+          overwrite: true,
+          onComplete: it.e === 0 ? function () { busy = false; } : null });
+      });
+      if (dur === 0) busy = false;
+      updateDots();
     }
 
     /* ── Paging indicator (opsiyonel) ───────────────────────────── */
