@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — navbar.css v3.3.0
+   Marveltour — navbar.css v3.4.0
    js/components/navbar.js'in companion CSS'i.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
@@ -25,7 +25,19 @@
 
 /* Mobil menü açıkken sayfa kilidi — YALNIZ mobilde (spec §0.3).
    Shadow DOM yok, o yüzden inline style yerine sınıf. */
-body.mt-nav-lock { overflow: hidden; }
+/* overflow:hidden iOS Safari'de tek basina yetmiyor: parmakla arka plan
+   yine kayabiliyor. touch-action + overscroll-behavior zinciri kapatiyor.
+   JS ayrica Lenis'i durduruyor (native scroll'u o sardigi icin sart). */
+body.mt-nav-lock {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+/* Cekmecenin KENDI scroll'u calismaya devam etmeli */
+body.mt-nav-lock .mt-nav__mobile-scroll {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
 
 /* ---------- BAŞLANGIÇ DURUMU: GİZLİ ----------
    DİKKAT: bu üç blok bilerek Designer'da DEĞİL. Webflow canvas'ı bu dosyayı
@@ -163,12 +175,61 @@ body.mt-nav-lock { overflow: hidden; }
               color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
               border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* Panel açılışı. DİKKAT — `display` de geçişe dâhil ve `allow-discrete`:
+   Designer'da .mt-nav__panel'e display:none verilebiliyor (canvas'ta çalışmak
+   için). display none→block bir geçiş ÜRETMEZ; panel son hâliyle "löp" diye
+   belirir. allow-discrete + @starting-style ikilisi bunu çözer: tarayıcı
+   elemanı görünür kılar, sonra başlangıç değerlerinden asıl geçişi oynatır.
+   Desteklemeyen tarayıcıda kurallar yok sayılır, davranış eskisi gibi kalır. */
 .mt-nav__panel {
   will-change: transform, opacity;
-  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.22s;
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.42s,
+              display 0.42s allow-discrete;
 }
-.mt-nav__mobile { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s; }
+@starting-style {
+  .mt-nav__panel.is-open {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* İçerik panelden bir tık sonra gelir — tek parça "blok" hissi yerine
+   iki kademeli açılış. */
+.mt-nav__panel .mt-nav__panel-inner {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.06s,
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.06s;
+}
+.mt-nav__panel.is-open .mt-nav__panel-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+.mt-nav__mobile { transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.42s; }
+
+/* ---------- PANEL ARKASI BLUR ----------
+   Ayrı bir "catcher" div YOK (spec §0.2) — perde kökün pseudo-element'i.
+   z-index:-1 onu bar ve panelin ALTINA, sayfanın ÜSTÜNE koyar; kök zaten
+   pointer-events:none olduğu için hiçbir tıklamayı yutmaz.
+   NOT: tam ekran backdrop-filter pahalı bir paint'tir; yalnız menü açıkken
+   yaşar ve reduced-motion'da tamamen kapanır. */
+.mt-nav::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  background: rgba(43, 10, 28, 0.16);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.42s;
+}
+.mt-nav.is-panel-open::after,
+.mt-nav.is-mobile-open::after { opacity: 1; visibility: visible; }
 .mt-nav__item, .mt-nav__row, .mt-nav__tag, .mt-nav__list-link, .mt-nav__cta {
   transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -276,5 +337,10 @@ body.mt-nav-lock { overflow: hidden; }
 
 /* ---------- REDUCED MOTION (proje kuralı — her modülde zorunlu) ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .mt-nav, .mt-nav * { transition: none !important; animation: none !important; }
+  .mt-nav, .mt-nav *, .mt-nav::after { transition: none !important; animation: none !important; }
+  /* Tam ekran blur hem pahalı hem hareket hissi veriyor — burada tamamen
+     kalkıyor, perde düz bir tonlamaya düşüyor. */
+  .mt-nav::after { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  /* Geçiş kapalıyken içerik opacity:0'da takılmasın */
+  .mt-nav__panel .mt-nav__panel-inner { opacity: 1; transform: none; }
 }
