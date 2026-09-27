@@ -1,5 +1,5 @@
 /*!
- * process-steps.js v1.1.0
+ * process-steps.js v1.1.1
  * HWW "Süreç adımları" — pinli, adım adım AKORDİYON anlatısı (SITE-PLAN
  * §2.5 #2, §2.4 #3; step-scroll'un tam ekran sinemasının sakin kardeşi):
  *   - Section pinlenir; scroll, adım başına eşit pencerelere bölünür.
@@ -152,16 +152,30 @@
     // ── Adım değişimi: akordiyon + sağdan görsel (sabit süreli tween'ler —
     // scrub'a bağlı değil; geri sarışta da aynı dil çalışır) ──
     var current = 0, zTop = 2;
+
+    /** Sınıf + ARIA — tween yok, yalnız durum. */
+    function paintState(idx) {
+      items.forEach(function (item, i) {
+        item.classList.toggle("is-active", i === idx);
+        item.setAttribute("aria-current", i === idx ? "step" : "false");
+        item.setAttribute("aria-expanded", i === idx ? "true" : "false");
+      });
+    }
+
+    /* İLK ADIMIN DURUMU BURADA BASILIR, activate(0) ile DEĞİL.
+       current zaten 0 olduğu için activate(0) erken döner; sahneye ilk
+       girildiğinde onUpdate progress≈0 ile activate(0) çağırır ve hiçbir şey
+       olmaz. Sonuç: 1. adım, scroll geri gelene kadar hiç aktif görünmez.
+       Görsel başlangıç (desc[0] açık, panel[0] görünür) yukarıdaki gsap.set'
+       lerle zaten kurulu — burada yalnız sınıf/ARIA eşleniyor, tween yok. */
+    paintState(0);
+
     function activate(idx) {
       if (idx === current) return;
       var prev = current;
       current = idx;
 
-      items.forEach(function (item, i) {
-        item.classList.toggle("is-active", i === idx);
-        item.setAttribute("aria-current", i === idx ? "step" : "false");
-        if (item.setAttribute) item.setAttribute("aria-expanded", i === idx ? "true" : "false");
-      });
+      paintState(idx);
 
       // Akordiyon (bilinçli height istisnası — bkz. header; pinli sahnede
       // sayfa layout'u oynamaz). Premium his: kapanışta içerik ÖNCE hızla
