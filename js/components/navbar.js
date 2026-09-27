@@ -1,7 +1,11 @@
 /*!
- * navbar.js v2.2.0
+ * navbar.js v2.2.1
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.2.1 — Bar hover köprüsü hedefe göre ayrıldı: mega menüsü olmayan bir
+ *          öğeye (How We Work, Journal, About, CTA, logo) gelince menü
+ *          kapanıyor. Önce bar'ın tamamı kapanışı iptal ettiği için panel
+ *          ancak navbar'dan tamamen çıkınca kapanıyordu.
  * v2.2.0 — setActiveRow, aktif satiri [data-nav-tags] uzerine
  *          data-nav-row-active olarak yaziyor. "all" disindaki satirlarda
  *          tag'ler pill bulutu yerine alt alta link listesi olarak diziliyor
@@ -299,10 +303,23 @@
       asButton(t);
     });
 
-    /* İmleç trigger'dan panele inerken aradaki bar boşluğundan geçiyor; orada
-       durursa kapanış tetiklenmesin. Menü yalnız bar VE panelin ikisinden de
-       çıkılınca kapanır. */
-    bar.addEventListener("mouseover", clearClose);
+    /* İmleç trigger'dan panele inerken aradaki bar BOŞLUĞUNDAN geçiyor; orada
+       durursa kapanış tetiklenmesin. Ama boşluk ile "mega menüsü olmayan bir
+       öğe" aynı şey değil: bar'ın tamamına koşulsuz clearClose bağlanırsa
+       How We Work / Journal / About / CTA / logo üzerine gelmek de kapanışı
+       iptal eder ve panel açık kalır — ancak navbar'dan tamamen çıkınca
+       kapanır. Hedefe göre ayrılıyor. */
+    var BAR_CLOSERS = ".mt-nav__item, .mt-nav__cta, .mt-nav__brand, .mt-nav__lang, [data-nav-burger]";
+    bar.addEventListener("mouseover", function (e) {
+      var node = e.target && e.target.closest
+        ? e.target.closest("[data-nav-trigger], " + BAR_CLOSERS)
+        : null;
+      /* Trigger'ın kendisi: açmayı kendi mouseenter'ı yürütür, köprü bozulmasın.
+         Bar'ın boş alanı (node yok): köprü — kapanışı iptal et. */
+      if (!node || node.hasAttribute("data-nav-trigger")) { clearClose(); return; }
+      /* Mega menüsü olmayan bir öğe → menü kapanmalı. */
+      scheduleClose();
+    });
     bar.addEventListener("mouseleave", scheduleClose);
 
     /* Dışarı tık: ekranı kaplayan catcher div YOK (spec §0.2) */
