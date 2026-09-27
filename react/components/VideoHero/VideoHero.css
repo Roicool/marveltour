@@ -35,6 +35,18 @@
 .vh--center { text-align: center; }
 .vh--center .vh__stack { align-items: center; margin-inline: auto; }
 
+/* ── Wordmark ─────────────────────────────────────────────────
+   Kaynak SVG'nin viewBox'ı (2124 × 1019) çizimden belirgin geniş: içerik
+   y≈255–763 bandında, alt ve üstte ~%25 boşluk var. Bu yüzden verilen
+   genişlikte beklenenden küçük görünür — ölçek buna göre seçildi.
+   Renk currentColor; colorMode="light" varyantında da doğru gelir. */
+.vh__logo {
+  width: min(100%, clamp(15rem, 34vw, 30rem));
+  margin-bottom: var(--spacing--2, 0.5rem);
+}
+.vh__logo svg { display: block; width: 100%; height: auto; }
+.vh--center .vh__logo { margin-inline: auto; }
+
 /* ── Arka plan medya: inset 0, object-fit cover; reveal clip + scale ── */
 .vh__media {
   position: absolute;

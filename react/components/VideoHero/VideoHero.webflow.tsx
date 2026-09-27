@@ -44,6 +44,7 @@ export default declareComponent(VideoHero, {
     // --- Görünüm ---
     colorMode: props.Variant({ name: "Color mode", group: G_LOOK, defaultValue: "dark", options: ["dark", "light"], tooltip: "dark: off-white metin (koyu video). light: koyu metin, açık overlay." }),
     align: props.Variant({ name: "Align", group: G_LOOK, defaultValue: "left", options: ["left", "center"] }),
+    logo: props.Boolean({ name: "Logo (wordmark)", group: G_LOOK, defaultValue: false }),
     minHeight: props.Variant({ name: "Min height", group: G_LOOK, defaultValue: "100svh", options: ["100svh", "80svh", "60svh", "auto"] }),
 
     // --- Hareket ---
