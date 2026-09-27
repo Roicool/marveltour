@@ -25,6 +25,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { acquireGsap } from "../HeroCarousel/engine";
 import { createReveal, type RevealApi } from "./reveal";
+import { Logo } from "./Logo";
 import "./VideoHero.css";
 
 export type NavLink = { href: string; target?: string; preload?: string };
@@ -51,6 +52,8 @@ export interface VideoHeroProps {
 
   colorMode?: "dark" | "light";
   align?: "left" | "center";
+  /** Başlığın üstünde Marveltour wordmark'ı. */
+  logo?: boolean;
   minHeight?: "100svh" | "80svh" | "60svh" | "auto";
   reveal?: boolean;
   revealMode?: "scroll" | "once";
@@ -82,6 +85,7 @@ export function VideoHero({
   overlay = 0.35,
   colorMode = "dark",
   align = "left",
+  logo = false,
   minHeight = "100svh",
   reveal = true,
   revealMode = "scroll",
@@ -98,6 +102,7 @@ export function VideoHero({
   const mediaInnerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
   const eyebrowRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLParagraphElement>(null);
@@ -163,7 +168,8 @@ export function VideoHero({
           mediaInner: mediaInnerRef.current,
           textLayer: contentRef.current,
           splitTargets: [eyebrowRef.current, titleRef.current].filter(Boolean) as HTMLElement[],
-          riseTargets: [bodyRef.current, linksRef.current].filter(Boolean) as HTMLElement[],
+          /* Logo grafik: satır bölme (splitTargets) anlamsız, yükselerek girer */
+          riseTargets: [logoRef.current, bodyRef.current, linksRef.current].filter(Boolean) as HTMLElement[],
           reveal,
           revealMode,
           revealRepeat,
@@ -212,6 +218,11 @@ export function VideoHero({
 
       <div className="vh__content" ref={contentRef}>
         <div className="vh__stack">
+          {logo && (
+            <div className="vh__logo" ref={logoRef}>
+              <Logo />
+            </div>
+          )}
           {eyebrow && (
             <p className="vh__eyebrow" ref={eyebrowRef}>
               {eyebrow}
