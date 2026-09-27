@@ -1,7 +1,11 @@
 /*!
- * navbar.js v2.1.1
+ * navbar.js v2.2.0
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.2.0 — setActiveRow, aktif satiri [data-nav-tags] uzerine
+ *          data-nav-row-active olarak yaziyor. "all" disindaki satirlarda
+ *          tag'ler pill bulutu yerine alt alta link listesi olarak diziliyor
+ *          (gorunum navbar.css'te, durum sinifina bagli oldugu icin).
  * v2.1.1 — Mobilde tek region görünümü: mgo satırındaki data-nav-mtitle,
  *          görünümün kendi başlığını ezer. 7 ayrı region görünümü yerine tek
  *          görünüm + satırdan gelen başlık.
@@ -81,6 +85,8 @@
  *               başlığı görünümünkini ezer (tek görünüm, çok region).
  * data-nav-tags: içindeki TEK Collection List'in item'ları filtrelenir; her
  *               destinasyon linkinde data-region → Region alanı binding'i.
+ *               JS buraya data-nav-row-active="<aktif satır>" yazar; "all"
+ *               dışındaki değerlerde CSS listeyi alt alta dizer.
  *
  * Trigger'lar ve burger Webflow'da Div Block olabilir (gerçek <button> native
  * bir Webflow elemanı değil); JS onları role="button" + tabindex + Enter/Space
@@ -329,6 +335,13 @@
      *     (Webflow'un sayfa başına 20 Collection List sınırı).
      */
     function setActiveRow(scope, row) {
+      /* Aktif satiri tag kabinin uzerine yaz: CSS "all" (tum destinasyonlar,
+         pill bulutu) ile tek bir region (alt alta link listesi) arasindaki
+         gorunum farkini buradan okuyor. Attribute YOKKEN liste moduna
+         gecilmez — ilk boyamada gorunum sicramasin diye. */
+      Array.prototype.forEach.call(scope.querySelectorAll("[data-nav-tags]"), function (box) {
+        box.setAttribute("data-nav-row-active", row);
+      });
       Array.prototype.forEach.call(scope.querySelectorAll("[data-nav-tags] [data-region]"), function (node) {
         var on = row === "all" || slugify(node.getAttribute("data-region")) === row;
         var item = node.closest(".w-dyn-item") || node;
