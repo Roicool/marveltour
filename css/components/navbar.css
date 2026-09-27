@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — navbar.css v3.4.0
+   Marveltour — navbar.css v3.5.0
    js/components/navbar.js'in companion CSS'i.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
@@ -61,10 +61,16 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
 
 /* ---------- DURUM SINIFLARI (JS ekler) ---------- */
 
-/* scroll / panel açık / mobil açık → bar zemine oturur, yazı koyulaşır */
+/* scroll / panel açık / mobil açık → bar zemine oturur, yazı koyulaşır.
+   `--base` variantı da buraya dâhil: AÇIK ZEMİN ÜSTÜNDE kullanılır, yani
+   scroll beklemeden en baştan zeminli ve koyu yazılı durur. (Zemin yalnız
+   .is-scrolled'dan gelseydi base variantı açılışta şeffaf kalır ve açık
+   sayfada görünmez olurdu.) */
+.mt-nav--base,
 .mt-nav.is-scrolled,
 .mt-nav.is-panel-open,
 .mt-nav.is-mobile-open { color: #2b0a1c; }
+.mt-nav--base .mt-nav__bar,
 .mt-nav.is-scrolled .mt-nav__bar,
 .mt-nav.is-panel-open .mt-nav__bar,
 .mt-nav.is-mobile-open .mt-nav__bar {

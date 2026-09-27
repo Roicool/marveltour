@@ -1,7 +1,10 @@
 /*!
- * navbar.js v2.2.1
+ * navbar.js v2.3.0
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
+ * v2.3.0 — Variant, Designer'da basılmış mt-nav--base / --inverted sınıfından
+ *          da okunabiliyor (data-nav-variant hâlâ geçerli). Açık zemin üstü
+ *          için mt-nav--base artık scroll beklemeden zeminli duruyor.
  * v2.2.1 — Bar hover köprüsü hedefe göre ayrıldı: mega menüsü olmayan bir
  *          öğeye (How We Work, Journal, About, CTA, logo) gelince menü
  *          kapanıyor. Önce bar'ın tamamı kapanışı iptal ettiği için panel
@@ -203,7 +206,12 @@
     });
 
     var cfg = {
-      variant: attr(root, "data-nav-variant") || "inverted",
+      /* Öncelik: Designer'da elle basılmış mt-nav--base/--inverted sınıfı >
+         data-nav-variant > varsayılan. Webflow Component Variant'ı attribute
+         değiştiremiyorsa sınıf üzerinden de kurulabilsin diye. */
+      variant: (root.classList.contains("mt-nav--base") ? "base"
+        : root.classList.contains("mt-nav--inverted") ? "inverted"
+        : attr(root, "data-nav-variant")) || "inverted",
       height: parseInt(attr(root, "data-nav-height"), 10) || 64,
       zIndex: parseInt(attr(root, "data-nav-z"), 10) || 1000,
       backLabel: attr(root, "data-nav-back-label") || "Back"
