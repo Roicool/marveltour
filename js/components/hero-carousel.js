@@ -1,5 +1,5 @@
 /*!
- * hero-carousel.js v1.1.0
+ * hero-carousel.js v1.2.0
  * Hero + sonsuz (wrap-around) kart carousel'i — Squarespace
  * /solutions/education "#education-training-hero" bölümünün GSAP portu.
  * Orijinal React + Framer Motion; algoritma ve sabitler birebir korunur:
@@ -464,7 +464,26 @@
         pause();
         track.setPointerCapture && track.setPointerCapture(pid);
       }
+      /* Capture'ı AÇIKÇA bırak: bırakılmazsa imleç ve sonraki pointer
+         olayları track'e kilitli kalıyor. */
+      function releaseCapture() {
+        if (pid === null) return;
+        try {
+          if (track.hasPointerCapture && track.hasPointerCapture(pid) &&
+              track.releasePointerCapture) track.releasePointerCapture(pid);
+        } catch (err) { /* yoksay */ }
+        pid = null;
+      }
+
       function onMove(e) {
+        /* EMNİYET — sürükleme yarıda kalabiliyor: pointerup track dışında
+           düşerse, pointercancel gelmezse ya da capture kaybolursa `dragging`
+           true kalıyordu. Sonuç: her fare hareketi track'i sürüklemeye devam
+           ediyor (imleç takılı kalmış gibi) ve onDown'daki pause()'a karşılık
+           play() hiç çağrılmadığı için autoplay ölüp start/pause düğmesi
+           durumla uyumsuzlaşıyor. Fare tuşu bırakılmışsa ilk harekette
+           kendini toparla. */
+        if (dragging && e.pointerType === "mouse" && e.buttons === 0) { onUp(e); return; }
         if (!dragging || e.pointerId !== pid) return;
         var dx = e.clientX - startX;
         var dt = e.timeStamp - lastT;
@@ -484,6 +503,7 @@
         if (right) step(-1, true); else if (left) step(1, true);
         if (right || left) resetTimer();
         gsap.to(track, { x: 0, duration: reduce ? 0 : D_DUR, ease: EASE_DRAG_END, overwrite: true });
+        releaseCapture();
         if (!manuallyPaused) play();
       }
       /* Sürükleme sonrası kart linki tıklanmış sayılmasın */
@@ -495,6 +515,8 @@
       track.addEventListener("pointermove", onMove);
       track.addEventListener("pointerup", onUp);
       track.addEventListener("pointercancel", onUp);
+      /* Capture başka bir yere geçerse de sürüklemeyi kapat */
+      track.addEventListener("lostpointercapture", onUp);
       track.addEventListener("click", onClick, true);
       track.addEventListener("dragstart", preventDefault); // native img drag
 
@@ -503,6 +525,7 @@
         track.removeEventListener("pointermove", onMove);
         track.removeEventListener("pointerup", onUp);
         track.removeEventListener("pointercancel", onUp);
+        track.removeEventListener("lostpointercapture", onUp);
         track.removeEventListener("click", onClick, true);
         track.removeEventListener("dragstart", preventDefault);
         track.classList.remove("is-draggable");
