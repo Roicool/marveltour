@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — navbar.css v3.2.1
+   Marveltour — navbar.css v3.3.0
    js/components/navbar.js'in companion CSS'i.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
@@ -85,6 +85,19 @@ body.mt-nav-lock { overflow: hidden; }
   visibility: visible;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+/* DESIGNER'DA RAHAT ÇALIŞMAK İÇİN: canvas bu dosyayı yüklemediği için
+   paneller orada üst üste binip düzenlemeyi imkânsızlaştırıyor. Designer'da
+   .mt-nav__panel'e display:none (ya da opacity:0) verebilirsin — açık durum
+   burada geri dayatılıyor, combo specificity (0,2,0) Designer'ın tek
+   sınıfını (0,1,0) yener.
+
+   min-width: 992px ŞART: Webflow'un "medium" breakpoint'i ≤991px'te panelleri
+   display:none yapıyor (mega menü mobilde çekmeceye devrediyor). Koşulsuz
+   yazılsa panel mobilde de açılabilirdi. */
+@media (min-width: 992px) {
+  .mt-nav__panel.is-open { display: block; }
 }
 .mt-nav.is-mobile-open .mt-nav__mobile { transform: translateX(0); visibility: visible; }
 
@@ -242,6 +255,24 @@ body.mt-nav-lock { overflow: hidden; }
   transform: translateX(4px);
   opacity: 1;
 }
+
+/* ---------- MOBİL REGION GÖRÜNÜMÜ: başlık üstte, liste altta ----------
+   Görünüm çekmecenin boyunu doldurur; başlık + açıklama üstte kalır,
+   destinasyon listesi alta yapışır. */
+.mt-nav__mobile-scroll {
+  display: flex;
+  flex-direction: column;
+}
+.mt-nav__mobile .mt-nav__mexplore[data-nav-mview] {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+/* Designer'da .mt-nav__stack `flex: 1` taşıyor (masaüstü mega menü için).
+   Burada büyümesine izin verilirse tüm boşluğu yutar ve space-between'in
+   dayanacağı bir şey kalmaz. */
+.mt-nav__mobile .mt-nav__mexplore .mt-nav__stack { flex: none; }
 
 /* ---------- REDUCED MOTION (proje kuralı — her modülde zorunlu) ---------- */
 @media (prefers-reduced-motion: reduce) {
