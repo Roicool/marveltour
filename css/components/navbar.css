@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — navbar.css v3.2.0
+   Marveltour — navbar.css v3.2.1
    js/components/navbar.js'in companion CSS'i.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
@@ -187,9 +187,22 @@ body.mt-nav-lock { overflow: hidden; }
 
    .w-dyn-items Webflow'un Collection List'e kendi bastığı sınıf — asıl flex
    kabı o; dıştaki [data-nav-tags] div'i değil. */
+/* Dıştaki [data-nav-tags] bir flex SATIRI (Designer'daki .mt-nav__tags).
+   İçindeki Collection List Wrapper içerik kadar daralır, liste tam genişliğe
+   gitmez ve space-between hiçbir şey yapmaz. Zincirin tamamı gerdiriliyor. */
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) {
+  display: block;
+}
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) > *,
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .w-dyn-list {
+  width: 100%;
+  min-width: 0;
+}
 [data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .w-dyn-items {
+  display: flex;
   flex-direction: column;
   align-items: stretch;
+  width: 100%;
   gap: 0;
 }
 [data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .w-dyn-item {
@@ -198,20 +211,25 @@ body.mt-nav-lock { overflow: hidden; }
 [data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: space-between;   /* ok en sağa */
+  gap: 16px;
   width: 100%;
-  padding: 10px 0;
+  padding: 14px 0;
   border: 0;
   border-bottom: 1px solid rgba(71, 14, 45, 0.14);
   border-radius: 0;
   background: none;
   text-align: left;
+  /* Pill boyutu bu listede küçük kalıyor — satır ölçeğine çıkarılıyor */
+  font-size: clamp(17px, 1.15vw, 21px);
+  line-height: 1.35;
 }
 /* Ok: link olduğunu gösterir. Designer'daki .mt-nav__arrow ile aynı dil. */
 [data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag::after {
   content: "→";
   flex: none;
+  margin-left: auto;   /* tek çocuklu/sarmalayıcılı item'larda da sağa yapışsın */
+  font-size: 0.9em;
   opacity: 0.45;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
 }
