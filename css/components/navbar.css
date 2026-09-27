@@ -1,5 +1,5 @@
 /* ============================================================
-   Marveltour — navbar.css v3.1.0
+   Marveltour — navbar.css v3.2.0
    js/components/navbar.js'in companion CSS'i.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
@@ -175,6 +175,55 @@ body.mt-nav-lock { overflow: hidden; }
 [data-nav-mview][hidden],
 [data-nav-back][hidden],
 .mt-nav__brand[hidden] { display: none !important; }
+
+/* ---------- TAG LİSTESİ: "all" dışındaki satırlarda alt alta ----------
+   JS, aktif satırı [data-nav-tags] üzerine data-nav-row-active olarak yazar
+   (navbar.js v2.2.0). "all" = tüm destinasyonlar → Designer'daki pill bulutu
+   aynen kalır. Tek bir region seçiliyken liste alt alta dizilir ve link
+   olduğu anlaşılsın diye ayraç + ok + hover altçizgisi kazanır.
+
+   Neden Designer'da DEĞİL: görünüm runtime'da değişen bir attribute'a bağlı,
+   Webflow'un style paneli bunu ifade edemiyor.
+
+   .w-dyn-items Webflow'un Collection List'e kendi bastığı sınıf — asıl flex
+   kabı o; dıştaki [data-nav-tags] div'i değil. */
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .w-dyn-items {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .w-dyn-item {
+  width: 100%;
+}
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(71, 14, 45, 0.14);
+  border-radius: 0;
+  background: none;
+  text-align: left;
+}
+/* Ok: link olduğunu gösterir. Designer'daki .mt-nav__arrow ile aynı dil. */
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag::after {
+  content: "→";
+  flex: none;
+  opacity: 0.45;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+}
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag:hover {
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+[data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag:hover::after {
+  transform: translateX(4px);
+  opacity: 1;
+}
 
 /* ---------- REDUCED MOTION (proje kuralı — her modülde zorunlu) ---------- */
 @media (prefers-reduced-motion: reduce) {
