@@ -373,6 +373,24 @@ HTML'i gelir). Bu yüzden Barba kullanılan sitede tüm component script'leri **
 Settings → Custom Code**'a (global) konur, Page Settings'e değil. Sayfada ilgili element
 yoksa modül zaten sessizce çıkar — maliyeti yalnız cache'lenmiş dosyanın baytıdır.
 
+**Sayfaya özel CSS de aynı kurala tabidir.** Page Settings → "Inside `<head>` tag"a
+yazılan CSS, o sayfaya Barba ile gelindiğinde hiç yüklenmez; yalnız sayfa doğrudan
+açıldığında çalışır. Teşhis: sayfayı doğrudan aç → düzgün, başka sayfadan tıkla → bozuk.
+
+Yeri **`wrap-main`** (yani `[data-barba="container"]`) içinde bir HTML Embed'dir:
+
+- `wrap-main` içi → container'la birlikte gelir, sayfa terk edilince DOM'dan silinir.
+  Kapsama kendiliğinden doğru olur; ayrıca `data-barba-namespace` ile kapsamlamaya
+  gerek kalmaz. Embed'i **ilk çocuk** yap — içerik boyanmadan uygulansın.
+- `wrap-page` içi (wrapper, container'ın DIŞI) → **KULLANMA**. Geçişte değişmediği için
+  ilk sayfanın CSS'i DOM'da yapışıp kalır ve sonraki sayfalara sızar; o sayfaların kendi
+  CSS'i ise hiç gelmez. Head'dekinin aynısı, üstüne sızıntı.
+- Embed'e `<script>` koyma — `innerHTML` ile eklenen script'ler execute edilmez.
+
+Site Settings head'i de bir seçenek ama Webflow o alanı **10.000 karakterle** sınırlıyor
+ve mevcut blok ~6.3 KB yer kaplıyor; büyüyen sayfa CSS'i için repoda bir dosya açıp
+combine URL'ine eklemek daha doğru.
+
 ### Kural B5 — Webflow markup'ı
 
 | Element | Attribute |

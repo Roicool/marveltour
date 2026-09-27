@@ -183,6 +183,10 @@ combine listesine ekle:
     // çağrılabilir — idempotent.
     Marveltour.initBarba({
       logo: 'Marveltour', // veya SVG string / logo URL'i
+      // Perde rengi: Webflow Variables'taki surface/page--transition
+      // değişkeninden gelir (BRAND-BRIEF: raw hex CSS'e yazılmaz).
+      // Kaynak sırası: opts.coverColor > --surface--page-transition
+      //                > --surface--inverted > koyu fallback
       introOnLoad: true,  // F5/ilk yüklemede de perde oynasın — VARSAYILAN KAPALI,
                           // yazmazsan ilk açılışta geçiş perdesi hiç görünmez
       onEach: function (container) {
