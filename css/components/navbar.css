@@ -1,6 +1,12 @@
 /* ============================================================
-   Marveltour — navbar.css v3.5.0
+   Marveltour — navbar.css v3.6.0
    js/components/navbar.js'in companion CSS'i.
+
+   v3.6.0 — Bölge listesi (mega menüde "all" dışındaki satırlar) iki düzeltme:
+            hover'da yazı BEYAZA dönüp okunmaz oluyordu (Designer'daki pill
+            hover'ı; bu listede zemin kalktığı için açıkta kalıyordu) ve
+            satırlar panel boyunca uzayıp ok ile yazı arasını açıyordu.
+            Artık hover rengi sabit, satırlarda --mt-nav-tag-max sınırı var.
 
    BÖLÜŞÜM: düzen, renk, boşluk, tipografi, hover ve breakpoint'ler WEBFLOW
    DESIGNER'daki mt-nav__* class'larında — canvas'ta doğru görünsün ve editör
@@ -303,6 +309,10 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
   /* Pill boyutu bu listede küçük kalıyor — satır ölçeğine çıkarılıyor */
   font-size: clamp(17px, 1.15vw, 21px);
   line-height: 1.35;
+  /* Satırlar panel genişliğine yayılınca ok ile yazı arası gereksiz açılıyor
+     ve alt çizgi metreler sürüyor. Üstteki açıklama sütunuyla aynı ölçekte
+     tutuluyor; tek yerden ayarlamak için değişken. */
+  max-width: var(--mt-nav-tag-max, 34rem);
 }
 /* Ok: link olduğunu gösterir. Designer'daki .mt-nav__arrow ile aynı dil. */
 [data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag::after {
@@ -315,6 +325,10 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
 }
 [data-nav-tags][data-nav-row-active]:not([data-nav-row-active="all"]) .mt-nav__tag:hover {
   background: none;
+  /* DİKKAT — rengi geri sabitliyoruz: Designer'da .mt-nav__tag koyu zeminli
+     bir pill ve hover'da yazıyı BEYAZA çeviriyor. Bu listede zemini
+     kaldırdığımız için beyaz yazı açık panelde okunmaz oluyordu. */
+  color: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
