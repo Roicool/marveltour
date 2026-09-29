@@ -252,14 +252,17 @@ gidiyordu.)
   /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
   [data-hero-cinematic] {
     --hero-m-min: 100svh;      /* bölüm yüksekliği */
-    --hero-m-top: 7rem;        /* üst boşluk (navbar payı) */
-    --hero-m-bottom: 3rem;     /* alt boşluk */
+    --hero-m-top: 6rem;        /* üst boşluk (navbar payı) */
+    --hero-m-bottom: 6rem;     /* alt boşluk — üstle eşit = gerçek ortalama */
+    --hero-m-align: center;    /* dikey hizalama: center | flex-start | space-between */
     --hero-m-pad: 1.25rem;     /* yan boşluk */
     --hero-m-gap: 2rem;        /* başlık ile alt metin arası min. boşluk */
     --hero-m-scrim: none;      /* metin okunmuyorsa: aşağıdaki gradient'i aç */
   }
 
-  /* 1) Bölüm akışa döner: pin yok, içerik dikey dağılır.
+  /* 1) Bölüm akışa döner: pin yok, içerik dikey ORTALANIR.
+        space-between değil: 2. sahne metni boş/kısa olduğunda içeriği
+        yukarı yapıştırıp altta koca bir boşluk bırakıyordu.
         isolation: video/perde için kullanılan negatif z-index'ler bu
         bölümün İÇİNDE kalır, sayfanın zeminine düşmez. */
   [data-hero-cinematic][data-hero-cinematic] {
@@ -267,7 +270,7 @@ gidiyordu.)
     isolation: isolate;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: var(--hero-m-align, center);
     gap: var(--hero-m-gap);
     height: auto;
     min-height: 100vh;                    /* svh desteklemeyen tarayıcı */
