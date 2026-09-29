@@ -1,12 +1,25 @@
 /*!
- * journey-timeline.css v1.0.0
- * react/components/JourneyTimeline'ın vanilla portu (Barba geçişlerinde
- * yaşasın diye — bkz. PROJECT.md Kural B1). Geometri ve süreler React
- * sürümünden birebir; tek fark :host kaldırıldı (Shadow DOM yok) ve
- * Designer'da CMS kaynağını gizleyen kural eklendi.
+ * journey-timeline.css v2.0.0
+ * react/components/JourneyTimeline'ın vanilla portu (bkz. PROJECT.md Kural B1).
  *
- * DOM'u journey-timeline.js kuruyor: kartlar ve yörünge öğeleri
- * [data-journey-items] içindeki Collection List'ten üretiliyor.
+ * v2.0.0 — Panel kabuğu ve sol anlatı sütunu Webflow class'larına taşındı
+ *          (.mt-jt__shell / __wrap / __content / __eyebrow / __title / __body /
+ *          __link / __animation / __cards). Canvas CDN stylesheet'ini
+ *          yüklemediği için orada kalınca section Designer'da düzenlenemiyordu.
+ *          Bu dosya artık yalnız Webflow style panelinin İFADE EDEMEDİĞİ
+ *          yörünge makinesini tutuyor — navbar.css'teki ayrımın aynısı.
+ *
+ * BURADA NE VAR
+ *   - --jt-* token'ları (renk/süre/easing), iki yarı da bunları kullanıyor.
+ *   - Yörünge: __timeline / __arc / __circle / __orbit. Dönüş
+ *     transform: rotate(var(--mt-jt-rotation)) ile, upright ise
+ *     calc(0deg - angle - rotation) ile ters döndürülüp dik tutuluyor —
+ *     ikisi de Webflow panelinden kurulamıyor.
+ *   - JS'in ÜRETTİĞİ öğeler: kartlar, __item, __upright, __year, __dot ve
+ *     is-active / is-outside durumları. Designer'da karşılıkları yok.
+ *   - CMS/statik kaynak listesini gizleme + prefers-reduced-motion.
+ *
+ * NE YOK (Designer'da): panel zemini, köşe yarıçapı, boşluklar, tipografi.
  */
 .mt-jt, .mt-jt * { box-sizing: border-box; }
 
@@ -29,96 +42,21 @@
   --jt-move: 800ms;                 /* orbit dönüşü — kaynakla aynı */
   --jt-rotation: 0deg;
 
-  position: relative;
-  width: 100%;
-  padding-block: var(--jt-py);
-  padding-inline: var(--jt-pad-x);
-  color: var(--jt-fg);
-  font: inherit;
 }
 /* Container: panel sayfanın diğer section'larıyla aynı hizada dursun */
-.mt-jt__shell {
-  width: 100%;
-  max-width: var(--jt-container);
-  margin-inline: auto;
-}
-.mt-jt--full { --jt-container: none; }
-.mt-jt--bleed { padding-inline: 0; }
+
 .mt-jt--light {
   --jt-bg: var(--neutral--off-white, #f5f5ec);
   --jt-fg: var(--color-text--primary, #1a1a18);
   --jt-card-bg: #fff;
 }
 
-.mt-jt__wrap {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  min-height: 34rem;
-  border-radius: var(--jt-radius);
-  background: var(--jt-bg);
-  overflow: hidden;
-}
-
 /* ── Sol: anlatı ── */
-.mt-jt__content {
-  display: flex;
-  flex-flow: column;
-  gap: 0.75rem;
-  max-width: 36.625rem;
-  padding: 6rem var(--jt-panel-pad) 0;
-}
-.mt-jt__eyebrow {
-  margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--jt-fg-muted);
-}
-.mt-jt__title {
-  margin: 0;
-  font-size: var(--jt-title, clamp(1.875rem, 3.2vw, 3rem));
-  font-weight: 300;
-  line-height: 1.06;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-.mt-jt__body {
-  margin: 0;
-  font-size: var(--jt-body, clamp(0.9375rem, 1.1vw, 1.0625rem));
-  line-height: 1.55;
-  color: var(--jt-fg-muted);
-}
-.mt-jt__link { margin: 0.5rem 0 0; font-size: 0.9375rem; }
-.mt-jt__link a {
-  color: inherit;
-  text-decoration: none;
-  padding-bottom: 2px;
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 100% 1px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size 360ms var(--jt-ease);
-}
-.mt-jt__link a:hover, .mt-jt__link a:focus-visible { background-size: 0 1px; }
 
 /* ── Sağ: kartlar + yörünge ── */
-.mt-jt__animation {
-  display: flex;
-  flex-flow: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 6.5rem;
-  height: 100%;
-}
 
 /* Kartlar tek hücrede üst üste — yükseklik en uzun karta göre sabit */
-.mt-jt__cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  width: 100%;
-  max-width: 22.75rem;
-}
+
 .mt-jt__card {
   grid-area: 1 / 1 / 2 / 2;
   padding: 0.75rem;
@@ -268,24 +206,15 @@
 .mt-jt__item.is-active .mt-jt__dot { transform: scale(1.3); }
 
 /* ── Desktop: iki sütun, yörünge sağda ── */
-@media (min-width: 62rem) {
-  .mt-jt__wrap { grid-template-columns: minmax(0, 1fr); }
-  .mt-jt__animation {
-    position: absolute;
-    inset: 0 48px 0 auto;
-    width: min(54.1875rem, 62%);
-  }
-  .mt-jt__content { position: relative; z-index: 1; padding-bottom: 6rem; }
-}
 
 /* ── Tablet & mobil: yörünge akışta, daha alçak şerit ── */
 @media (max-width: 61.9375rem) {
-  .mt-jt__wrap { gap: 3.75rem; padding-bottom: 2.5rem; min-height: 0; }
-  .mt-jt__content { padding: 3rem var(--jt-panel-pad) 0; max-width: none; }
+  
+  
   /* Şerit tam genişlik: yan yıllar panel kenarına takılmasın (kaynakta da
      collage gibi taşar). Yatay boşluk yalnız kartlara. */
-  .mt-jt__animation { gap: 3rem; }
-  .mt-jt__cards { max-width: 19rem; margin-inline: var(--jt-panel-pad); width: auto; }
+  
+  
   .mt-jt__card { padding: 0.5rem; border-radius: 0.5rem; }
   .mt-jt__card-inner { gap: 0.5rem; padding: 1.125rem 1rem; border-radius: 0.5rem; }
 }
@@ -309,7 +238,7 @@
 
 /* ── Erişilebilirlik ── */
 @media (prefers-reduced-motion: reduce) {
-  .mt-jt__orbit, .mt-jt__upright, .mt-jt__dot, .mt-jt__year, .mt-jt__card, .mt-jt__link a {
+  .mt-jt__orbit, .mt-jt__upright, .mt-jt__dot, .mt-jt__year, .mt-jt__card {
     transition: none;
   }
 }
