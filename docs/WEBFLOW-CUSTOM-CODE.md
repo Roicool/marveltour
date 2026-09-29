@@ -109,12 +109,18 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
       introOnLoad: true,   // F5/ilk yuklemede de perde oynasin (varsayilan: KAPALI)
 
       /* Webflow React Code Component'leri Barba container swap'inde YENIDEN
-         MOUNT OLMUYOR (yalniz tam sayfa yuklemede hydrate oluyorlar). Code
-         component barindiran sayfalari buraya koy: linkler Barba'ya girmez,
-         tarayici normal navigasyon yapar. Gecis animasyonu olmaz ama sayfa
-         her kosulda dogru kurulur. Eslesme yol on-eki ustunden:
-         "/about-us" -> /about-us ve /about-us/... ("/about-us-old" HAYIR). */
-      preventPaths: ['/about-us'],
+         MOUNT OLMUYOR (yalniz tam sayfa yuklemede hydrate oluyorlar), bu yuzden
+         onlari barindiran sayfalar Barba'ya hic girmemeli: linkler normal
+         navigasyon yapar, gecis animasyonu olmaz ama sayfa dogru kurulur.
+         Eslesme yol on-eki ustunden: "/about-us" -> /about-us ve /about-us/...
+         ("/about-us-old" HAYIR).
+         Liste 2026-09'da Designer taranarak cikarildi:
+           /about-us    -> About Hero, Journey Timeline
+           /capabilities -> Hero Carousel, Video Hero (Capabilities Template)
+         Diger sayfalarda code component YOK. Yeni sayfaya koyarsan listeye ekle.
+         Bu gecici bir cozum: dogrusu bu dordunu vanilla js/ modulune cevirmek
+         (bkz. PROJECT.md Kural B1). */
+      preventPaths: ['/about-us', '/capabilities'],
       onEach: function (container) {
         /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
            eksik/hatali modulun adi konsola dusur. */
