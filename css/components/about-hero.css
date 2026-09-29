@@ -10,6 +10,11 @@
  *          dogruluk kaynagi, tek cascade. Canvas bu dosyayi yuklemedigi icin
  *          Designer'da mozaik dizilmez; birebir goruntu bundan onemli.
  *
+ * TİPOGRAFİ DESIGNER'DA: asagidaki siniflarin yazi tipi bildirimleri
+ * bilerek bu dosyada YOK — Webflow class'larina tasindi ki Designer'dan
+ * degistirilebilsin. Buraya geri eklersen Designer'i ezer (CDN sonra yukleniyor).
+ *   .mt-ah__body, .mt-ah__btn
+ *
  * Tek farklar:
  *   - :host kaldirildi (Shadow DOM yok).
  *   - Reveal gizlemesi .is-armed'a bagli: koşulsuz opacity:0 yazarsak JS
@@ -94,7 +99,6 @@
   margin: 0;
   color: var(--mt-ah-fg-muted);
   font-size: var(--mt-ah-body-size, clamp(1rem, 1.2vw, 1.1875rem));
-  line-height: 1.55;
 }
 
 /* ── Butonlar ── */
@@ -113,8 +117,6 @@
   align-items: center;
   gap: 0.5rem;
   font: inherit;
-  font-size: 0.9375rem;
-  line-height: 1;
   text-decoration: none;
   color: inherit;
   cursor: pointer;

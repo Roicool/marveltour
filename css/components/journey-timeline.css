@@ -11,6 +11,11 @@
  *              content padding'i, cards genisligi) tamamen kayboldu.
  *          Artik CSS'in TAMAMI burada ve React dosyasiyla birebir.
  *
+ * TİPOGRAFİ DESIGNER'DA: asagidaki siniflarin yazi tipi bildirimleri
+ * bilerek bu dosyada YOK — Webflow class'larina tasindi ki Designer'dan
+ * degistirilebilsin. Buraya geri eklersen Designer'i ezer (CDN sonra yukleniyor).
+ *   .mt-jt__eyebrow, .mt-jt__title, .mt-jt__body, .mt-jt__link, .mt-jt__card-title, .mt-jt__card-text, .mt-jt__item
+ *
  * Tek fark: :host kaldirildi (Shadow DOM yok) ve kaynak listesini gizleyen
  * kural eklendi — DOM'u journey-timeline.js kuruyor, milestone'lar
  * [data-journey-items] icindeki listeden okunuyor.
@@ -77,26 +82,21 @@
 }
 .mt-jt__eyebrow {
   margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--jt-fg-muted);
 }
 .mt-jt__title {
   margin: 0;
   font-size: var(--jt-title, clamp(1.875rem, 3.2vw, 3rem));
-  font-weight: 300;
-  line-height: 1.06;
-  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .mt-jt__body {
   margin: 0;
   font-size: var(--jt-body, clamp(0.9375rem, 1.1vw, 1.0625rem));
-  line-height: 1.55;
   color: var(--jt-fg-muted);
 }
-.mt-jt__link { margin: 0.5rem 0 0; font-size: 0.9375rem; }
+.mt-jt__link { margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+}
 .mt-jt__link a {
   color: inherit;
   text-decoration: none;
@@ -165,7 +165,10 @@
   letter-spacing: -0.01em;
 }
 .mt-jt__card-divider { height: 0.5px; background: currentColor; opacity: 0.35; }
-.mt-jt__card-text { margin: 0; font-size: 0.9375rem; line-height: 1.5; color: var(--jt-card-muted); }
+.mt-jt__card-text { margin: 0; color: var(--jt-card-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
 
 /* ── Yörünge ──
    timeline: dairenin yalnız üst şeridini gösteren pencere.
