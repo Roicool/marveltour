@@ -1,5 +1,15 @@
 /**
- * AboutHero — v1.2.0
+ * AboutHero — v1.2.1
+ * v1.2.1 — Kolaj artık "hiç görünmeme" durumuna düşemiyor. Reveal gizlemesi
+ *          (.mt-ah__photo-inner opacity:0) koşulsuzdu: .is-in'i yalnız bu
+ *          component'in JS'i basıyor, dolayısıyla hydrate olmadığı her
+ *          durumda (Barba geçişi — Code Component'ler container swap'inde
+ *          yeniden mount OLMUYOR) fotoğraflar kalıcı olarak görünmez
+ *          kalıyordu. Artık gizleme .is-armed'a bağlı ve .is-armed'ı JS,
+ *          observer'ı kurarken basıyor → JS çalışmazsa fotoğraflar
+ *          animasyonsuz ama görünür. Ayrıca IntersectionObserver
+ *          threshold 0.15 → 0: bölüm viewport'tan uzun olduğunda oran
+ *          eşiğe hiç ulaşmayıp reveal tetiklenmeyebiliyordu.
  * v1.2.0 — Container prop'u: genişlik sitenin RC --container--* token'ından
  *          (varsayılan 2xl); full/bleed ile container kaldırılabilir.
  * v1.1.0 — Fotoğraflarda projenin parallax preset'i (parallax.ts;
@@ -24,7 +34,7 @@
  * Barba notu: Code Component'ler yalnız tam sayfa yüklemede hydrate olur;
  * Barba container'ının DIŞINDA ya da data-barba-prevent sayfalarda kullan.
  */
-import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { acquireGsap } from "../HeroCarousel/engine";
 import { createCollageParallax, depthFactor, type CollageParallaxApi, type ParallaxDose } from "./parallax";
 import "./AboutHero.css";
@@ -68,6 +78,10 @@ export interface AboutHeroProps {
   parallaxDose?: ParallaxDose;
   attributes?: Record<string, string>;
 }
+
+/* .is-armed boyamadan ÖNCE düşmeli, yoksa kolaj bir kare görünüp gizlenir.
+   Sunucuda useLayoutEffect uyarı verdiği için ortam bazlı seçiliyor. */
+const useArmEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /** Reveal sırası: merkez (6) → dışa (9). Değer = stagger adım indeksi. */
 const ORDER: Record<number, number> = { 6: 0, 4: 1, 7: 2, 2: 3, 5: 4, 8: 5, 10: 6, 3: 7, 1: 8, 9: 9 };
@@ -119,7 +133,7 @@ export function AboutHero({
     image10,
   ];
 
-  useEffect(() => {
+  useArmEffect(() => {
     const root = rootRef.current;
     if (!root) return;
 
@@ -136,6 +150,10 @@ export function AboutHero({
       return;
     }
 
+    /* Gizlemeyi ancak observer'ı gerçekten kurabildiğimizde açıyoruz — CSS
+       opacity:0'ı .is-armed'a bağlı (bkz. AboutHero.css). */
+    root.classList.add("is-armed");
+
     let io: IntersectionObserver | null = new win.IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -149,7 +167,10 @@ export function AboutHero({
           }
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+      /* threshold 0: bölüm viewport'tan uzunsa (mobilde kolaj %210 genişlik
+         + başlık bloğu) oran hiçbir zaman 0.15'e ulaşmayabiliyordu → reveal
+         hiç tetiklenmiyordu. Alt kenardan %8 içeri girmesi yeterli. */
+      { threshold: 0, rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(root);
 

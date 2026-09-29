@@ -1,5 +1,7 @@
 /* ============================================================
-   Marveltour — AboutHero.css v1.0.0
+   Marveltour — AboutHero.css v1.1.0
+   v1.1.0 — Reveal gizlemesi .is-armed'a bağlandı (JS yoksa fotoğraflar
+            görünür kalır; bkz. AboutHero.tsx v1.2.1).
    glean.com/about "section-hero-about" portu: ortalanmış başlık bloğu +
    10 fotoğraflı collage, merkezden dışa açılan PURE CSS reveal.
    Geometri (yüzdeler, max-width'ler, breakpoint'ler) kaynaktan birebir.
@@ -215,12 +217,21 @@
    referanstaki oranı korur. */
 
 /* ── Center-out reveal (pure CSS) ──
-   Karolar .is-in gelene kadar gizli; sonra sıraya bağlı gecikmeyle açılır. */
+   Karolar .is-in gelene kadar gizli; sonra sıraya bağlı gecikmeyle açılır.
+
+   DİKKAT — gizleme .is-armed'a bağlı: opacity:0'ı koşulsuz yazarsak
+   component hydrate OLMAZSA (Barba geçişinde Code Component'ler yeniden
+   mount olmuyor) .is-in hiç gelmez ve mozaik KALICI olarak görünmez kalır.
+   .is-armed'ı JS mount'ta, IntersectionObserver'ı kurmadan hemen önce
+   basıyor: JS yoksa fotoğraflar animasyonsuz ama GÖRÜNÜR. (Aynı emniyet
+   VideoHero'da da var: .vh:not(.is-armed).) */
 .mt-ah--reveal .mt-ah__photo-inner {
   --start-x: 0rem;
   --start-y: 0rem;
   --mt-ah-i: 0;
   transform-origin: center;
+}
+.mt-ah--reveal.is-armed .mt-ah__photo-inner {
   opacity: 0;
   will-change: transform, opacity, filter;
 }
@@ -266,6 +277,7 @@
 @media (prefers-reduced-motion: reduce) {
   .mt-ah--parallax .mt-ah__photo { will-change: auto; transform: none; }
   .mt-ah--reveal .mt-ah__photo-inner,
+  .mt-ah--reveal.is-armed .mt-ah__photo-inner,
   .mt-ah--reveal.is-in .mt-ah__photo-inner {
     animation: none;
     opacity: 1;
