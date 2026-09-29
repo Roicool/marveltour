@@ -1,5 +1,9 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.7.0 — opts.preventPaths: verilen yol ön-eklerine giden linkler Barba'ya
+ *          hiç girmez, tarayıcı normal navigasyon yapar. Webflow React Code
+ *          Component'leri container swap'inde yeniden mount olmadığı için
+ *          onları barındıran sayfaları listeye koy (örn. ["/about-us"]).
  * v1.6.0 — Kalıcı katman event köprüsü: her sayfa kurulumunda (ilk yükleme
  *          + her geçiş) document'a `marveltour:page` (detail.path,
  *          detail.container), her geçiş başında `marveltour:leave` yayılır.
@@ -79,6 +83,32 @@
     opts = opts || {};
     var onEach = typeof opts.onEach === "function" ? opts.onEach : function () {};
     var onLeave = typeof opts.onLeave === "function" ? opts.onLeave : function () {};
+
+    /* Barba DIŞINDA bırakılacak yollar. Webflow React Code Component'leri
+       container swap'inde yeniden mount OLMUYOR (yalnız tam sayfa yüklemede
+       hydrate oluyorlar); bu yüzden code component barındıran bir sayfaya
+       geçiş, o component'i ölü DOM olarak bırakır. Böyle sayfaları listeye
+       koyunca tarayıcı normal navigasyon yapar: geçiş animasyonu olmaz ama
+       sayfa her koşulda doğru kurulur.
+       Eşleşme yol ön-eki üstünden: "/about-us" → /about-us ve /about-us/... */
+    var preventPaths = (Array.isArray(opts.preventPaths) ? opts.preventPaths : [])
+      .map(function (p) { return String(p || "").trim().replace(/\/+$/, ""); })
+      .filter(Boolean);
+
+    function isPreventedPath(href) {
+      if (!preventPaths.length || !href) return false;
+      var path;
+      try {
+        path = new URL(href, location.href).pathname.replace(/\/+$/, "");
+      } catch (e) {
+        return false;
+      }
+      for (var i = 0; i < preventPaths.length; i++) {
+        var p = preventPaths[i];
+        if (path === p || path.indexOf(p + "/") === 0) return true;
+      }
+      return false;
+    }
 
     /* Kalıcı katman köprüsü: container DIŞINDA yaşayan modüller (React Navbar
        code component vb.) Barba hook'larına doğrudan bağlanmaz; document
@@ -308,7 +338,9 @@
       prevent: function (data) {
         var href = (data.el && data.el.getAttribute("href")) || "";
         /* Aynı sayfa anchor'ları Barba'ya girmez — lenis-init smooth kaydırır */
-        return href.charAt(0) === "#";
+        if (href.charAt(0) === "#") return true;
+        /* opts.preventPaths: code component barındıran sayfalar tam yüklenir */
+        return isPreventedPath(href);
       },
       transitions: [
         {
