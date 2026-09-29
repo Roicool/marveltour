@@ -2,6 +2,9 @@
  * about-hero.css v3.0.0
  * react/components/AboutHero.css'in BİREBİR portu (bkz. PROJECT.md Kural B1).
  *
+ * v3.1.0 — .mt-ah__header'in max-width'i dosyadan CIKARILDI (mobil override'i
+ *          dahil): basligin genisligi artik Designer'dan ayarlaniyor. Iki
+ *          yerde birden dursaydi CDN sonra yuklendigi icin Designer ezilirdi.
  * v3.0.0 — v2.0.0'da geometriyi Webflow class'larina tasimistim; bunu GERİ
  *          ALDIM. İki şey kirildi: (1) .mt-ah__inner container katmanini hic
  *          kurmamisim, bolum tam genislige yayiliyordu; (2) responsive
@@ -81,11 +84,16 @@
 }
 
 /* ── Başlık bloğu (başlık SLOT: Webflow'daki gerçek H1) ── */
+/* BASLIK GENISLIGI DESIGNER'DA: max-width bilerek burada YOK.
+   React'te bu deger headerWidth prop'uydu (49.875rem) ve mobilde 22.5rem'e
+   iniyordu; ikisi de bu dosyadaydi, yani Designer'dan genisletmeye
+   calisinca CDN sonra yuklendigi icin sessizce eziliyordu. Artik
+   .mt-ah__header'in genisligini Webflow'dan ver (breakpoint basina da) —
+   buraya geri eklersen Designer'i tekrar ezersin. */
 .mt-ah__header {
   display: flex;
   flex-flow: column;
   gap: var(--mt-ah-header-gap, 1rem);
-  max-width: var(--mt-ah-header-w);
   margin-inline: auto;
   width: 100%;
   text-align: center;
@@ -298,7 +306,6 @@
 
 /* ── Responsive — kaynaktan birebir ── */
 @media (max-width: 991px) {
-  .mt-ah__header { max-width: 22.5rem; }
   .mt-ah__collage { width: 120%; margin-left: -10%; padding-inline: 0; }
 }
 @media (max-width: 479px) {
