@@ -1,5 +1,10 @@
 /*!
  * Marveltour — core/barba-init.js
+ * v1.8.0 — Geçiş süreleri kısaldı ve ayarlanabilir oldu. Perdenin AÇILIŞ
+ *          yarısı sayfa hazır olduktan SONRA oynadığı için hiçbir şey
+ *          kazandırmıyordu; asıl kısılan orası. Sayfa→sayfa toplam perde
+ *          süresi ~1.66sn'den ~1.15sn'ye indi. opts.transitionSpeed ile
+ *          hepsi birden ölçeklenir (0.7 = %30 daha kısa; sınır 0.3–2).
  * v1.7.0 — opts.preventPaths: verilen yol ön-eklerine giden linkler Barba'ya
  *          hiç girmez, tarayıcı normal navigasyon yapar. Webflow React Code
  *          Component'leri container swap'inde yeniden mount olmadığı için
@@ -202,6 +207,23 @@
 
     var introOnLoad = opts.introOnLoad === true;
 
+    /* ── Geçiş süreleri ──
+       Perde iki yarim: KAPANIS ve ACILIS. Kapanis, Barba'nin fetch'iyle
+       AYNI ANDA oluyor — yani bekleme suresini gizliyor, ise yariyor.
+       Acilis ise sayfa kurulup ScrollTrigger.refresh() bittikten SONRA
+       oynuyor; hicbir sey kazandirmiyor, sadece bekletiyor. Bu yuzden
+       taban degerlerde asil kisilan taraf ACILIS.
+
+       opts.transitionSpeed ile hepsi birden olceklenir: 1 = asagidaki
+       degerler, 0.7 = %30 daha kisa, 1.3 = daha agir. Sinir 0.3–2. */
+    var SPEED = (function () {
+      var n = parseFloat(opts.transitionSpeed);
+      if (isNaN(n) || n <= 0) return 1;
+      return Math.min(2, Math.max(0.3, n));
+    })();
+    function d(sec) { return Math.round(sec * SPEED * 1000) / 1000; }
+
+
     var gsap = window.gsap;
     var ScrollTrigger = window.ScrollTrigger;
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -382,22 +404,22 @@
                 autoAlpha: 1,
                 y: 0,
                 scale: 1,
-                duration: 0.45,
+                duration: d(0.4),
                 ease: "power3.out",
-                delay: 0.1
+                delay: d(0.08)
               })
               .to(logoWrap, {
                 autoAlpha: 0,
                 y: -20,
-                duration: 0.28,
+                duration: d(0.24),
                 ease: "power2.in",
-                delay: 0.5 // marka anı — ilk karşılamada bir nefes uzun
+                delay: d(0.34) // marka anı — ilk karşılamada bir nefes uzun
               })
               .to(cover, {
                 yPercent: -101,
-                duration: 0.6,
+                duration: d(0.45),
                 ease: "power3.inOut"
-              }, "-=0.08")
+              }, "-=" + d(0.08))
               .set(cover, { visibility: "hidden", y: 0, yPercent: 101 })
               .set(logoWrap, { autoAlpha: 0, y: 0, scale: 1 });
             return tl;
@@ -419,12 +441,12 @@
             tl.set(cover, { visibility: "visible" })
               .fromTo(cover,
                 { y: 0, yPercent: 101 },
-                { y: 0, yPercent: 0, duration: 0.55, ease: "power3.inOut" }
+                { y: 0, yPercent: 0, duration: d(0.42), ease: "power3.inOut" }
               )
               .fromTo(logoWrap,
                 { autoAlpha: 0, y: 24, scale: 0.92 },
-                { autoAlpha: 1, y: 0, scale: 1, duration: 0.35, ease: "power3.out" },
-                "-=0.22"
+                { autoAlpha: 1, y: 0, scale: 1, duration: d(0.28), ease: "power3.out" },
+                "-=" + d(0.2)
               );
             return tl;
           },
@@ -475,16 +497,16 @@
             tl.to(logoWrap, {
                 autoAlpha: 0,
                 y: -20,
-                duration: 0.28,
+                duration: d(0.22),
                 ease: "power2.in",
-                delay: 0.18 // marka anı — logo bir nefes ekranda kalır
+                delay: d(0.06) // marka anı — kısa; sayfa zaten hazır
               })
               /* Panel aynı yönde (yukarı) devam eder — tek akış hissi */
               .to(cover, {
                 yPercent: -101,
-                duration: 0.6,
+                duration: d(0.45),
                 ease: "power3.inOut"
-              }, "-=0.08")
+              }, "-=" + d(0.08))
               .set(cover, { visibility: "hidden", y: 0, yPercent: 101 })
               .set(logoWrap, { y: 0, scale: 1 });
             return tl;
