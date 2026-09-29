@@ -226,10 +226,27 @@ Mobil kurgu: **video bölümün tamamını kaplayan zemin**, başlık üstte, 2.
 metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef kutusu
 (`[data-hero-placeholder]`) animasyon olmadığı için gizlenir.
 
+Blok **Designer'daki sarmalayıcı kurgusundan bağımsız**: hero ister üç kardeş
+sarmalayıcı (başlık / medya / sahne) ister tek bir sarmalayıcı içinde olsun
+aynı sonucu verir. Bunun için z-index yarışına hiç girilmiyor — video negatif
+katmana alınıyor, metinler normal akışta kaldığı için otomatik üstte kalıyor,
+section'daki `isolation: isolate` de negatif katmanın sayfanın zeminine
+kaçmasını engelliyor. (Önceki sürüm medyanın sarmalayıcısını
+`:has([data-hero-media])` ile **descendant** olarak seçiyordu: tek sarmalayıcılı
+kurguda o sarmalayıcı metinleri de taşıdığı için hepsi videonun arkasına
+gidiyordu.)
+
 ```html
 <style>
 /* ═══ Ana sayfa hero — tablet ve altı (<992px) ═══
-   Video zemin; başlık üstte, 2. sahne metni altta. */
+   Video zemin; başlık üstte, 2. sahne metni altta.
+
+   KURGUDAN BAĞIMSIZ: Designer'da hero ister üç kardeş sarmalayıcı
+   (başlık / medya / sahne) ister tek bir sarmalayıcı içinde olsun aynı
+   sonucu verir. Bunun için z-index yarışına hiç girilmiyor: video NEGATİF
+   katmana alınıyor, metinler normal akışta kaldığı için otomatik üstte
+   kalıyor. Section'daki isolation:isolate negatif katmanın sayfanın
+   arkasına kaçmasını engelliyor. */
 @media (max-width: 991px) {
 
   /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
@@ -242,9 +259,12 @@ metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef ku
     --hero-m-scrim: none;      /* metin okunmuyorsa: aşağıdaki gradient'i aç */
   }
 
-  /* 1) Bölüm akışa döner: pin yok, içerik dikey dağılır */
+  /* 1) Bölüm akışa döner: pin yok, içerik dikey dağılır.
+        isolation: video/perde için kullanılan negatif z-index'ler bu
+        bölümün İÇİNDE kalır, sayfanın zeminine düşmez. */
   [data-hero-cinematic][data-hero-cinematic] {
     position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -256,25 +276,24 @@ metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef ku
     overflow: clip;
   }
 
-  /* 2) Sarmalayıcılar akışa döner ve videonun ÜSTÜNDE kalır */
-  [data-hero-cinematic][data-hero-cinematic] > * {
-    position: relative;
-    inset: auto;
-    z-index: 2;
-    width: 100%;
-    max-width: none;
+  /* 2) Medyanın ATASI olan sarmalayıcılar konumlandırma bağlamı KURMASIN —
+        medya kaç kat içeride olursa olsun doğrudan bölüme göre yerleşsin.
+        Bu sarmalayıcı aynı zamanda metinleri de taşıyorsa hiçbir şey
+        kaybolmaz: static kalmak akışa dokunmuyor. */
+  [data-hero-cinematic][data-hero-cinematic] :has([data-hero-media]) {
+    position: static;
+    width: auto;
     height: auto;
     min-height: 0;
     transform: none;
   }
 
-  /* 3) VIDEO = ZEMİN. Medya sarmalayıcısı da medyanın kendisi de bölümü
-        kaplar (Designer'da bir sarmalayıcı katmanı olsa da olmasa da). */
-  [data-hero-cinematic][data-hero-cinematic] > :has([data-hero-media]),
+  /* 3) VIDEO = ZEMİN. Negatif katman: metinler akışta olduğu için
+        z-index vermeden otomatik üstte kalır. */
   [data-hero-cinematic][data-hero-cinematic] [data-hero-media] {
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: -2;
     width: 100%;
     height: 100%;
     border-radius: 0;
@@ -294,21 +313,37 @@ metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef ku
     content: "";
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: -1;
     pointer-events: none;
     background: var(--hero-m-scrim, none);
   }
 
-  /* 4) 2. sahne akışa iner; FLIP'in hedef kutusu animasyon yokken anlamsız */
-  [data-hero-cinematic] [data-hero-scene] {
-    position: static;
+  /* 4) Metin katmanları: nerede durursa dursun akışa döner ve görünür olur.
+        Sarmalayıcıları attribute'lardan bulunuyor — Designer'daki sınıf
+        adlarına hiç bağlı değil. */
+  [data-hero-cinematic][data-hero-cinematic] :is(
+    [data-hero-scene],
+    :has(> [data-hero-title]),
+    :has(> [data-hero-desc]),
+    :has(> [data-hero-cta]),
+    :has(> [data-hero-text])
+  ) {
+    position: relative;
     inset: auto;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* 2. sahne tek kolon; FLIP'in hedef kutusu animasyon yokken anlamsız */
+  [data-hero-cinematic] [data-hero-scene] {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
   }
   [data-hero-cinematic] [data-hero-placeholder] { display: none; }
 
@@ -320,6 +355,7 @@ metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef ku
     opacity: 1;
     visibility: visible;
     transform: none;
+    pointer-events: auto;
   }
 }
 </style>
