@@ -4,6 +4,11 @@
  * Code component'ler Barba container swap'inde mount olmuyor; bu yuzden
  * VideoHero vanilla js/ + css/ moduline cevrildi.
  *
+ * TİPOGRAFİ DESIGNER'DA: asagidaki siniflarin yazi tipi bildirimleri
+ * bilerek bu dosyada YOK — Webflow class'larina tasindi ki Designer'dan
+ * degistirilebilsin. Buraya geri eklersen Designer'i ezer (CDN sonra yukleniyor).
+ *   .vh__eyebrow, .vh__title, .vh__body, .vh__link
+ *
  * Tek fark: :host kaldirildi (Shadow DOM yok).
  *
  * PROP -> CSS koprusu: React'te section'a inline style ile iki degisken
@@ -128,17 +133,14 @@
 .vh__eyebrow {
   margin: 0 0 1.25rem;
   font-size: var(--vh-eyebrow-size);
+  color: var(--vh-fg);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 500;
-  color: var(--vh-fg);
 }
 .vh__title {
   margin: 0;
   font-size: var(--vh-title-size);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-  font-weight: 500;
   text-wrap: balance;
   color: var(--vh-fg);
 }
@@ -146,7 +148,6 @@
   margin: 1.5rem 0 0;
   max-width: 34ch;
   font-size: var(--vh-body-size);
-  line-height: 1.45;
   color: var(--vh-fg-muted);
   text-wrap: pretty;
 }
@@ -158,9 +159,6 @@
   display: inline-block;
   color: var(--vh-fg);
   text-decoration: none;
-  font-weight: 500;
-  font-size: 1.0625rem;
-  line-height: 1.3;
   padding-bottom: 3px;
   background-image: linear-gradient(currentColor, currentColor);
   background-size: 100% 1.5px;
