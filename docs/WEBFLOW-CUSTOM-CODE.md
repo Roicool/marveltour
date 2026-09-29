@@ -114,6 +114,15 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
       logo: 'Marveltour',
       introOnLoad: true,   // F5/ilk yuklemede de perde oynasin (varsayilan: KAPALI)
 
+      /* Perde suresi. 1 = varsayilan (sayfa->sayfa toplam ~1.15sn),
+         0.7 = %30 daha kisa, 1.3 = daha agir. Sinir 0.3-2.
+         Not: perdenin KAPANIS yarisi Barba'nin fetch'iyle ayni anda oluyor,
+         yani bekleme suresini gizliyor; ACILIS yarisi ise sayfa hazir
+         olduktan sonra oynuyor. Cok kisarsan gecis sertlesir, ama
+         "sayfa yuklenmesi icin vakit kazanma" tarafindan bir sey
+         kaybetmezsin — o is kapanista bitiyor. */
+      transitionSpeed: 1,
+
       /* Webflow React Code Component'leri Barba container swap'inde YENIDEN
          MOUNT OLMUYOR (yalniz tam sayfa yuklemede hydrate oluyorlar), bu yuzden
          onlari barindiran sayfalar Barba'ya hic girmemeli: linkler normal
