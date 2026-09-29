@@ -349,6 +349,17 @@ Logo kaynağı (öncelik sırasıyla): sayfadaki gizli `[data-transition-logo]` 
   içine konan component Barba geçişinde hydrate edilmez (Webflow runtime'ı yalnız sayfa
   yüklemesinde çalışır) ve DOMParser declarative shadow root'ları oluşturmadığı için stili
   de kaybolur. Sayfa içi UI = vanilla `js/` + `onEach`.
+
+  > **Bu kural Designer'da ihlal edildi ve semptomu "React component'ler sayfa
+  > değiştirirken gelmiyor, F5'te geliyor".** 2026-09 itibarıyla `wrap-main` İÇİNDE
+  > code component barındıran sayfalar: **About Us** (About Hero, Journey Timeline) ve
+  > **Capabilities Template** (Hero Carousel, Video Hero). Diğer tüm sayfalar temiz.
+  >
+  > Kalıcı çözüm bu dördünü vanilla `js/` modülüne çevirmek. O yapılana kadar
+  > geçici çözüm `initBarba({ preventPaths: ['/about-us', '/capabilities'] })`:
+  > bu yollara giden linkler Barba'ya girmez, tarayıcı tam sayfa yükler. Geçiş
+  > animasyonu kaybolur ama sayfa doğru kurulur. **Yeni bir sayfaya code component
+  > koyarsan ya listeye ekle ya da component'i vanilla'ya çevir.**
 - **Sayfa katmanı** (her geçişte yeniden): ScrollTrigger kuran ya da container içi DOM'a
   bağlanan HER ŞEY. Bunlar `initBarba({ onEach })` içinden çağrılır, asla dışından.
 
