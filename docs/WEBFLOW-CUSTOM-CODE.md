@@ -239,14 +239,21 @@ gidiyordu.)
 ```html
 <style>
 /* ═══ Ana sayfa hero — tablet ve altı (<992px) ═══
-   Video zemin; başlık üstte, 2. sahne metni altta.
+   Video zemin; içerik MUTLAK KONUMLU ve dikeyde ortalı.
 
-   KURGUDAN BAĞIMSIZ: Designer'da hero ister üç kardeş sarmalayıcı
-   (başlık / medya / sahne) ister tek bir sarmalayıcı içinde olsun aynı
-   sonucu verir. Bunun için z-index yarışına hiç girilmiyor: video NEGATİF
-   katmana alınıyor, metinler normal akışta kaldığı için otomatik üstte
-   kalıyor. Section'daki isolation:isolate negatif katmanın sayfanın
-   arkasına kaçmasını engelliyor. */
+   Neden mutlak: Designer'daki sarmalayıcılarda height:100% / 100vh gibi
+   ayarlar kaldığında flex'in justify-content'i ortalayacak boşluk bulamıyor
+   (çocuk bölümü tamamen dolduruyor). Mutlak konum o ayarların TAMAMINI
+   devre dışı bırakıyor — kurgu ne olursa olsun sonuç aynı.
+
+   KURGUDAN BAĞIMSIZ: hero ister üç kardeş sarmalayıcı (başlık / medya /
+   sahne) ister tek sarmalayıcı içinde olsun çalışır. z-index yarışı yok:
+   video negatif katmanda, içerik normal katmanda; section'daki
+   isolation:isolate negatif katmanın sayfanın zeminine kaçmasını engelliyor.
+
+   AKIŞ MODUNA DÖNMEK İSTERSEN (içerik 100svh'ye sığmıyorsa) section'a:
+     style="--hero-m-pos: relative"
+   O zaman bölüm flex column olarak ortalar ve içerikle birlikte uzar. */
 @media (max-width: 991px) {
 
   /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
@@ -254,17 +261,17 @@ gidiyordu.)
     --hero-m-min: 100svh;      /* bölüm yüksekliği */
     --hero-m-top: 6rem;        /* üst boşluk (navbar payı) */
     --hero-m-bottom: 6rem;     /* alt boşluk — üstle eşit = gerçek ortalama */
-    --hero-m-align: center;    /* dikey hizalama: center | flex-start | space-between */
     --hero-m-pad: 1.25rem;     /* yan boşluk */
-    --hero-m-gap: 2rem;        /* başlık ile alt metin arası min. boşluk */
+    --hero-m-gap: 1.5rem;      /* başlık / metin / buton arası */
+    --hero-m-align: center;    /* dikey: center | flex-start | flex-end */
+    --hero-m-x: center;        /* yatay: center | flex-start */
+    --hero-m-text: center;     /* metin hizası: center | left */
     --hero-m-scrim: none;      /* metin okunmuyorsa: aşağıdaki gradient'i aç */
+    --hero-m-pos: absolute;    /* relative = akış moduna dön */
   }
 
-  /* 1) Bölüm akışa döner: pin yok, içerik dikey ORTALANIR.
-        space-between değil: 2. sahne metni boş/kısa olduğunda içeriği
-        yukarı yapıştırıp altta koca bir boşluk bırakıyordu.
-        isolation: video/perde için kullanılan negatif z-index'ler bu
-        bölümün İÇİNDE kalır, sayfanın zeminine düşmez. */
+  /* 1) Bölüm: sabit yükseklikli sahne + konumlandırma bağlamı.
+        Flex ayarları yalnız --hero-m-pos:relative'e geçilirse iş görür. */
   [data-hero-cinematic][data-hero-cinematic] {
     position: relative;
     isolation: isolate;
@@ -275,14 +282,12 @@ gidiyordu.)
     height: auto;
     min-height: 100vh;                    /* svh desteklemeyen tarayıcı */
     min-height: var(--hero-m-min, 100svh);
-    padding: var(--hero-m-top) var(--hero-m-pad) var(--hero-m-bottom);
+    padding: 0;
     overflow: clip;
   }
 
   /* 2) Medyanın ATASI olan sarmalayıcılar konumlandırma bağlamı KURMASIN —
-        medya kaç kat içeride olursa olsun doğrudan bölüme göre yerleşsin.
-        Bu sarmalayıcı aynı zamanda metinleri de taşıyorsa hiçbir şey
-        kaybolmaz: static kalmak akışa dokunmuyor. */
+        medya kaç kat içeride olursa olsun doğrudan bölüme göre yerleşsin. */
   [data-hero-cinematic][data-hero-cinematic] :has([data-hero-media]) {
     position: static;
     width: auto;
@@ -291,8 +296,8 @@ gidiyordu.)
     transform: none;
   }
 
-  /* 3) VIDEO = ZEMİN. Negatif katman: metinler akışta olduğu için
-        z-index vermeden otomatik üstte kalır. */
+  /* 3) VIDEO = ZEMİN. Negatif katman: içerik normal akışta/üst katmanda
+        olduğu için z-index vermeden üstte kalır. */
   [data-hero-cinematic][data-hero-cinematic] [data-hero-media] {
     position: absolute;
     inset: 0;
@@ -309,7 +314,7 @@ gidiyordu.)
     transform: none;
   }
 
-  /* Okunabilirlik perdesi — videonun üstünde, metnin altında. Designer'daki
+  /* Okunabilirlik perdesi — videonun üstünde, içeriğin altında. Designer'daki
      overlay yetiyorsa dokunma; yetmiyorsa --hero-m-scrim'i şuna çevir:
        linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.15) 45%, rgba(0,0,0,.65)) */
   [data-hero-cinematic]::after {
@@ -321,44 +326,75 @@ gidiyordu.)
     background: var(--hero-m-scrim, none);
   }
 
-  /* 4) Metin katmanları: nerede durursa dursun akışa döner ve görünür olur.
-        Sarmalayıcıları attribute'lardan bulunuyor — Designer'daki sınıf
-        adlarına hiç bağlı değil. */
+  /* 4) BAŞLIK KATMANI — bölümü kaplar, içeriği dikeyde ortalar.
+        Sarmalayıcı attribute'lardan bulunuyor, Designer sınıf adına bağlı
+        değil. pointer-events:none: boş alan tıklama yutmasın. */
   [data-hero-cinematic][data-hero-cinematic] :is(
-    [data-hero-scene],
     :has(> [data-hero-title]),
     :has(> [data-hero-desc]),
-    :has(> [data-hero-cta]),
-    :has(> [data-hero-text])
+    :has(> [data-hero-cta])
   ) {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    max-width: none;
+    position: var(--hero-m-pos, absolute);
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--hero-m-align, center);
+    align-items: var(--hero-m-x, center);
+    gap: var(--hero-m-gap);
+    width: auto;
     height: auto;
     min-height: 0;
+    max-height: none;
+    margin: 0;
+    padding: var(--hero-m-top) var(--hero-m-pad) var(--hero-m-bottom);
+    text-align: var(--hero-m-text, center);
     transform: none;
     opacity: 1;
     visibility: visible;
+    pointer-events: none;
   }
 
-  /* 2. sahne tek kolon; FLIP'in hedef kutusu animasyon yokken anlamsız */
-  [data-hero-cinematic] [data-hero-scene] {
+  /* 5) 2. SAHNE — alta yaslı; başlık katmanıyla çakışmaz.
+        Boşsa hiçbir yer kaplamaz. */
+  [data-hero-cinematic][data-hero-cinematic] [data-hero-scene] {
+    position: var(--hero-m-pos, absolute);
+    inset: auto 0 0 0;
     display: flex;
     flex-direction: column;
+    align-items: var(--hero-m-x, center);
     gap: 1rem;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0 var(--hero-m-pad) var(--hero-m-bottom);
+    text-align: var(--hero-m-text, center);
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
   }
+
+  /* FLIP'in hedef kutusu animasyon yokken anlamsız */
   [data-hero-cinematic] [data-hero-placeholder] { display: none; }
 
-  /* 5) Animasyonun gizlediği parçalar burada hep görünür */
+  /* 6) İçerik: her koşulda görünür ve tıklanabilir
+        (katmanlar pointer-events:none, etkileşim burada yaşar). */
   [data-hero-cinematic] [data-hero-title],
   [data-hero-cinematic] [data-hero-desc],
   [data-hero-cinematic] [data-hero-cta],
   [data-hero-cinematic] [data-hero-text] {
+    max-width: 100%;
     opacity: 1;
     visibility: visible;
     transform: none;
     pointer-events: auto;
+  }
+
+  /* Akış moduna (--hero-m-pos: relative) geçildiğinde: Designer'dan gelen
+     height:100% / flex:1 ortalayacak boşluk bırakmıyor — sıfırlanır. */
+  [data-hero-cinematic][data-hero-cinematic] > * {
+    flex: 0 0 auto;
   }
 }
 </style>
