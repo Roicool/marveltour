@@ -1,5 +1,5 @@
 /*!
- * hero-cinematic.js v2.5.0
+ * hero-cinematic.js v2.6.0
  * Two-scene home hero driven by one scrubbed, pinned timeline (FLIP):
  *   Scene 1 — FULL-BACKGROUND media, headline overlaid on top, its
  *             characters fade in in RANDOM order
@@ -16,6 +16,10 @@
  *
  * Under prefers-reduced-motion everything is static (scene 2 flows in
  * normal document order via the companion CSS) and the video is paused.
+ *
+ * TABLET VE ALTI (<992px, data-hero-bp ile ayarlanır): pin/FLIP HİÇ kurulmaz.
+ * Section'a data-hero-static="1" basılır; o genişliklerin yerleşimi CSS'in
+ * işidir (başlık → görsel → 2. sahne metni, akışta alt alta).
  *
  * Requires: gsap + ScrollTrigger + SplitText (globals)
  * CSS:      css/components/hero-cinematic.css
@@ -83,6 +87,41 @@
       if (video) video.pause(); // ilk kare statik poster gibi durur
       return;                   // companion CSS scene-2'yi normal akışa alır
     }
+
+    /* ── Tablet ve altı: pin/FLIP HİÇ kurulmaz ──
+       FLIP, medyayı [data-hero-placeholder]'ın ÖLÇÜLEN kutusuna taşıyor;
+       dar ekranda o kutu anlamsızlaşıyor, üstüne pin 160% viewport scroll
+       yutuyor ve mobil adres çubuğu her açılıp kapandığında yeniden ölçüm
+       tetikliyor. Bu genişliklerde section akışta duran sade bir bölüm.
+
+       gsap.matchMedia BİLEREK: tablet döndürülünce eşik geçişinde
+       ScrollTrigger'ı kendisi temizleyip yeniden kuruyor. Elle if yazsaydık
+       döndürmede pin asılı kalırdı.
+
+       Eşik section'dan ayarlanabilir: data-hero-bp="992" */
+    var BP = parseInt(section.getAttribute("data-hero-bp"), 10) || 992;
+    var mm = gsap.matchMedia();
+
+    mm.add("(max-width: " + (BP - 1) + "px)", function () {
+      /* CSS'in tutunacağı işaret — companion CSS bunu bekliyor */
+      section.setAttribute("data-hero-static", "1");
+      return function () { section.removeAttribute("data-hero-static"); };
+    });
+
+    mm.add("(min-width: " + BP + "px)", function () {
+      buildCinematic();
+      /* gsap.matchMedia kendi kurduğu tween'leri geri alıyor ama ELLE yazdığımız
+         inline stilleri almıyor. Tablet yatay→dikey döndürülünce pointer-events
+         "none" asılı kalırdı ve CTA'lar tıklanmaz olurdu; burada siliyoruz. */
+      return function () {
+        [section, title, title && title.parentElement, media,
+         media && media.parentElement, scene].concat(ui)
+          .forEach(function (el) { if (el) el.style.pointerEvents = ""; });
+        if (placeholder) placeholder.style.aspectRatio = "";
+      };
+    });
+
+    function buildCinematic() {
 
     /* ---------- 1) Intro — headline chars + desc/CTA rise ---------- */
     /* Intro viewport tespitine DEĞİL, pin timeline'ının progress'ine bağlı:
@@ -277,6 +316,7 @@
           immediateRender: false,
         }, 0.3);
       /* (pointer-events takası syncPointers'ta) */
+    }
     }
   }
 
