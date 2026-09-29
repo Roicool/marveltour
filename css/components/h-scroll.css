@@ -1,5 +1,10 @@
 /*!
- * h-scroll.css v1.3.2  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.4.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.4.0: TABLET/MOBİL kart genişliği — film şeridi (v1.3.0) genişliği
+ *         görselin doğal oranına bırakmıştı: 50svh yüksekliğindeki yatay bir
+ *         foto telefonda ekrandan taşıyordu. ≤991px'te genişlik artık
+ *         --hscroll-spv'den türüyor (tablet 2.2, mobil 1.2 kart) ve görsel
+ *         karta cover'lanıyor. Masaüstü film şeridi AYNEN duruyor.
  * v1.3.2: --hscroll-name-inset — isim overlay'ini kart kenarından içeri
  *         çeken tek değişken (absolute konum kartın padding'ini dikkate
  *         almaz; boşluk bu değişkenle ya da .hscroll__name'in KENDİ
@@ -130,11 +135,42 @@
   object-fit: cover;
 }
 
+/* ── Tablet ve mobil kart ölçüsü ──────────────────────────────
+   Film şeridi (genişlik = görselin doğal oranı) yalnız MASAÜSTÜNDE mantıklı:
+   dar ekranda 50svh yüksekliğindeki yatay bir foto ekrandan taşıyor. Burada
+   genişlik kaç kart görüneceğinden türer; görsel karta cover'lanır.
+
+   --hscroll-spv: kaç kart görünsün. Varsayılanı bu media query'ler verir,
+   h-scroll.js aktifken data-hscroll-spv-t / -spv-m attribute'larını root'a
+   custom property olarak basıp bunları ezer. Swiper slidesPerView:"auto"
+   olduğu için kart genişliğini buradan okur — tek kaynak. */
 @media (max-width: 991px) {
-  [data-hscroll] { --hscroll-card-h: 58svh; }
+  [data-hscroll] {
+    --hscroll-card-h: 58svh;
+    --hscroll-spv: 2.2;
+  }
+
+  /* Hem Swiper hem scroll-snap fallback aynı genişliği kullanır: Swiper
+     yüklenmese de kartlar aynı ölçüde kalır, sıçrama olmaz. */
+  [data-hscroll] .hscroll__card {
+    width: calc(100% / var(--hscroll-spv, 1.2));
+  }
+
+  /* Kart artık genişliği dayatıyor → görsel doğal oranını değil kartı
+     doldurur. max-width:none masaüstü kuralından geliyor, geri alınmalı. */
+  [data-hscroll] .hscroll__card [data-hscroll-img],
+  [data-hscroll] .hscroll__card img {
+    width: 100%;
+    max-width: 100%;
+    height: var(--hscroll-card-h);
+  }
 }
+
 @media (max-width: 767px) {
-  [data-hscroll] { --hscroll-card-h: 50svh; }
+  [data-hscroll] {
+    --hscroll-card-h: 50svh;
+    --hscroll-spv: 1.2;
+  }
 }
 
 /* Destination ismi — görselin üstünde; tipografi/renk Designer'ın.

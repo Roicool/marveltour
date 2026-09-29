@@ -200,58 +200,67 @@ Lighthouse'un "fetchpriority=high uygulanmalıdır" satırı bu durumda yanılt�
 
 ---
 
-## 4) YALNIZ ana sayfa → hero'nun İÇİNE **HTML Embed** (tablet ve altı)
+## 4) Tablet ve altı — **HTML Embed**, `wrap-main`'in İÇİNDE
 
-`hero-cinematic.js` v2.6.0'dan itibaren **<992 px'de pin/FLIP'i hiç kurmuyor**
-(eşik `data-hero-bp="768"` gibi section attribute'u ile değiştirilebilir).
-Sebep: FLIP medyayı `[data-hero-placeholder]`'ın **ölçülen** kutusuna taşıyor —
-dar ekranda o kutu anlamsızlaşıyor, üstüne pin 160% viewport scroll yutuyor ve
-mobil adres çubuğu her açılıp kapandığında yeniden ölçüm tetikliyor. O
-genişliklerde JS section'a `data-hero-static="1"` basıp çekiliyor; **yerleşim
-tamamen aşağıdaki CSS'in işi.**
+Üç bölümün dar ekran yerleşimi. Hepsinin JS'i o genişliklerde sahneyi
+**hiç kurmuyor**; görünen şeyi tamamen bu CSS belirliyor.
 
-**Nereye:** Embed, Barba container'ının (`wrap-main`) İÇİNDE olmalı — hero
-section'ının içine ya da hemen yanına koy. **Page Settings → Inside `<head>`'e
-KOYMA:** page-level kod Barba geçişinde çalışmaz (Kural B4), başka bir
-sayfadan ana sayfaya geçildiğinde stil hiç gelmez.
+**Nereye:** Embed, Barba container'ının (`wrap-main`) İÇİNDE olmalı — ilgili
+section'ın içine ya da yanına koy. **Page Settings → Inside `<head>`'e KOYMA:**
+page-level kod Barba geçişinde çalışmaz (Kural B4), başka bir sayfadan o
+sayfaya geçildiğinde stil hiç gelmez.
 
 Seçiciler bilerek **yalnız data-attribute**: Designer'da sınıf adı/combo
-değişse de tutar. `[data-hero-cinematic]` iki kez yazılı — combo class'ların
-(0-2-0) üstüne çıkmak için; `!important` gerekmesin diye.
+değişse de tutar. Kök attribute bazı kurallarda iki kez yazılı — combo
+class'ların (0-2-0) üstüne çıkmak için, `!important` gerekmesin diye.
+
+### 4a) Ana sayfa hero — video ARKA PLAN
+
+`hero-cinematic.js` v2.6.0'dan itibaren **<992 px'de pin/FLIP'i hiç kurmuyor**
+(eşik: `data-hero-bp="768"`). Sebep: FLIP medyayı `[data-hero-placeholder]`'ın
+**ölçülen** kutusuna taşıyor — dar ekranda o kutu anlamsızlaşıyor, üstüne pin
+160% viewport scroll yutuyor ve mobil adres çubuğu her açılıp kapandığında
+yeniden ölçüm tetikliyor.
+
+Mobil kurgu: **video bölümün tamamını kaplayan zemin**, başlık üstte, 2. sahne
+metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef kutusu
+(`[data-hero-placeholder]`) animasyon olmadığı için gizlenir.
 
 ```html
 <style>
 /* ═══ Ana sayfa hero — tablet ve altı (<992px) ═══
-   Dizilim DOM sırası: başlık bloğu → görsel → 2. sahne metni. */
+   Video zemin; başlık üstte, 2. sahne metni altta. */
 @media (max-width: 991px) {
 
   /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
   [data-hero-cinematic] {
+    --hero-m-min: 100svh;      /* bölüm yüksekliği */
     --hero-m-top: 7rem;        /* üst boşluk (navbar payı) */
-    --hero-m-gap: 2.5rem;      /* bloklar arası */
+    --hero-m-bottom: 3rem;     /* alt boşluk */
     --hero-m-pad: 1.25rem;     /* yan boşluk */
-    --hero-m-ratio: 4 / 5;     /* görsel oranı — 16/9, 1/1, 3/4 … */
-    --hero-m-radius: 16px;     /* görsel köşe yuvarlaklığı */
+    --hero-m-gap: 2rem;        /* başlık ile alt metin arası min. boşluk */
+    --hero-m-scrim: none;      /* metin okunmuyorsa: aşağıdaki gradient'i aç */
   }
 
-  /* 1) Bölüm akışa döner: 100vh yok, pin yok */
+  /* 1) Bölüm akışa döner: pin yok, içerik dikey dağılır */
   [data-hero-cinematic][data-hero-cinematic] {
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: var(--hero-m-gap);
     height: auto;
-    min-height: 0;
-    padding: var(--hero-m-top) var(--hero-m-pad) var(--hero-m-gap);
-    overflow: visible;
+    min-height: 100vh;                    /* svh desteklemeyen tarayıcı */
+    min-height: var(--hero-m-min, 100svh);
+    padding: var(--hero-m-top) var(--hero-m-pad) var(--hero-m-bottom);
+    overflow: clip;
   }
 
-  /* 2) Üç sarmalayıcı (başlık / medya / 2. sahne) akışa döner —
-        masaüstünde üst üste binebilmek için absolute olabiliyorlar */
+  /* 2) Sarmalayıcılar akışa döner ve videonun ÜSTÜNDE kalır */
   [data-hero-cinematic][data-hero-cinematic] > * {
     position: relative;
     inset: auto;
+    z-index: 2;
     width: 100%;
     max-width: none;
     height: auto;
@@ -259,15 +268,16 @@ değişse de tutar. `[data-hero-cinematic]` iki kez yazılı — combo class'lar
     transform: none;
   }
 
-  /* 3) Görsel: tam genişlik, sabit oranlı kutu */
-  [data-hero-cinematic] [data-hero-media] {
-    position: relative;
-    inset: auto;
+  /* 3) VIDEO = ZEMİN. Medya sarmalayıcısı da medyanın kendisi de bölümü
+        kaplar (Designer'da bir sarmalayıcı katmanı olsa da olmasa da). */
+  [data-hero-cinematic][data-hero-cinematic] > :has([data-hero-media]),
+  [data-hero-cinematic][data-hero-cinematic] [data-hero-media] {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     width: 100%;
-    height: auto;
-    aspect-ratio: var(--hero-m-ratio);
-    border-radius: var(--hero-m-radius);
-    overflow: clip;
+    height: 100%;
+    border-radius: 0;
     transform: none;
   }
   [data-hero-cinematic] [data-hero-media] video {
@@ -277,14 +287,25 @@ değişse de tutar. `[data-hero-cinematic]` iki kez yazılı — combo class'lar
     transform: none;
   }
 
-  /* 4) 2. sahne: masaüstünde inset:0 ile ekranı kaplıyor, burada akışa iner.
-        Yer tutucu kutu FLIP'in hedefiydi; animasyon yokken anlamsız → gizli. */
+  /* Okunabilirlik perdesi — videonun üstünde, metnin altında. Designer'daki
+     overlay yetiyorsa dokunma; yetmiyorsa --hero-m-scrim'i şuna çevir:
+       linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.15) 45%, rgba(0,0,0,.65)) */
+  [data-hero-cinematic]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: var(--hero-m-scrim, none);
+  }
+
+  /* 4) 2. sahne akışa iner; FLIP'in hedef kutusu animasyon yokken anlamsız */
   [data-hero-cinematic] [data-hero-scene] {
     position: static;
     inset: auto;
     display: flex;
     flex-direction: column;
-    gap: var(--hero-m-gap);
+    gap: 1rem;
     opacity: 1;
     visibility: visible;
     transform: none;
@@ -305,8 +326,104 @@ değişse de tutar. `[data-hero-cinematic]` iki kez yazılı — combo class'lar
 ```
 
 `data-hero-bp`'yi değiştirirsen buradaki `991px`'i de değiştir (eşik − 1).
-Değerler oturunca bu blok `css/components/hero-cinematic.css`'e taşınabilir;
-o zaman Embed silinir ve tek kaynak repo olur.
+
+### 4b) Experience Manifesto — statik akış
+
+`manifesto.js` v1.4.0'dan itibaren **<992 px'de `.is-cinema` hiç basılmıyor**
+(eşik: `data-mf-bp`). 300% viewport'luk pin dar ekranda scroll'u yutuyordu,
+merkeze uçan iki metin katmanı da üst üste binip okunmuyordu. Class basılmayınca
+CSS zaten modülün baştan beri taşıdığı **statik fallback'e** düşüyor: split
+düzen + manifesto metni + CTA normal akışta.
+
+Aşağısı o statik hâli mobilde derli toplu yapıyor. Designer'da bu bölümün
+tablet/mobil görünümünü zaten düzenlediysen bu bloğa gerek yok.
+
+```html
+<style>
+/* ═══ Experience Manifesto — tablet ve altı (<992px) ═══
+   .is-cinema basılmaz; her şey akışta, tek kolon. */
+@media (max-width: 991px) {
+
+  [data-manifesto] {
+    --mf-m-gap: 2rem;          /* bloklar arası */
+    --mf-m-pad: 1.25rem;       /* yan boşluk */
+    --mf-m-ratio: 4 / 5;       /* medya oranı */
+    --mf-m-radius: 16px;
+    --mf-m-dim: .35;           /* medya karartması (0 = kapalı) */
+  }
+
+  /* Tek kolon — Designer'daki split grid/flex ne olursa olsun */
+  [data-manifesto][data-manifesto] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mf-m-gap);
+    min-height: 0;                 /* .is-cinema'nın 100svh'si zaten yok */
+    padding-inline: var(--mf-m-pad);
+    overflow: visible;             /* fullbleed açılım yok, kırpmaya gerek yok */
+  }
+
+  /* Medya: tam genişlik, sabit oranlı kutu */
+  [data-manifesto][data-manifesto] [data-mf-media] {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--mf-m-ratio);
+    border-radius: var(--mf-m-radius);
+    overflow: clip;
+    transform: none;
+  }
+  [data-manifesto] [data-mf-media] :is(img, video) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Overlay'i JS statik modda hiç sürmüyor — sabit bir karartma ver */
+  [data-manifesto] [data-mf-overlay] { opacity: var(--mf-m-dim, .35); }
+
+  /* Manifesto katmanı akışta: absolute merkezleme .is-cinema'ya aitti */
+  [data-manifesto][data-manifesto] [data-mf-manifesto] {
+    position: static;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--mf-m-gap);
+    padding: 0;
+    text-align: left;
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  [data-manifesto] [data-mf-intro],
+  [data-manifesto] [data-mf-text],
+  [data-manifesto] [data-mf-cta] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  [data-manifesto] [data-mf-cta] { pointer-events: auto; }
+}
+</style>
+```
+
+### 4c) Destinations (h-scroll) — Embed GEREKMİYOR
+
+Kart genişliği artık `h-scroll.css` v1.4.0'da: tablette **2.2**, mobilde
+**1.2** kart. Bölümden ayarlanır, CSS yazmana gerek yok:
+
+```
+data-hscroll-spv-t="2.2"     tablet (768–991px)
+data-hscroll-spv-m="1.2"     mobil  (<768px)
+data-hscroll-bp-m="768"      mobil eşiği
+```
+
+Kart yüksekliği aynı yerden: section'a `style="--hscroll-card-h: 46svh"`
+(varsayılan tablet 58svh, mobil 50svh).
+
+Önceki davranış film şeridiydi — genişlik görselin doğal oranından geliyordu,
+o yüzden yatay bir foto telefonda ekrandan taşıyordu. Masaüstünde film şeridi
+aynen duruyor; değişen yalnız ≤991px.
 
 ---
 
