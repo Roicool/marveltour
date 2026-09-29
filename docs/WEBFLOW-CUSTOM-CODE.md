@@ -28,7 +28,7 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
      sırası, bozma. Modül CSS'lerini media="print" onload ile non-blocking
      YAPMA: pinli ScrollTrigger bölümleri (hero-cinematic, h-scroll, manifesto,
      stat-counter…) CSS geç geldiğinde yanlış ölçüp layout kaydırıyor. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/core/utils.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/navbar.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/stagger-button.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/animations/parallax.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/hero-cinematic.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/hero-frame.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/hero-carousel.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/marquee.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/h-scroll.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/expertise-showcase.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/effects/noise.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/manifesto.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/process-steps.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/accordion.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/stat-counter.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/lightbox.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/core/utils.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/navbar.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/stagger-button.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/animations/parallax.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/hero-cinematic.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/hero-frame.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/hero-carousel.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/marquee.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/h-scroll.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/expertise-showcase.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/effects/noise.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/manifesto.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/process-steps.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/accordion.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/stat-counter.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/lightbox.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/about-hero.css,gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/css/components/journey-timeline.css">
 
 <!-- ── Vendor ── -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
@@ -69,6 +69,11 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/js/components/accordion.js" defer></script>
 <!-- lightbox: bağımlılıksız, init YOK (kendi kurulur); galeri köküne data-lightbox -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/js/components/lightbox.js" defer></script>
+<!-- about-hero + journey-timeline: React code component'lerin vanilla portu.
+     Barba container swap'inde code component'ler mount olmuyordu (PROJECT.md
+     Kural B1); bu ikisi her gecişte onEach'ten yeniden kuruluyor. -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/js/components/about-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/js/components/journey-timeline.js" defer></script>
 
 <!-- ── Animations — preset'ler; parallax dışında CSS'i yok ── -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@f6ec266759d6cac6697edacd1bd8a72c82f0ce48/js/animations/text-reveal.js" defer></script>
@@ -125,10 +130,12 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
         /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
            eksik/hatali modulun adi konsola dusur. */
         [
-          'initUtils','initStaggerButton','initParallax','initReveal','initTextReveal',
+          /* initAboutHero, initParallax'tan ONCE: mozaik karolarinin
+             parallax dozunu derinlige gore damgaliyor. */
+          'initUtils','initStaggerButton','initAboutHero','initParallax','initReveal','initTextReveal',
           'initHeroCinematic','initHeroFrame','initHeroCarousel','initMarquee',
           'initStepScroll','initHScroll','initExpertiseShowcase','initManifesto',
-          'initProcessSteps','initStatCounter','initAccordion'
+          'initProcessSteps','initStatCounter','initAccordion','initJourneyTimeline'
         ].forEach(function (name) {
           var fn = Marveltour[name];
           if (typeof fn !== 'function') { console.warn('[MT] eksik:', name); return; }

@@ -1,0 +1,270 @@
+/*!
+ * about-hero.css v1.0.0
+ * react/components/AboutHero'nun vanilla portu (Barba geçişlerinde yaşasın
+ * diye — bkz. PROJECT.md Kural B1). glean.com/about "section-hero-about":
+ * ortalanmış başlık + gövde + buton, altında 10 fotoğraflı mozaik ve
+ * merkezden dışa açılan reveal.
+ *
+ * DESIGNER'DA NE GEREKİYOR
+ * ------------------------
+ * Mozaiğin geometrisi (konum, en-boy oranı, reveal sırası, başlangıç
+ * offset'i) BURADA ve :nth-child ile yazılı. Yani karolara tek tek class
+ * vermene gerek YOK — `.mt-ah__item`leri doğru SIRAYLA koyman yeterli,
+ * gerisini sıra belirler. Sıra referans mozaikten:
+ *
+ *   1 en sol · 2 sol üst · 3 sol alt · 4 küçük iç sol · 5 iç sol alt
+ *   6 merkez üst · 7 iç sağ · 8 iç sağ alt · 9 sağ alt geniş · 10 en sağ
+ *
+ * Reveal merkezden dışa açılır (6 → 4 → 7 → 2 → 5 → 8 → 10 → 3 → 1 → 9);
+ * bu sıra da nth-child'daki --mt-ah-i değerinden geliyor.
+ */
+
+.mt-ah, .mt-ah * { box-sizing: border-box; }
+
+.mt-ah {
+  --mt-ah-fg: var(--color-text--primary, #1a1a18);
+  --mt-ah-fg-muted: var(--color-text--secondary, color-mix(in srgb, var(--mt-ah-fg) 66%, transparent));
+  --mt-ah-accent: var(--brand--primary, #2b0a1c);
+  --mt-ah-accent-fg: var(--color-text--inverted, #f5f5ec);
+  --mt-ah-btn-arrow: var(--mt-ah-accent-fg);
+  --mt-ah-gap: var(--mt-ah-wrap-gap, clamp(2.5rem, 6vw, 4.5rem));
+  --mt-ah-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mt-ah-duration: 650ms;
+  --mt-ah-step: 100ms;
+  --mt-ah-radius: 12px;
+
+  position: relative;
+  width: 100%;
+  color: var(--mt-ah-fg);
+  overflow: hidden;
+}
+.mt-ah--dark {
+  --mt-ah-fg: var(--color-text--inverted, #f5f5ec);
+  --mt-ah-accent: var(--color-text--inverted, #f5f5ec);
+  --mt-ah-accent-fg: var(--neutral--950, #111110);
+  --mt-ah-btn-arrow: var(--mt-ah-accent-fg);
+}
+
+/* Dış kenar boşluğu ve container Designer'ın kendi sınıflarından gelir
+   (view-px, container-2xl …) — React sürümündeki --mt-ah-container/px/py
+   token'ları burada YOK, çünkü sayfadaki diğer section'larla aynı sistemi
+   kullanmak hizayı garantiliyor. */
+.mt-ah__wrap {
+  display: flex;
+  flex-flow: column;
+  gap: var(--mt-ah-gap);
+}
+
+/* ── Başlık bloğu ── */
+.mt-ah__header {
+  display: flex;
+  flex-flow: column;
+  gap: var(--mt-ah-header-gap, 1rem);
+  max-width: var(--mt-ah-header-w, 49.875rem);
+  margin-inline: auto;
+  width: 100%;
+  text-align: center;
+}
+.mt-ah--left .mt-ah__header { margin-inline: 0; text-align: left; }
+.mt-ah__heading { display: block; }
+.mt-ah__heading > * { margin: 0; }
+.mt-ah__body {
+  margin: 0;
+  color: var(--mt-ah-fg-muted);
+  font-size: var(--mt-ah-body-size, clamp(1rem, 1.2vw, 1.1875rem));
+  line-height: 1.55;
+}
+
+/* ── Butonlar ── */
+.mt-ah__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.75rem;
+}
+.mt-ah--left .mt-ah__actions { justify-content: flex-start; }
+
+.mt-ah__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  line-height: 1;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.mt-ah__btn--primary {
+  padding: 0.875rem 1.5rem;
+  border-radius: 999px;
+  background: var(--mt-ah-accent);
+  color: var(--mt-ah-accent-fg);
+  overflow: hidden;
+}
+/* Metin maskesi: hover'da iki kopyalı track yukarı kayar */
+.mt-ah__btn-mask { display: block; overflow: hidden; height: 1em; }
+.mt-ah__btn-track {
+  display: flex;
+  flex-flow: column;
+  transform: translateY(0);
+  transition: transform 420ms var(--mt-ah-ease);
+}
+.mt-ah__btn-line { display: block; height: 1em; }
+.mt-ah__btn--primary:hover .mt-ah__btn-track,
+.mt-ah__btn--primary:focus-visible .mt-ah__btn-track { transform: translateY(-1em); }
+
+.mt-ah__btn--secondary { color: var(--mt-ah-fg); }
+.mt-ah__btn-icon {
+  display: inline-flex;
+  width: 1.375rem;
+  height: 1.375rem;
+  color: var(--mt-ah-accent);
+  transition: transform 380ms var(--mt-ah-ease);
+}
+.mt-ah__btn--secondary:hover .mt-ah__btn-icon,
+.mt-ah__btn--secondary:focus-visible .mt-ah__btn-icon { transform: translateX(4px); }
+.mt-ah__btn-text {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 380ms var(--mt-ah-ease);
+}
+.mt-ah__btn--secondary:hover .mt-ah__btn-text,
+.mt-ah__btn--secondary:focus-visible .mt-ah__btn-text { background-size: 100% 1px; }
+.mt-ah__btn:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ── Mozaik ── */
+.mt-ah__collage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-inline: 1.3rem;
+  /* Alt sıra (karo 5/9) grid kutusunun ~%3 dışına taşar — kaynakta da öyle. */
+  padding-bottom: 4%;
+}
+.mt-ah__grid {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3;
+}
+.mt-ah__item { position: absolute; }
+
+/* Sarmalayıcı kırpar, içindeki görsel kayar (parallax.js preset'i):
+   hareket layout'u etkilemez, yalnız transform animasyonu olur. */
+.mt-ah__photo-inner {
+  width: 100%;
+  border-radius: var(--mt-ah-radius);
+  overflow: clip;
+}
+.mt-ah__photo { display: block; width: 100%; border-radius: inherit; }
+
+/* Karo en-boy oranları sabit, görsel cover: hangi fotoğraf konursa konsun
+   mozaik referanstaki şekilde durur. */
+.mt-ah--cover .mt-ah__photo-inner { aspect-ratio: var(--mt-ah-ar, 1); }
+.mt-ah--cover .mt-ah__photo {
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ── Geometri: SIRAYA bağlı (class gerekmez) ──
+   --mt-ah-ar  karo oranı · --mt-ah-i reveal sırası
+   --start-x/y reveal başlangıç offset'i */
+.mt-ah__item:nth-child(1) {
+  --mt-ah-ar: 0.746; --mt-ah-i: 8; --start-x: 1.5rem;   --start-y: -0.75rem;
+  width: 17%; top: 28%; left: 0%;
+}
+.mt-ah__item:nth-child(2) {
+  --mt-ah-ar: 0.803; --mt-ah-i: 3; --start-x: 1.25rem;  --start-y: 0.625rem;
+  width: 13%; top: 0%; left: 16.9%; margin-left: 0.5rem;
+}
+.mt-ah__item:nth-child(3) {
+  --mt-ah-ar: 1.03;  --mt-ah-i: 7; --start-x: 1.25rem;  --start-y: -0.625rem;
+  width: 13%; top: 49%; left: 16.9%; margin-left: 0.5rem; margin-top: 0.5rem;
+}
+.mt-ah__item:nth-child(4) {
+  --mt-ah-ar: 0.656; --mt-ah-i: 1; --start-x: 0.875rem; --start-y: 0rem;
+  width: 9%; top: 28.7%; left: 30.5%; margin-left: 0.5rem;
+}
+.mt-ah__item:nth-child(5) {
+  --mt-ah-ar: 1.31;  --mt-ah-i: 4; --start-x: 1rem;     --start-y: -0.75rem;
+  width: 18%; top: 68.3%; left: 30.4%; margin-left: 0.5rem; margin-top: 0.5rem;
+}
+.mt-ah__item:nth-child(6) {
+  --mt-ah-ar: 0.73;  --mt-ah-i: 0; --start-x: 0rem;     --start-y: 0rem;
+  width: 17%; top: 0%; left: 40%; margin-left: 0.5rem;
+}
+.mt-ah__item:nth-child(7) {
+  --mt-ah-ar: 1.86;  --mt-ah-i: 2; --start-x: -0.875rem; --start-y: 0rem;
+  width: 23%; top: 29.9%; left: 57.55%; margin-left: 0.5rem;
+}
+.mt-ah__item:nth-child(8) {
+  --mt-ah-ar: 1.73;  --mt-ah-i: 5; --start-x: -1rem;    --start-y: -0.75rem;
+  width: 14%; top: 68.2%; left: 57.55%; margin-left: 0.5rem; margin-top: 0.5rem;
+}
+.mt-ah__item:nth-child(9) {
+  --mt-ah-ar: 2.14;  --mt-ah-i: 9; --start-x: -1.5rem;  --start-y: -0.75rem;
+  width: 27%; top: 68.2%; left: 72.1%; margin-left: 0.5rem; margin-top: 0.5rem;
+}
+.mt-ah__item:nth-child(10) {
+  --mt-ah-ar: 1.06;  --mt-ah-i: 6; --start-x: -1.5rem;  --start-y: -0.375rem;
+  width: 18%; top: 16.5%; left: 81.1%; margin-left: 0.5rem;
+}
+
+/* ── Center-out reveal ──
+   Gizleme .is-armed'a BAĞLI: koşulsuz opacity:0 yazarsak JS herhangi bir
+   sebeple çalışmazsa mozaik kalıcı olarak görünmez kalır. .is-armed'ı
+   about-hero.js observer'ı kurarken basıyor. */
+/* DİKKAT — varsayılanlar KARONUN kendisinde (.mt-ah__item), sarmalayıcıda
+   DEĞİL: custom property'ler zaten miras alınıyor, ama aynı değişkeni
+   çocukta yeniden tanımlarsak nth-child'dan gelen değeri ezeriz ve bütün
+   karolar aynı offset'le açılır. 10'un da sıfırlanması böyle olurdu. */
+.mt-ah__item {
+  --start-x: 0rem;
+  --start-y: 0rem;
+  --mt-ah-i: 0;
+}
+.mt-ah--reveal .mt-ah__photo-inner { transform-origin: center; }
+.mt-ah--reveal.is-armed .mt-ah__item .mt-ah__photo-inner {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+.mt-ah--reveal.is-in .mt-ah__item .mt-ah__photo-inner {
+  animation: mt-ah-pan-out var(--mt-ah-duration) var(--mt-ah-ease) both;
+  animation-delay: calc(var(--mt-ah-i) * var(--mt-ah-step));
+}
+
+@keyframes mt-ah-pan-out {
+  0%   { opacity: 0; filter: blur(5px); transform: translate(var(--start-x), var(--start-y)) scale(0.72); }
+  100% { opacity: 1; filter: blur(0);   transform: translate(0, 0) scale(1); }
+}
+
+/* ── Responsive — kaynaktan birebir ── */
+@media (max-width: 991px) {
+  .mt-ah__header { max-width: 22.5rem; }
+  .mt-ah__collage { width: 120%; margin-left: -10%; padding-inline: 0; }
+}
+@media (max-width: 479px) {
+  .mt-ah__collage { width: 210%; margin-left: -42%; }
+  .mt-ah__item:nth-child(3) { top: 47%; }
+  .mt-ah__item:nth-child(5),
+  .mt-ah__item:nth-child(8) { top: 67.2%; }
+}
+
+/* ── Erişilebilirlik ── */
+@media (prefers-reduced-motion: reduce) {
+  .mt-ah--reveal .mt-ah__photo-inner,
+  .mt-ah--reveal.is-armed .mt-ah__item .mt-ah__photo-inner,
+  .mt-ah--reveal.is-in .mt-ah__item .mt-ah__photo-inner {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  .mt-ah__btn-track, .mt-ah__btn-icon, .mt-ah__btn-text { transition: none; }
+}
