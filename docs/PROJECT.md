@@ -355,11 +355,25 @@ Logo kaynağı (öncelik sırasıyla): sayfadaki gizli `[data-transition-logo]` 
   > code component barındıran sayfalar: **About Us** (About Hero, Journey Timeline) ve
   > **Capabilities Template** (Hero Carousel, Video Hero). Diğer tüm sayfalar temiz.
   >
-  > Kalıcı çözüm bu dördünü vanilla `js/` modülüne çevirmek. O yapılana kadar
-  > geçici çözüm `initBarba({ preventPaths: ['/about-us', '/capabilities'] })`:
-  > bu yollara giden linkler Barba'ya girmez, tarayıcı tam sayfa yükler. Geçiş
-  > animasyonu kaybolur ama sayfa doğru kurulur. **Yeni bir sayfaya code component
-  > koyarsan ya listeye ekle ya da component'i vanilla'ya çevir.**
+  > **Neden bir süre çalıştı, sonra bozuldu:** Webflow code component runtime'ını
+  > sayfaya YALNIZ o sayfada en az bir code component varsa ekliyor. Barba `<head>`'i
+  > hiç değiştirmediği için, runtime'ı olan bir sayfadan gelirken enjekte edilen
+  > custom element upgrade olup mount oluyor; runtime'ı olmayan bir sayfadan gelirken
+  > olmuyor. Navbar React code component'iyken HER sayfada bir code component vardı →
+  > runtime her yerde yüklüydü → sorun görünmüyordu. Navbar Webflow Component'ine
+  > çevrilince code component'i olmayan sayfalar runtime'sız kaldı ve o sayfalardan
+  > yapılan geçişler bozuldu. (Mekanizma Webflow tarafında doğrulanmadı — ayırt edici
+  > test: Capabilities → About Us geçişi çalışıyorsa doğru.)
+  >
+  > Kalıcı çözüm bu dördünü vanilla `js/` modülüne çevirmek. Ara çözümler:
+  > - **Runtime Anchor** (`react/components/RuntimeAnchor`): görünmez code component,
+  >   kalıcı katmana (footer Webflow Component'inin içine) tek instance konur →
+  >   runtime her sayfada yüklenir, geçiş animasyonları korunur.
+  > - `initBarba({ preventPaths: ['/about-us', '/capabilities'] })` — bu yollara giden
+  >   linkler Barba'ya girmez, tarayıcı tam sayfa yükler. Geçiş animasyonu kaybolur
+  >   ama runtime mekanizmasından bağımsız olarak her koşulda çalışır.
+  >
+  > **Yeni bir sayfaya code component koyarsan ya listeye ekle ya da vanilla'ya çevir.**
 - **Sayfa katmanı** (her geçişte yeniden): ScrollTrigger kuran ya da container içi DOM'a
   bağlanan HER ŞEY. Bunlar `initBarba({ onEach })` içinden çağrılır, asla dışından.
 
