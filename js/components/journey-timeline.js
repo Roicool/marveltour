@@ -189,7 +189,7 @@
     function paint() {
       var rotation = -(angles[active] || 0);
       var lim = limit();
-      /* Timeline'a yazılır: orbit ve arc'taki güneş (.mt-jt__circle::before)
+      /* Timeline'a yazılır: orbit ve arc'taki güneş (.mt-jt__arc::before)
          aynı açıyı miras alır */
       timeline.style.setProperty("--mt-jt-rotation", rotation + "deg");
 
