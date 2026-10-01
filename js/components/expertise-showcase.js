@@ -1,5 +1,9 @@
 /*!
- * expertise-showcase.js v1.6.0
+ * expertise-showcase.js v1.7.0
+ * v1.7.0: BOŞ CMS FIELD'I ARTIK PLACEHOLDER'I SİLMİYOR — bir grubun ilk
+ *         item'ında Watermark/Caption/Label boşsa Designer'daki metin
+ *         siliniyor ve o panelin yazısı bir daha gelmiyordu. Doldurma slot
+ *         bazına indi: her grup + anahtar için İLK DOLU değer kazanır.
  * v1.6.0: GİRİŞ ANİMASYONU — panel viewport'a girerken ön kart maske-reveal
  *         (clip-path, border-radius korumalı) ile alttan açılır, arka kartlar
  *         fan-out ile derinlik pozisyonlarına akar, oklar en son belirir;
@@ -100,7 +104,9 @@
  * Collection Item'ın kendisine attribute verilemez; data-es-* attribute'ları
  * Item İÇİNDEKİ div'lere konur (data-es-group değeri CMS field'ından bind).
  * Aynı grubun item'larında metin field'ları tekrar eder — yalnız ilki okunur,
- * boş bırakılan slot Designer'daki placeholder metniyle kalır.
+ * boş bırakılan slot Designer'daki placeholder metniyle kalır (doldurma slot
+ * bazındadır: her grup + anahtar için İLK DOLU değer kazanır, boş field
+ * placeholder'ı silmez).
  * is-front/is-active initial class'ları gerekmez — JS init'te basar.
  * JS her panele data-es-stack-resolved="left|right" yazar — Designer'da ayna
  * düzeni (metin sağ/sol) bu attribute üzerinden stillenebilir.
@@ -207,15 +213,23 @@
       });
       if (orphans) console.warn("[Marveltour ExpertiseShowcase] " + orphans + " slide'ın data-es-group'u hiçbir panele eşleşmedi.", root);
 
+      /* BOŞ FIELD PLACEHOLDER'I SİLMEZ. Eskiden slot.textContent = text
+         koşulsuz yazılıyordu: CMS'te bir grubun ilk item'ında Watermark
+         (ya da Caption/Label) boşsa Designer'daki metin siliniyor ve o
+         panelin yazısı bir daha gelmiyordu. Doldurma artık slot bazında:
+         her grup + anahtar için İLK DOLU değer kazanır, hiç dolu değer
+         yoksa Designer'daki placeholder olduğu gibi kalır. */
       var filled = {};
       Array.prototype.slice.call(source.querySelectorAll("[data-es-meta]")).forEach(function (meta) {
         var group = groupOf(meta);
         var panel = panelByGroup(group);
-        if (!panel || filled[group]) return;
-        filled[group] = true;
+        if (!panel) return;
         Array.prototype.slice.call(meta.querySelectorAll("[data-es-text]")).forEach(function (src) {
           var key = src.getAttribute("data-es-text");
-          var text = src.textContent;
+          var text = src.textContent.trim();
+          var mark = group + "\u0000" + key;
+          if (!text || filled[mark]) return;
+          filled[mark] = true;
           if (key === "label") {
             panel.setAttribute("data-es-label", text);
             var pill = pills[panels.indexOf(panel)];
