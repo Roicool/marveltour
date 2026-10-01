@@ -24,11 +24,11 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 <!-- ═══ Marveltour — pin: b4e770937ddf84274947e5182a70ad98fe87ec2e ═══ -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
-<!-- CSS — 16 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
+<!-- CSS — 20 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
      sırası, bozma. Modül CSS'lerini media="print" onload ile non-blocking
      YAPMA: pinli ScrollTrigger bölümleri (hero-cinematic, h-scroll, manifesto,
      stat-counter…) CSS geç geldiğinde yanlış ölçüp layout kaydırıyor. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/core/utils.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/navbar.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/stagger-button.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/animations/parallax.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/hero-cinematic.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/hero-frame.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/hero-carousel.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/marquee.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/h-scroll.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/expertise-showcase.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/effects/noise.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/manifesto.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/process-steps.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/accordion.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/stat-counter.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/lightbox.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/about-hero.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/journey-timeline.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/video-hero.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/core/utils.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/navbar.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/stagger-button.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/animations/parallax.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/hero-cinematic.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/hero-frame.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/hero-carousel.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/marquee.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/h-scroll.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/expertise-showcase.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/effects/noise.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/manifesto.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/process-steps.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/accordion.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/stat-counter.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/lightbox.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/gallery-slider.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/about-hero.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/journey-timeline.css,gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/css/components/video-hero.css">
 
 <!-- ── Vendor ── -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
@@ -69,6 +69,9 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/js/components/accordion.js" defer></script>
 <!-- lightbox: bağımlılıksız, init YOK (kendi kurulur); galeri köküne data-lightbox -->
 <script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/js/components/lightbox.js" defer></script>
+<!-- gallery-slider: lightbox'ın sayfa içi Swiper sürümü, init YOK (kendi kurulur);
+     Collection List Wrapper'a data-lightbox data-lightbox-layout="slider" -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b4e770937ddf84274947e5182a70ad98fe87ec2e/js/components/gallery-slider.js" defer></script>
 <!-- about-hero + journey-timeline: React code component'lerin vanilla portu.
      Barba container swap'inde code component'ler mount olmuyordu (PROJECT.md
      Kural B1); bu ikisi her gecişte onEach'ten yeniden kuruluyor. -->
@@ -500,12 +503,57 @@ Kart yüksekliği aynı yerden: section'a `style="--hscroll-card-h: 46svh"`
 o yüzden yatay bir foto telefonda ekrandan taşıyordu. Masaüstünde film şeridi
 aynen duruyor; değişen yalnız ≤991px.
 
+## 5) Galeri slider'ı (lightbox'ın Swiper sürümü)
+
+Sayfadaki galeri, merkez odaklı bir slider olur: aktif görsel ortada ve tam
+boy, komşular küçülmüş ve soluk. Ölçek ve solukluk sürüklemeye bağlı,
+parmağı takip eder. Ortadaki görsele tık → tam ekran lightbox; yandakine tık
+→ önce ortaya gelir. Lightbox'ta gezip kapatınca slider kaldığın görsele
+geçer.
+
+**Kurulum — tek attribute.** Head'deki script + CSS yeter, footer'a
+dokunmaya gerek yok (modül kendi kurulur):
+
+```
+Collection List Wrapper   data-lightbox  data-lightbox-layout="slider"
+  Collection List          ← Designer'daki grid ayarı ezilir, sorun değil
+    Collection Item
+      Image                ← multi-image alanına bağlı
+```
+
+**Ayarlar** — Wrapper'a `style="..."` olarak:
+
+| Değişken | Varsayılan | Ne |
+|---|---|---|
+| `--gs-w-d` / `-t` / `-m` | 62% / 72% / 80% | aktif görsel genişliği (masaüstü / tablet / mobil) |
+| `--gs-ratio-d` / `-m` | 16 / 10 · 4 / 5 | görsel oranı |
+| `--gs-gap-d` / `-m` | 1.5rem · 0.75rem | görseller arası |
+| `--gs-side-scale` | 0.86 | yandakilerin ölçeği |
+| `--gs-side-dim` | 0.38 | yandakilerin opaklığı |
+| `--gs-radius` | `--radius--lg` | köşe |
+
+Attribute'lar: `data-gs-speed="700"` (ms), `data-gs-rewind="false"` (uçlarda
+dur; varsayılan sonda başa sarar).
+
+**Kendi kontrollerin:** Wrapper'ın ebeveynine `[data-gs-prev]`,
+`[data-gs-next]`, `[data-gs-current]`, `[data-gs-total]` koyarsan varsayılan
+bar kurulmaz, seninkiler kullanılır — Designer'da istediğin gibi stillersin.
+Aynı ebeveynde birden çok slider varsa her birini `[data-gs-scope]` ile sar.
+
+**Bilerek yapılanlar:**
+- `loop` yok, `rewind` var — loop slide'ları kopyalıyor, lightbox "12 / 24"
+  derdi.
+- Mobilde komşu ~27px görünür; küçülme merkeze doğru (kendi
+  ortasından küçülseydi komşu ekranın dışına düşüyordu).
+- Swiper gelmeden önce CSS aynı yerleşimi native scroll-snap ile kuruyor —
+  CLS yok (Chromium'da ölçüldü: iki hâlde de görsel piksel piksel aynı yerde).
+
 ---
 
 ## Sürüm yükseltme
 
 1. `main`'e merge et, yeni commit SHA'sını al.
-2. Bu dosyadaki ve Webflow head'indeki `b4e770937ddf84274947e5182a70ad98fe87ec2e` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 16 kez geçiyor).
+2. Bu dosyadaki ve Webflow head'indeki `b4e770937ddf84274947e5182a70ad98fe87ec2e` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 20 kez geçiyor).
 3. Publish.
 
 Acilde pin yerine `@main` kullanıp purge edebilirsin: `https://purge.jsdelivr.net/`

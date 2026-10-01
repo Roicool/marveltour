@@ -1,5 +1,8 @@
 /*!
- * lightbox.js v1.2.0
+ * lightbox.js v1.3.0
+ * v1.3.0: kapanışta document'a `marveltour:lightbox-close` (detail: index,
+ *         item) yayılır — gallery-slider kaldığın görsele geçer. Odak iadesi
+ *         artık SON BAKILAN görsele (galeri görselinden açıldıysa).
  * CMS multi-image galerisini (ya da herhangi bir görsel grubunu) tam ekran
  * lightbox'a çeviren, data-attribute'lu, bağımlılıksız modül.
  *   - Sıfır kurulum: script + CSS + attribute yeter; init çağrısı GEREKMEZ
@@ -51,6 +54,9 @@
  *                              "hero" → ilk görsel tam genişlik, kalanlar
  *                                       altında küçük kareler
  *                              "grid" → eşit kareli grid
+ *                              "slider" → merkez odaklı Swiper slider
+ *                                       (js/components/gallery-slider.js;
+ *                                       bu dosya o moda dokunmaz)
  *                            Ayar: --lbg-cols, --lbg-gap, --lbg-ratio,
  *                            --lbg-hero-ratio (bkz. lightbox.css)
  *
@@ -70,6 +76,10 @@
  * JS API:
  *   Marveltour.lightbox.open("grup-adi" | rootElement, index?)  index 0'dan
  *   Marveltour.lightbox.close() / .next() / .prev()
+ * Event'ler (document):
+ *   marveltour:lightbox-close   detail: { index, item }  — item, son bakılan
+ *                               görselin sayfadaki elemanı
+ *
  *   Marveltour.lightbox.labels   metinler (İngilizce default; ilk açılıştan
  *                                ÖNCE değiştirilirse buton label'ları da
  *                                değişir)
@@ -156,6 +166,10 @@
 
   function pad(n) {
     return (n < 10 ? "0" : "") + n;
+  }
+
+  function emit(name, detail) {
+    try { doc.dispatchEvent(new CustomEvent(name, { detail: detail || {} })); } catch (e) {}
   }
 
   function focusEl(el) {
@@ -485,8 +499,23 @@
     doc.removeEventListener("focusin", onFocusIn);
     unlock(opts.fromNav);
 
+    /* Kapanış event'i — sayfa tarafı (gallery-slider vb.) kaldığın görsele
+       geçebilsin. Odak iadesinden ÖNCE: slider önce yerine oturur, sonra
+       odak o görsele döner (tersi olsaydı Swiper a11y odaklanan eski
+       görsele kayardı). */
+    var cur = state.items[state.index];
+    emit("marveltour:lightbox-close", { index: state.index, item: cur ? cur.el : null });
+
+    /* Odak iadesi: lightbox bir galeri görselinden açıldıysa, odak AÇTIĞIN
+       görsele değil SON BAKTIĞIN görsele döner — kullanıcı yerini kaybetmez.
+       Harici açıcıdan ("View all photos") açıldıysa o butona döner. */
     var ret = state.returnFocus;
     state.returnFocus = null;
+    if (cur && ret && cur.el.isConnected) {
+      for (var i = 0; i < state.items.length; i++) {
+        if (focusTargetOf(state.items[i].el) === ret) { ret = focusTargetOf(cur.el); break; }
+      }
+    }
     if (!opts.fromNav && ret && ret.isConnected) focusEl(ret);
 
     if (opts.instant || state.reduce) {
