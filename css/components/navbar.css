@@ -1,6 +1,10 @@
 /* ============================================================
-   Marveltour — navbar.css v3.6.0
+   Marveltour — navbar.css v3.7.0
    js/components/navbar.js'in companion CSS'i.
+
+   v3.7.0 — Capabilities paneli: sağ kolonda Journal ↔ tour kartı takası
+            ([data-nav-swap] içindeki [data-row] parçaları aynı hücrede,
+            yalnız aktif olan görünür). Seçiciler data-attribute.
 
    v3.6.0 — Bölge listesi (mega menüde "all" dışındaki satırlar) iki düzeltme:
             hover'da yazı BEYAZA dönüp okunmaz oluyordu (Designer'daki pill
@@ -138,6 +142,56 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
 .mt-nav__stack > .mt-nav__stack-item.is-active { opacity: 1; visibility: inherit; }
 .mt-nav__panel.is-open .mt-nav__stack > .mt-nav__stack-item.is-active { pointer-events: auto; }
 .mt-nav__stack--media > .mt-nav__stack-item { display: block; }
+
+/* ---------- CAPABILITIES: Journal ↔ tour kartı takası (v3.7.0) ----------
+   [data-nav-swap] (sağ kolon) içindeki [data-row] parçaları AYNI hücrede
+   üst üste durur, yalnız aktif olan görünür: varsayılan "journal", bir
+   capability'nin üzerine gelince onun navbar-tour kartı. Tour kartları bir
+   Collection List'in içinde olduğu için sarmalayıcılar da aynı hücreye
+   oturtulur. Kolon yüksekliği = en uzun parça → takasta zıplama yok.
+   Canvas bu dosyayı yüklemediği için Designer'da hepsi alt alta, açık ve
+   düzenlenebilir kalır. */
+/* Seçiciler bilerek DOĞRUDAN çocuk (>): journal kartı da kendi Collection
+   List'inin içinde. Genel ".w-dyn-*" yazılsaydı onun listesine de dokunur,
+   pointer-events miras yoluyla journal linkini tıklanamaz yapardı. Tour
+   Collection List'i kolonun DOĞRUDAN çocuğu olmalı. */
+[data-nav-swap] { display: grid; }
+[data-nav-swap] > *,
+[data-nav-swap] > .w-dyn-list > .w-dyn-items > .w-dyn-item { grid-area: 1 / 1; min-width: 0; }
+[data-nav-swap] > .w-dyn-list > .w-dyn-items { display: grid; }
+
+/* Üst üste binen SARMALAYICILAR tık almaz: DOM'da sonra gelen gizli kartın
+   Collection Item'ı görünen kartın üstünde durup tıkları yutuyordu — kart
+   görünüyor ama tıklanamıyordu (Chromium'da elementFromPoint ile yakalandı).
+   Tık yalnız aktif [data-row]'da yaşar (aşağıdaki .is-active kuralı). */
+[data-nav-swap] > *,
+[data-nav-swap] > .w-dyn-list > .w-dyn-items,
+[data-nav-swap] > .w-dyn-list > .w-dyn-items > .w-dyn-item { pointer-events: none; }
+
+[data-nav-swap] [data-row] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* gizlenirken visibility gecikmeli: solarak çıksın */
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+/* `inherit` — `visible` DEĞİL: kapalı panelde görünmez ama tıklanabilir
+   kalmasın (bkz. .mt-nav__stack-item notu) */
+[data-nav-swap] [data-row].is-active {
+  opacity: 1;
+  visibility: inherit;
+  transition: opacity 0.25s ease;
+}
+.mt-nav__panel.is-open [data-nav-swap] [data-row].is-active { pointer-events: auto; }
+
+/* Kartı gösterilen capability linki — ok hover'daki gibi öne kayık kalır:
+   imleç karta giderken hangi capability'nin tour'u olduğu belli olsun */
+[data-row-trigger].is-active .mt-nav__arrow { transform: translateX(4px); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-nav-swap] [data-row],
+  [data-nav-swap] [data-row].is-active { transition: none; }
+}
 
 /* ---------- JS'İN BASTIĞI ELEMANLAR (Designer'da class'ları yok) ---------- */
 

@@ -1,5 +1,15 @@
 /*!
- * navbar.js v2.4.1
+ * navbar.js v2.5.0
+ *
+ * v2.5.0 — Capabilities paneli: capability'nin üzerine gelince sağ kolonda
+ *          onun öne çıkan tour'u (CMS navbar-tour) görünür; varsayılan
+ *          "Latest Journal". Satır mekanizması genişletildi:
+ *          [data-row-trigger] — GERÇEK link olan satır seçici (data-row
+ *          taşısaydı parça sayılıp aria-hidden alırdı). Panelde
+ *          data-row-reset → her açılışta data-row-default'tan başlar;
+ *          açıkken seçim korunur (imleç karta giderken kart kaybolmaz).
+ *          Anahtarlar slug'a normalize edilir: CMS'ten Slug yerine Name
+ *          bağlansa da eşleşir.
  * Marveltour kalıcı navbar — YALNIZ DAVRANIŞ.
  *
  * v2.4.1 — Varyant önceliği ters çevrildi: SAYFA işaretçisi
@@ -76,7 +86,16 @@
  *     …orta kolon: <div class="mt-nav__stack-item" data-row="ege">…Collection List…</div>
  *     …sağ kolon:  <img class="mt-nav__media mt-nav__stack-item" data-row="ege">
  *   </div>
- *   <div data-nav-panel="caps" class="mt-nav__panel mt-nav__panel--caps">…</div>
+ *   <div data-nav-panel="caps" class="mt-nav__panel mt-nav__panel--caps"
+ *        data-row-default="journal" data-row-reset>
+ *     …sol:  Capabilities Collection List → <a class="mt-nav__list-link"
+ *                                              data-row-trigger="{Slug}">
+ *     …sağ:  <div class="mt-nav__col--journal" data-nav-swap>
+ *              <div data-row="journal">…Latest Journal…</div>
+ *              Capabilities Collection List → <div data-row="{Slug}">
+ *                                                …navbar-tour kartı…</div>
+ *            </div>
+ *   </div>
  *
  *   <div data-nav-mobile class="mt-nav__mobile">
  *     <div class="mt-nav__mobile-scroll">
@@ -98,6 +117,9 @@
  *           Değer serbest (slug), yalnız aynı panelde tutarlı olsun.
  *           İlk satır varsayılan aktiftir; data-row-default ile başka satır
  *           seçilebilir.
+ * data-row-trigger: data-row gibi satır seçer ama GERÇEK bir link üzerinde
+ *           (parça sayılmaz, aria-hidden almaz). CMS Slug'ına bağlanır.
+ * data-row-reset (panel): her açılışta data-row-default parçasına dön.
  * data-nav-mgo: mobil satırın gideceği görünüm; hedef [data-nav-mview] olmalı.
  * data-nav-row: mgo satırında opsiyonel — görünüme geçerken aktif satırı da
  *               seçer (mobilde tek region görünümü kullanıldığında gerekir).
@@ -314,6 +336,7 @@
 
     function setOpen(next) {
       if (open === next) return;
+      if (next && resetRowsOnOpen) resetRowsOnOpen(next);
       open = next;
       Object.keys(panels).forEach(function (key) {
         var on = open === key;
@@ -429,6 +452,9 @@
      *     (Webflow'un sayfa başına 20 Collection List sınırı).
      */
     function setActiveRow(scope, row) {
+      /* Anahtarlar slug'a normalize: CMS'ten Slug yerine Name bağlansa da
+         ("Cultural Touring" ↔ "cultural-touring") eşleşir. */
+      row = slugify(row);
       /* Aktif satiri tag kabinin uzerine yaz: CSS "all" (tum destinasyonlar,
          pill bulutu) ile tek bir region (alt alta link listesi) arasindaki
          gorunum farkini buradan okuyor. Attribute YOKKEN liste moduna
@@ -442,7 +468,7 @@
         item.hidden = !on;
       });
       Array.prototype.forEach.call(scope.querySelectorAll("[data-row]"), function (node) {
-        var on = node.getAttribute("data-row") === row;
+        var on = slugify(node.getAttribute("data-row")) === row;
         node.classList.toggle("is-active", on);
         if (node.classList.contains("mt-nav__row")) {
           if (on) node.setAttribute("aria-current", "true");
@@ -451,21 +477,49 @@
           node.setAttribute("aria-hidden", on ? "false" : "true");
         }
       });
+      /* Gerçek link olan tetikleyiciler (capabilities linkleri): yalnız durum
+         sınıfı. aria-current BASILMAZ — linkte "şu anki sayfa" anlamına gelir. */
+      Array.prototype.forEach.call(scope.querySelectorAll("[data-row-trigger]"), function (node) {
+        node.classList.toggle("is-active", slugify(node.getAttribute("data-row-trigger")) === row);
+      });
+    }
+
+    /* Satır seçen öğeler: Designer satırları (.mt-nav__row[data-row]) ya da
+       GERÇEK link olan tetikleyiciler ([data-row-trigger] — örn. CMS'ten gelen
+       capability linkleri; data-row taşısalar parça sayılıp aria-hidden
+       alırlardı). */
+    var ROW_PICKERS = ".mt-nav__row[data-row], [data-row-trigger]";
+    function keyOf(node) {
+      return node.hasAttribute("data-row-trigger")
+        ? node.getAttribute("data-row-trigger")
+        : node.getAttribute("data-row");
     }
 
     megaPanels.forEach(function (panel) {
-      var rows = panel.querySelectorAll(".mt-nav__row[data-row]");
+      var rows = panel.querySelectorAll(ROW_PICKERS);
       if (!rows.length) return;
       var pick = function (e) {
-        var row = e.target.closest(".mt-nav__row[data-row]");
-        if (row && panel.contains(row)) setActiveRow(panel, row.getAttribute("data-row"));
+        var row = e.target.closest(ROW_PICKERS);
+        if (row && panel.contains(row)) setActiveRow(panel, keyOf(row));
       };
       panel.addEventListener("mouseover", pick);
       panel.addEventListener("focusin", pick);
       panel.addEventListener("click", pick);
-      var def = attr(panel, "data-row-default") || rows[0].getAttribute("data-row");
+      var def = attr(panel, "data-row-default") || keyOf(rows[0]);
+      panel._mtRowDefault = def;
       setActiveRow(panel, def);
     });
+
+    /* data-row-reset: panel her AÇILIŞTA varsayılan parçadan başlar
+       (capabilities → "Latest Journal"). Seçim panel açıkken korunur —
+       imleç linkten sağdaki karta giderken kart kaybolmasın, tıklanabilsin.
+       Destinations'ta bu attribute yok: son seçilen bölge kalır. */
+    function resetRowsOnOpen(key) {
+      var panel = panels[key];
+      if (panel && panel.hasAttribute("data-row-reset") && panel._mtRowDefault) {
+        setActiveRow(panel, panel._mtRowDefault);
+      }
+    }
 
     /* ---- mobil drill-in: görünümler Designer'da, JS yalnız gösterip gizler ---- */
     var views = {};
