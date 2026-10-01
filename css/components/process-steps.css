@@ -1,13 +1,15 @@
 /*!
- * process-steps.css v1.1.0
+ * process-steps.css v1.2.0
  * Behavioural CSS for js/components/process-steps.js — akordiyon kırpması,
- * doluş rayı, sahne katmanlaması, aktif/pasif madde durumları ve no-JS
- * fallback. Görsel tasarım (kolon düzeni, tipografi, renkler, sahne oranı)
- * Webflow Designer'da.
+ * doluş rayı, sahne katmanlaması, aktif/pasif madde durumları, mobil kart
+ * düzeni ve no-JS fallback. Görsel tasarım (kolon düzeni, tipografi,
+ * renkler, sahne oranı) Webflow Designer'da.
  *
- * .is-cinema class'ını JS basar (GSAP+ScrollTrigger aktif ve reduced-motion
- * kapalıyken). Class yokken TÜM açıklamalar açık, paneller akışta alt alta —
- * no-JS/reduced-motion fallback'i budur; Designer'da bu hali de düzgün bırak.
+ * .is-cinema class'ını JS basar (> data-ps-bp, GSAP+ScrollTrigger aktif ve
+ * reduced-motion kapalıyken). .is-stacked'i JS basar (≤ data-ps-bp, default
+ * 991px): pin'siz adım kartları. İkisi de yokken TÜM açıklamalar açık,
+ * paneller akışta alt alta — no-JS fallback'i budur; Designer'da bu hali de
+ * düzgün bırak.
  *
  * NOT: [data-ps-stage]'e yüksekliği Designer verir (aspect-ratio ya da
  * height) — paneller sinemada bu kutuyu doldurur.
@@ -27,17 +29,21 @@
   justify-content: center;
 }
 
-/* Akordiyon satırı — tıklanabilir; doluş rayının konum referansı.
+/* Madde — doluş rayının konum referansı.
    padding-left: ray ile içerik arasındaki nefes (Designer'dan ezilebilir) */
 [data-process] [data-ps-item] {
   position: relative;
-  cursor: pointer;
   padding-left: var(--spacing--6);
-  opacity: 0.45;                 /* pasif: soluk */
+}
+
+/* Sinemada akordiyon satırı tıklanabilir; pasif maddeler soluk */
+[data-process].is-cinema [data-ps-item] {
+  cursor: pointer;
+  opacity: 0.45;
   transition: opacity 0.25s;
 }
-[data-process] [data-ps-item].is-active {
-  opacity: 1;                    /* aktif: tam */
+[data-process].is-cinema [data-ps-item].is-active {
+  opacity: 1;
 }
 
 /* Akordiyon içeriği — yüksekliği JS sürer (pinli sahne istisnası);
@@ -46,8 +52,8 @@
   overflow: clip;
 }
 
-/* Doluş rayı — adımın penceresi boyunca JS scaleY ile doldurur.
-   Rengi/kalınlığı Designer'dan ezilebilir. */
+/* Doluş rayı — sinemada adımın penceresi, kart modunda madde geçerken
+   JS scaleY ile doldurur. Rengi/kalınlığı Designer'dan ezilebilir. */
 [data-process] [data-ps-fill] {
   position: absolute;
   left: 0;
@@ -76,6 +82,31 @@
   will-change: transform;
 }
 
+/* ── Kart modu (tablet + mobil) — pin yok ─────────────────────────
+   Kolon sarmalayıcıları erir, maddeler/paneller ortak atada JS'in
+   verdiği sırayla dizilir: görsel0, madde0, görsel1, madde1… */
+[data-process].is-stacked [data-ps-flow] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing--5);        /* kart içi: görsel ↔ metin */
+}
+[data-process].is-stacked [data-ps-flatten] {
+  display: contents;
+}
+[data-process].is-stacked [data-ps-order] {
+  order: var(--ps-order, 0);
+}
+[data-process].is-stacked [data-ps-card-start] {
+  margin-top: var(--spacing--10); /* kartlar arası nefes */
+}
+[data-process].is-stacked [data-ps-panel] {
+  position: relative;
+  inset: auto;
+  aspect-ratio: 4 / 3;
+  overflow: clip;
+  border-radius: var(--radius--2xl);
+}
+
 /* Görsel çerçevesi — iç drift taşmasını kırpar */
 [data-process] [data-ps-media] {
   position: relative;
@@ -91,13 +122,4 @@
   height: 100%;
   object-fit: cover;
   will-change: transform;
-}
-
-/* Statik fallback: maddeler tam görünür, tıklama işareti yok */
-@media (prefers-reduced-motion: reduce) {
-  [data-process] [data-ps-item] {
-    opacity: 1;
-    transition: none;
-    cursor: default;
-  }
 }
