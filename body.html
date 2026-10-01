@@ -1,0 +1,100 @@
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    /* Eksik bir GSAP eklentisi TUM init'i oldurmesin: registerPlugin bir
+       ReferenceError atarsa handler oracikta olur, initBarba hic cagrilmaz
+       ve sitede hicbir JS calismaz. */
+    try {
+      var plugins = [window.ScrollTrigger, window.SplitText].filter(Boolean);
+      if (window.gsap && plugins.length) gsap.registerPlugin.apply(gsap, plugins);
+      if (!window.SplitText) console.warn('[MT] SplitText yok - text-reveal statik kalir.');
+      if (!window.ScrollTrigger) console.warn('[MT] ScrollTrigger yok - scroll animasyonlari kapali.');
+    } catch (e) { console.error('[MT] registerPlugin:', e); }
+
+    if (!window.Marveltour) { console.error('[MT] Marveltour yuklenmedi - head blogunu kontrol et.'); return; }
+    try { Marveltour.initLenis(); } catch (e) { console.error('[MT] Lenis:', e); }
+
+    /* INIT YAZILMAYAN IKI MODUL - navbar ve lightbox. Ikisi de Barba
+       container'inin disinda yasar, dosya yuklenince kendi kurulur ve
+       marveltour:page / marveltour:leave ile senkronlanir. onEach'e
+       koymak her gecişte listener'lari cogaltir. */
+
+    Marveltour.initBarba({
+      logo: 'Marveltour',
+      introOnLoad: true,   // F5/ilk yuklemede de perde oynasin (varsayilan: KAPALI)
+
+      /* Perde suresi. 1 = varsayilan (sayfa->sayfa toplam ~1.15sn),
+         0.7 = %30 daha kisa, 1.3 = daha agir. Sinir 0.3-2. */
+      transitionSpeed: 1,
+
+      /* Webflow React Code Component'leri Barba container swap'inde YENIDEN
+         MOUNT OLMUYOR (yalniz tam sayfa yuklemede hydrate oluyorlar), bu yuzden
+         onlari barindiran sayfalar Barba'ya hic girmemeli: linkler normal
+         navigasyon yapar, gecis animasyonu olmaz ama sayfa dogru kurulur.
+         Eslesme yol on-eki ustunden: "/capabilities" -> /capabilities ve
+         /capabilities/... ("/capabilities-old" HAYIR).
+           /capabilities -> Hero Carousel, Video Hero (Capabilities Template)
+         /about-us LISTEDEN CIKTI: About Hero + Journey Timeline vanilla'ya
+         cevrildi (about-hero.js / journey-timeline.js), React component'leri
+         sayfadan silindi -> artik Barba gecisi ile calisiyor.
+         Diger sayfalarda code component YOK. Yeni sayfaya koyarsan listeye ekle.
+         /capabilities icin bu gecici bir cozum: dogrusu o ikisini de vanilla
+         js/ modulune cevirmek (bkz. PROJECT.md Kural B1). */
+      preventPaths: ['/about-us', '/capabilities', '/contact-us', '/start-a-conversation'],
+      onEach: function (container) {
+        /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
+           eksik/hatali modulun adi konsola dusur. */
+        [
+          /* initAboutHero, initParallax'tan ONCE: mozaik karolarinin
+             parallax dozunu derinlige gore damgaliyor. */
+          'initUtils','initStaggerButton','initAboutHero','initParallax','initReveal','initTextReveal',
+          'initHeroCinematic','initHeroFrame','initHeroCarousel','initMarquee',
+          'initStepScroll','initHScroll','initExpertiseShowcase','initManifesto',
+          'initProcessSteps','initStatCounter','initAccordion','initJourneyTimeline','initVideoHero'
+        ].forEach(function (name) {
+          var fn = Marveltour[name];
+          if (typeof fn !== 'function') { console.warn('[MT] eksik:', name); return; }
+          try { fn(container); } catch (e) { console.error('[MT] ' + name + ':', e); }
+        });
+      }
+    });
+  });
+</script>
+<script>
+/* Capabilities sayfalarından contact'a giden TÜM linklere ?planning=<sayfa> ekler.
+   /capabilities/cultural-touring → /contact-us?planning=cultural
+   Kontrol: sayfada F12 → Console'da "[MT] planning: cultural" yazmalı. */
+(function () {
+  var CONTACT = /\/(contact|start-a-conversation)/;
+  var MAP = { "tailor-made": "bespoke" };
+
+  function planning() {
+    var m = location.pathname.match(/\/capabilities\/([^\/]+)/);
+    return m ? (MAP[m[1]] || m[1].split("-")[0]) : null;
+  }
+
+  /* Shadow DOM (code component) içindeki linkleri de bulur */
+  function linkFrom(e) {
+    var path = e.composedPath ? e.composedPath() : [e.target];
+    for (var i = 0; i < path.length; i++) {
+      var el = path[i];
+      if (el && el.tagName === "A" && el.getAttribute("href")) return el;
+    }
+    return null;
+  }
+
+  function decorate(e) {
+    var p = planning();
+    var a = p && linkFrom(e);
+    if (!a) return;
+    var url;
+    try { url = new URL(a.href, location.href); } catch (err) { return; }
+    if (!CONTACT.test(url.pathname) || url.searchParams.has("planning")) return;
+    url.searchParams.set("planning", p);
+    a.setAttribute("href", url.pathname + url.search + url.hash);
+  }
+
+  if (planning()) console.log("[MT] planning:", planning());
+  document.addEventListener("pointerdown", decorate, true);
+  document.addEventListener("click", decorate, true);
+})();
+</script>
