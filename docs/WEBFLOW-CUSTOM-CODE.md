@@ -514,27 +514,29 @@ Kart yüksekliği aynı yerden: section'a `style="--hscroll-card-h: 46svh"`
 o yüzden yatay bir foto telefonda ekrandan taşıyordu. Masaüstünde film şeridi
 aynen duruyor; değişen yalnız ≤991px.
 
-### 4d) Destination hero (hero-frame) — Embed GEREKMİYOR
+### 4d) Destination hero (hero-frame) — sayfa embed'i (inline)
 
 `hero-frame` v1.2.0: ≤991px'te pin ve kadraj açılışı kurulmuyor. Hero,
 masaüstü açılışının **vardığı** kapak hâlini statik gösteriyor: görsel
 section'ı tam dolduruyor, scrim CSS'ten (`[data-hf-media]::after`), başlık
-açık mürekkeple altta. Kurallar `hero-frame.css`'te, sadece data-attribute
-seçicilerle yazıldı.
+açık mürekkeple altta.
+
+CSS sayfaya INLINE yazılıyor (CDN'e güvenilmiyor). Blok kendi başına yeterli:
+`hero-frame.css` çekirdeği + Designer sınıfları + kapak kuralları. Kapak
+kuralları `:not(.is-cinema)` ile korunuyor: head'de eski hero-frame.js
+(v1.1.0) kalsa bile mobil eski davranışıyla bozulmadan çalışır; kapak, JS
+v1.2.0 pinine geçince devreye girer.
 
 ```
-data-hf-bp="992"                 eşik (değiştirirsen hero-frame.css'teki 991px'i de değiştir)
+data-hf-bp="992"                 eşik (değiştirirsen bloktaki 991px'i de değiştir)
 style="--hf-m-h: 88svh"          kapak yüksekliği   (varsayılan 100svh)
 style="--hf-m-ink: #fff"         başlık rengi       (varsayılan #f7f5f0)
 style="--hf-m-pad: 2rem"         alt boşluk         (varsayılan spacing--8)
 ```
 
-Sayfa embed'indeki `@media (max-width:47.9375em)` bloğunda kadraj (3:4) ve
-başlığın negatif `margin-top`'u artık etkisiz: kapak kuralları onları
-specificity ile eziyor. Embed'de kalması gereken tek mobil kural
-`.destination-hero_name` font boyutu. Embed'in başındaki `[data-hero-frame]`…
-`[data-hf-scrim]` kopyası da gereksiz, çünkü `hero-frame.css` CDN'den aynısını
-yüklüyor.
+```html
+<style>[data-hero-frame]{position:relative}[data-hf-media]{position:relative;overflow:hidden;will-change:transform}[data-hf-media] img,[data-hf-media] video{display:block;width:100%;height:100%;object-fit:cover}[data-hf-fade]{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient( to top, var(--neutral--100, #f7f5f0), color-mix(in oklab, var(--neutral--100, #f7f5f0) 55%, transparent) 22%, transparent 46% )}[data-hf-scrim]{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:linear-gradient( to top, color-mix(in oklab, var(--neutral--950, #0a0a0a) 62%, transparent), color-mix(in oklab, var(--neutral--950, #0a0a0a) 18%, transparent) 45%, transparent 78% )}[data-hero-frame].is-cinema{min-height:100svh;overflow:clip}[data-hero-frame].is-cinema [data-hf-media]{z-index:1}[data-hero-frame].is-cinema [data-hf-title]{position:relative;z-index:2}.section_destination-hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-block:var(--spacing--10,4rem)}.section_destination-hero .container-2xl{width:100%}.destination-hero_frame{width:min(92%,calc(62svh * (16 / 9)));aspect-ratio:16 / 9;margin-left:auto;margin-right:0;border-radius:var(--radius--lg,12px)}.destination-hero_titles{position:relative;z-index:2;width:100%;margin-top:calc(-1 * clamp(2.75rem,6vw,6.5rem));display:flex;flex-direction:column;gap:var(--spacing--3,0.75rem);pointer-events:none}.destination-hero_overline{font-size:var(--text--sm,0.8125rem);text-transform:uppercase;letter-spacing:0.14em;color:color-mix(in oklab,var(--neutral--950,#0a0a0a) 55%,transparent)}.destination-hero_name{margin:0;font-size:var(--text--display,clamp(3.25rem,6.5vw + 1rem,8rem));line-height:0.98;letter-spacing:-0.02em;color:var(--neutral--950,#0a0a0a);text-wrap:balance;max-width:14ch}.destination-hero_intro{margin:0;max-width:48ch;font-size:var(--text--base,1rem);line-height:1.6;color:color-mix(in oklab,var(--neutral--950,#0a0a0a) 72%,transparent)}@media (max-width:47.9375em){.destination-hero_frame{width:min(100%,calc(54svh * (3 / 4)));aspect-ratio:3 / 4;margin-inline:auto}.destination-hero_titles{margin-top:calc(-1 * clamp(1.5rem,8vw,2.5rem))}.destination-hero_name{font-size:var(--text--display,clamp(2.5rem,12vw,4rem))}}@media (max-width: 991px){[data-hero-frame][data-hero-frame]:not(.is-cinema){isolation:isolate;display:flex;flex-direction:column;justify-content:flex-end;min-height:var(--hf-m-h, 100svh);padding-bottom:calc(var(--hf-m-pad, var(--spacing--8, 3rem)) + env(safe-area-inset-bottom, 0px));overflow:clip}[data-hero-frame][data-hero-frame]:not(.is-cinema) :has([data-hf-media]){position:static}[data-hero-frame][data-hero-frame]:not(.is-cinema) [data-hf-media]{position:absolute;inset:0;z-index:-1;width:auto;height:auto;max-width:none;aspect-ratio:auto;margin:0;border-radius:0}[data-hero-frame][data-hero-frame]:not(.is-cinema) [data-hf-media] :is(img, video){position:absolute;inset:0;width:100%;height:100%}[data-hero-frame][data-hero-frame]:not(.is-cinema) [data-hf-media]::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient( to top, color-mix(in oklab, var(--neutral--950, #0a0a0a) 78%, transparent), color-mix(in oklab, var(--neutral--950, #0a0a0a) 32%, transparent) 42%, transparent 70% ),linear-gradient( to bottom, color-mix(in oklab, var(--neutral--950, #0a0a0a) 35%, transparent), transparent 22% )}[data-hero-frame][data-hero-frame]:not(.is-cinema) :is([data-hf-fade], [data-hf-scrim]){display:none}[data-hero-frame][data-hero-frame]:not(.is-cinema) [data-hf-title]{position:relative;z-index:1;margin-top:0;color:var(--hf-m-ink, #f7f5f0)}[data-hero-frame][data-hero-frame]:not(.is-cinema) [data-hf-title] *{color:inherit}[data-hero-frame][data-hero-frame]:not(.is-cinema) [data-hf-title] p{opacity:0.86}}</style>
+```
 
 ## 5) Galeri slider'ı (lightbox'ın Swiper sürümü)
 
