@@ -1,5 +1,13 @@
 /*!
- * expertise-showcase.js v1.6.0
+ * expertise-showcase.js v1.7.1
+ * v1.7.1: grup eşleşmesi büyük/küçük harf ve boşluğa duyarsız — CMS'te
+ *         "Cultural" yazılmış bir item panel "cultural" beklediği için
+ *         sessizce boşa düşüyordu. Eşleşmeyen kartların uyarısı artık
+ *         grup değerlerini de söylüyor.
+ * v1.7.0: BOŞ CMS FIELD'I ARTIK PLACEHOLDER'I SİLMİYOR — bir grubun ilk
+ *         item'ında Watermark/Caption/Label boşsa Designer'daki metin
+ *         siliniyor ve o panelin yazısı bir daha gelmiyordu. Doldurma slot
+ *         bazına indi: her grup + anahtar için İLK DOLU değer kazanır.
  * v1.6.0: GİRİŞ ANİMASYONU — panel viewport'a girerken ön kart maske-reveal
  *         (clip-path, border-radius korumalı) ile alttan açılır, arka kartlar
  *         fan-out ile derinlik pozisyonlarına akar, oklar en son belirir;
@@ -100,7 +108,9 @@
  * Collection Item'ın kendisine attribute verilemez; data-es-* attribute'ları
  * Item İÇİNDEKİ div'lere konur (data-es-group değeri CMS field'ından bind).
  * Aynı grubun item'larında metin field'ları tekrar eder — yalnız ilki okunur,
- * boş bırakılan slot Designer'daki placeholder metniyle kalır.
+ * boş bırakılan slot Designer'daki placeholder metniyle kalır (doldurma slot
+ * bazındadır: her grup + anahtar için İLK DOLU değer kazanır, boş field
+ * placeholder'ı silmez).
  * is-front/is-active initial class'ları gerekmez — JS init'te basar.
  * JS her panele data-es-stack-resolved="left|right" yazar — Designer'da ayna
  * düzeni (metin sağ/sol) bu attribute üzerinden stillenebilir.
@@ -158,10 +168,15 @@
 
     var pills = Array.prototype.slice.call(root.querySelectorAll("[data-es-pill]"));
 
+    /* Eşleşme büyük/küçük harf ve kenar boşluğuna DUYARSIZ: CMS'te
+       "Cultural" yazılmış tek bir item, panel "cultural" beklediği için
+       sessizce boşa düşüyordu. Yazım farkı bir kartı kaybettirmemeli. */
+    function norm(v) { return String(v || "").trim().toLowerCase(); }
     function panelByGroup(group) {
-      if (!group) return null;
+      var key = norm(group);
+      if (!key) return null;
       for (var i = 0; i < panels.length; i++) {
-        if (panels[i].getAttribute("data-es-panel") === group) return panels[i];
+        if (norm(panels[i].getAttribute("data-es-panel")) === key) return panels[i];
       }
       return null;
     }
@@ -187,9 +202,10 @@
     // kaynak gizlenir — JS yoksa kaynak liste düz ve görünür kalır (fallback).
     var source = root.querySelector("[data-es-source]");
     if (source) {
-      var orphans = 0;
+      var orphans = [];
       Array.prototype.slice.call(source.querySelectorAll("[data-es-slide]")).forEach(function (slide) {
-        var panel = panelByGroup(groupOf(slide));
+        var group = groupOf(slide);
+        var panel = panelByGroup(group);
         var target = panel && panel.querySelector("[data-es-media]");
         // Slide'a özel metinler taşınmadan ÖNCE item'ındaki paketten kopyalanır —
         // ön karta gelince cam karta bu metinler yazılır.
@@ -203,19 +219,36 @@
             body: b ? b.textContent.trim() : "",
           };
         }
-        if (target) target.appendChild(slide); else orphans++;
+        if (target) target.appendChild(slide); else orphans.push(group);
       });
-      if (orphans) console.warn("[Marveltour ExpertiseShowcase] " + orphans + " slide'ın data-es-group'u hiçbir panele eşleşmedi.", root);
+      /* Uyarı grup değerlerini de söyler — boş Group field'ı ("") ile yazım
+         hatası tek bakışta ayrılsın. Kartlar sessizce kaybolmasın. */
+      if (orphans.length) {
+        console.warn("[Marveltour ExpertiseShowcase] " + orphans.length +
+          " kart hiçbir panele eşleşmedi. Grup değerleri: " +
+          orphans.map(function (g) { return JSON.stringify(g); }).join(", ") +
+          " — paneller: " + panels.map(function (p) {
+            return JSON.stringify(p.getAttribute("data-es-panel"));
+          }).join(", ") + ". CMS'te Group field'ını kontrol et.", root);
+      }
 
+      /* BOŞ FIELD PLACEHOLDER'I SİLMEZ. Eskiden slot.textContent = text
+         koşulsuz yazılıyordu: CMS'te bir grubun ilk item'ında Watermark
+         (ya da Caption/Label) boşsa Designer'daki metin siliniyor ve o
+         panelin yazısı bir daha gelmiyordu. Doldurma artık slot bazında:
+         her grup + anahtar için İLK DOLU değer kazanır, hiç dolu değer
+         yoksa Designer'daki placeholder olduğu gibi kalır. */
       var filled = {};
       Array.prototype.slice.call(source.querySelectorAll("[data-es-meta]")).forEach(function (meta) {
         var group = groupOf(meta);
         var panel = panelByGroup(group);
-        if (!panel || filled[group]) return;
-        filled[group] = true;
+        if (!panel) return;
         Array.prototype.slice.call(meta.querySelectorAll("[data-es-text]")).forEach(function (src) {
           var key = src.getAttribute("data-es-text");
-          var text = src.textContent;
+          var text = src.textContent.trim();
+          var mark = panels.indexOf(panel) + "\u0000" + key; // panel bazında: "Cultural"/"cultural" aynı panel
+          if (!text || filled[mark]) return;
+          filled[mark] = true;
           if (key === "label") {
             panel.setAttribute("data-es-label", text);
             var pill = pills[panels.indexOf(panel)];
