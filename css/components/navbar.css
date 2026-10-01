@@ -1,6 +1,9 @@
 /* ============================================================
-   Marveltour — navbar.css v3.7.0
+   Marveltour — navbar.css v3.7.1
    js/components/navbar.js'in companion CSS'i.
+
+   v3.7.1 — Mobil çekmecede açıklama ve destinasyon listesi tam genişlik;
+            44ch / 34rem sınırları yalnız masaüstü mega menüde kalıyor.
 
    v3.7.0 — Capabilities paneli: sağ kolonda Journal ↔ tour kartı takası
             ([data-nav-swap] içindeki [data-row] parçaları aynı hücrede,
@@ -408,6 +411,14 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
    Burada büyümesine izin verilirse tüm boşluğu yutar ve space-between'in
    dayanacağı bir şey kalmaz. */
 .mt-nav__mobile .mt-nav__mexplore .mt-nav__stack { flex: none; }
+
+/* Satır ölçüsü sınırları yalnız MASAÜSTÜ mega menü için: çekmecede
+   (tablet ve altı) açıklama ve destinasyon listesi tam genişlik. Yoksa
+   tablette açıklama 44ch'de (Designer), liste 34rem'de yarıda kalıyordu.
+   Media query bilerek YOK: çekmece hangi genişlikte görünürse görünsün
+   (Designer breakpoint'i değişse de) kural onunla birlikte gelir. */
+.mt-nav__mobile { --mt-nav-tag-max: none; }
+.mt-nav__mobile .mt-nav__explore-desc { max-width: none; }
 
 /* ---------- REDUCED MOTION (proje kuralı — her modülde zorunlu) ---------- */
 @media (prefers-reduced-motion: reduce) {
