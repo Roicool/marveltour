@@ -1,0 +1,285 @@
+/*!
+ * gallery-slider.css v1.0.0
+ * CSS for js/components/gallery-slider.js — lightbox galerisinin merkez
+ * odaklı sayfa içi slider'ı. Kök: [data-lightbox][data-lightbox-layout="slider"]
+ *
+ * ÜÇ HAL, TEK YERLEŞİM (CLS yok):
+ *   1) JS'ten önce / Swiper yoksa → native yatay scroller, scroll-snap
+ *      center; ilk görsel ORTADA (margin ile). Kullanılabilir fallback.
+ *   2) Swiper kurulunca (.swiper-initialized) → margin/gap/scroll kalkar,
+ *      Swiper centeredSlides aynı ilk konumu translate ile verir. Kayma yok.
+ *   3) Merkez odak: yandakiler küçülür ve solar. Değer slide.progress'ten
+ *      (--gs-p, 0 = ortada, 1 = bir yana) — sürüklemeye bağlı, parmağı izler.
+ *
+ * Swiper'ın kendi stylesheet'i GEREKMEZ — ihtiyaç duyulan çekirdek kurallar
+ * aşağıda, bu bileşene kapsamlı.
+ *
+ * Seçiciler data-attribute + JS'in bastığı .mt-gs* sınıfları — Designer'daki
+ * sınıf adlarına bağlı değil. CMS'te Collection List'in grid/columns ayarları
+ * burada ezilir (slider modunda anlamsızlar).
+ *
+ * AYARLAR — köke inline ver: style="--gs-w-d: 70%; --gs-ratio-d: 3 / 2"
+ *   --gs-w-d / -t / -m     aktif görsel genişliği (masaüstü/tablet/mobil)
+ *   --gs-ratio-d / -m      görsel oranı (masaüstü+tablet / mobil)
+ *   --gs-gap-d / -m        görseller arası boşluk
+ *   --gs-side-scale        yandakilerin ölçeği         (default .86)
+ *   --gs-side-dim          yandakilerin opaklığı       (default .38)
+ *   --gs-radius            görsel köşesi
+ *   --gs-ease              geçiş eğrisi
+ *   --gs-bar-gap           slider ile bar arası
+ *   --gs-btn               ok butonu çapı
+ */
+
+/* ── Ayar düğmeleri ───────────────────────────────────────────── */
+[data-lightbox-layout="slider"] {
+  --gs-w-d: 62%;
+  --gs-w-t: 72%;
+  --gs-w-m: 80%;   /* 86% denendi: komşu ekrana hiç girmiyordu */
+  --gs-ratio-d: 16 / 10;
+  --gs-ratio-m: 4 / 5;
+  --gs-gap-d: 1.5rem;
+  --gs-gap-m: 0.75rem;
+  --gs-side-scale: 0.86;
+  --gs-side-dim: 0.38;
+  --gs-radius: var(--radius--lg, 1rem);
+  --gs-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --gs-bar-gap: 1.5rem;
+  --gs-btn: 2.75rem;
+
+  /* Aktif değerler — media query'ler bunları değiştirir */
+  --gs-w: var(--gs-w-d);
+  --gs-ratio: var(--gs-ratio-d);
+  --gs-gap: var(--gs-gap-d);
+
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 991px) {
+  [data-lightbox-layout="slider"] {
+    --gs-w: var(--gs-w-t);
+  }
+}
+
+@media (max-width: 767px) {
+  [data-lightbox-layout="slider"] {
+    --gs-w: var(--gs-w-m);
+    --gs-ratio: var(--gs-ratio-m);
+    --gs-gap: var(--gs-gap-m);
+  }
+}
+
+/* ── Track — CMS'te Collection List (.w-dyn-items) ─────────────── */
+[data-lightbox-layout="slider"] > .w-dyn-items,
+[data-lightbox-layout="slider"] .mt-gs__track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  float: none;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  grid-template-columns: none;   /* Designer'daki grid ayarları slider'da anlamsız */
+}
+
+/* Webflow'un clearfix pseudo'ları flex item olup ofset yaratmasın */
+[data-lightbox-layout="slider"] > .w-dyn-items::before,
+[data-lightbox-layout="slider"] > .w-dyn-items::after,
+[data-lightbox-layout="slider"] .mt-gs__track::before,
+[data-lightbox-layout="slider"] .mt-gs__track::after {
+  content: none;
+  display: none;
+}
+
+/* ── Slide ────────────────────────────────────────────────────── */
+[data-lightbox-layout="slider"] > .w-dyn-items > .w-dyn-item,
+[data-lightbox-layout="slider"] .mt-gs__slide {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--gs-w);
+  max-width: none;
+  margin: 0;
+}
+
+[data-lightbox-layout="slider"] > .w-dyn-items > .w-dyn-item img,
+[data-lightbox-layout="slider"] .mt-gs__slide img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  aspect-ratio: var(--gs-ratio);
+  object-fit: cover;
+  border-radius: var(--gs-radius);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ── 1) Fallback: native scroller (JS'ten önce / Swiper yoksa) ──── */
+[data-lightbox-layout="slider"]:not(.swiper-initialized) > .w-dyn-items,
+[data-lightbox-layout="slider"] :not(.swiper-initialized) > .mt-gs__track {
+  gap: var(--gs-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-lightbox-layout="slider"]:not(.swiper-initialized) > .w-dyn-items::-webkit-scrollbar,
+[data-lightbox-layout="slider"] :not(.swiper-initialized) > .mt-gs__track::-webkit-scrollbar {
+  display: none;
+}
+
+[data-lightbox-layout="slider"]:not(.swiper-initialized) > .w-dyn-items > .w-dyn-item,
+[data-lightbox-layout="slider"] :not(.swiper-initialized) > .mt-gs__track > .mt-gs__slide {
+  scroll-snap-align: center;
+}
+
+/* İlk görsel ORTADA başlar — Swiper centeredSlides'ın vereceği konumun
+   aynısı, bu yüzden devralmada kayma olmaz. % → track'in genişliği (= kök). */
+[data-lightbox-layout="slider"]:not(.swiper-initialized) > .w-dyn-items > .w-dyn-item:first-child,
+[data-lightbox-layout="slider"] :not(.swiper-initialized) > .mt-gs__track > .mt-gs__slide:first-child {
+  margin-left: calc((100% - var(--gs-w)) / 2);
+}
+
+[data-lightbox-layout="slider"]:not(.swiper-initialized) > .w-dyn-items > .w-dyn-item:last-child,
+[data-lightbox-layout="slider"] :not(.swiper-initialized) > .mt-gs__track > .mt-gs__slide:last-child {
+  margin-right: calc((100% - var(--gs-w)) / 2);
+}
+
+/* ── 2) Swiper çekirdeği (swiper-bundle.css YÜKLENMİYOR) ────────── */
+[data-lightbox-layout="slider"] .swiper.swiper-initialized,
+[data-lightbox-layout="slider"].swiper.swiper-initialized {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  touch-action: pan-y;           /* dikey sayfa kaydırması native kalır */
+}
+
+[data-lightbox-layout="slider"] .swiper-initialized > .mt-gs__track,
+[data-lightbox-layout="slider"].swiper-initialized > .mt-gs__track {
+  position: relative;
+  z-index: 1;
+  gap: 0;                        /* boşluğu Swiper spaceBetween veriyor */
+  overflow: visible;
+  scroll-snap-type: none;
+  box-sizing: content-box;       /* Swiper translate hesabı bunu bekliyor */
+  transition-property: transform;
+  transition-timing-function: var(--gs-ease);
+}
+
+/* ── 3) Merkez odak — sürüklemeye bağlı ölçek + solukluk ────────── */
+[data-lightbox-layout="slider"] .swiper-initialized > .mt-gs__track > .mt-gs__slide,
+[data-lightbox-layout="slider"].swiper-initialized > .mt-gs__track > .mt-gs__slide {
+  --gs-p: 1;                     /* JS her slide'a inline basar */
+  flex-shrink: 0;
+  transform: scale(calc(1 - (1 - var(--gs-side-scale)) * var(--gs-p)));
+  /* Merkeze DOĞRU küçülür (JS --gs-ox basar): görseller arası boşluk
+     sabit kalır, komşu mobilde de ekrana taşar. */
+  transform-origin: var(--gs-ox, 50%) center;
+  opacity: calc(1 - (1 - var(--gs-side-dim)) * var(--gs-p));
+  transition-property: transform, opacity;   /* süreyi Swiper inline veriyor */
+  transition-timing-function: var(--gs-ease);
+  will-change: transform, opacity;
+}
+
+/* Yandaki görsel lightbox açmaz, ortaya gelir — imleç bunu söylesin */
+.mt-gs .mt-gs__slide:not(.swiper-slide-active) .mt-lb-trigger,
+.mt-gs .mt-gs__slide.mt-lb-trigger:not(.swiper-slide-active) {
+  cursor: pointer;
+}
+
+/* ── Bar: sayaç solda, oklar sağda — aktif görselin kenarlarına hizalı ── */
+.mt-gs__bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: var(--gs-bar-gap);
+  padding-inline: calc((100% - var(--gs-w)) / 2);
+}
+
+.mt-gs__count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-size: var(--text--sm, 0.875rem);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.mt-gs__sep,
+.mt-gs__total {
+  opacity: 0.5;
+}
+
+.mt-gs__nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Hairline daire — lightbox'ın butonlarıyla aynı dil; renk bölümden gelir
+   (currentColor), koyu ve açık bölümde ayrı ayar gerektirmez. */
+.mt-gs__btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--gs-btn);
+  height: var(--gs-btn);
+  margin: 0;
+  padding: 0;
+  border: 1px solid color-mix(in oklab, currentColor 35%, transparent);
+  border-radius: var(--radius--full, 9999px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 0;
+  cursor: pointer;
+  transition: background-color 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+}
+
+.mt-gs__btn svg {
+  display: block;
+  width: 42%;
+  height: 42%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .mt-gs__btn:hover:not([aria-disabled="true"]) {
+    background-color: color-mix(in oklab, currentColor 10%, transparent);
+    border-color: color-mix(in oklab, currentColor 60%, transparent);
+  }
+}
+
+.mt-gs__btn:focus-visible {
+  outline: 2px solid var(--brand-primary--500, #470e2d);
+  outline-offset: 3px;
+}
+
+/* aria-disabled (disabled DEĞİL): odaktaki buton pasifleşince odak kaybolmaz */
+.mt-gs__btn[aria-disabled="true"] {
+  opacity: 0.28;
+  cursor: default;
+}
+
+/* ── Reduced motion: fallback scroller da anlık kaysın ── */
+@media (prefers-reduced-motion: reduce) {
+  [data-lightbox-layout="slider"] > .w-dyn-items,
+  [data-lightbox-layout="slider"] .mt-gs__track {
+    scroll-behavior: auto;
+  }
+}

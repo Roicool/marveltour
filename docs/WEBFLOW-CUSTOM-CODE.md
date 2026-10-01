@@ -1,6 +1,6 @@
 # Webflow Custom Code — kopyala/yapıştır
 
-Yayındaki pin: **`3f50481c6880b37cf800fdd19f561730dcc04b0e`** (navbar v2.4.1 + css v3.6.0 · barba-init v1.8.0 · about-hero + journey-timeline + video-hero · 2026-09-29)
+Yayındaki pin: **`9187401d161bc540fe5720ab67edcf53186c750b`** (navbar v2.4.1 + css v3.6.0 · barba-init v1.8.0 · hero-cinematic v2.6.0 · manifesto v1.4.0 · h-scroll v1.2.0 · expertise-showcase v1.7.1 · lightbox v1.4.0 · gallery-slider v1.1.0 · about-hero + journey-timeline + video-hero · 2026-09-29)
 
 Aşağıdaki iki blok sitenin TAMAMI. Barba kullanıldığı için hepsi
 **Site Settings → Custom Code**'a girer; page-level custom code sayfa
@@ -21,14 +21,14 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 ## 1) Site Settings → Custom Code → **Head Code**
 
 ```html
-<!-- ═══ Marveltour — pin: 3f50481c6880b37cf800fdd19f561730dcc04b0e ═══ -->
+<!-- ═══ Marveltour — pin: 9187401d161bc540fe5720ab67edcf53186c750b ═══ -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
-<!-- CSS — 16 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
+<!-- CSS — 20 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
      sırası, bozma. Modül CSS'lerini media="print" onload ile non-blocking
      YAPMA: pinli ScrollTrigger bölümleri (hero-cinematic, h-scroll, manifesto,
      stat-counter…) CSS geç geldiğinde yanlış ölçüp layout kaydırıyor. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/core/utils.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/navbar.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/stagger-button.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/animations/parallax.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/hero-cinematic.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/hero-frame.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/hero-carousel.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/marquee.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/h-scroll.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/expertise-showcase.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/effects/noise.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/manifesto.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/process-steps.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/accordion.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/stat-counter.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/lightbox.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/about-hero.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/journey-timeline.css,gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/css/components/video-hero.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/core/utils.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/navbar.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/stagger-button.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/animations/parallax.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/hero-cinematic.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/hero-frame.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/hero-carousel.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/marquee.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/h-scroll.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/expertise-showcase.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/effects/noise.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/manifesto.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/process-steps.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/accordion.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/stat-counter.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/lightbox.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/gallery-slider.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/about-hero.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/journey-timeline.css,gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/css/components/video-hero.css">
 
 <!-- ── Vendor ── -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
@@ -41,9 +41,9 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 
 <!-- ── Core — bu sırayla ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/core/lenis-init.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/core/utils.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/core/barba-init.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/core/lenis-init.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/core/utils.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/core/barba-init.js" defer></script>
 
 <!-- ── Navbar — YALNIZ DAVRANIŞ ──
      Bar, mega menü, paneller, Collection List'ler ve mobil görünümler
@@ -52,34 +52,37 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
      KOYMA. Destinasyonlar hem masaüstünde hem mobilde TEK Collection List'ten
      gelir: her link data-region ile Region alanına bağlı, JS aktif satıra göre
      eşleşmeyeni gizler (sayfa başına 20 Collection List sınırı için şart). -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/navbar.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/navbar.js" defer></script>
 
 <!-- ── Components ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/stagger-button.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/hero-cinematic.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/hero-frame.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/hero-carousel.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/marquee.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/step-scroll.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/h-scroll.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/expertise-showcase.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/manifesto.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/process-steps.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/stat-counter.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/accordion.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/stagger-button.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/hero-cinematic.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/hero-frame.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/hero-carousel.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/marquee.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/step-scroll.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/h-scroll.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/expertise-showcase.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/manifesto.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/process-steps.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/stat-counter.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/accordion.js" defer></script>
 <!-- lightbox: bağımlılıksız, init YOK (kendi kurulur); galeri köküne data-lightbox -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/lightbox.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/lightbox.js" defer></script>
+<!-- gallery-slider: lightbox'ın sayfa içi Swiper sürümü, init YOK (kendi kurulur);
+     Collection List Wrapper'a data-lightbox data-lightbox-layout="slider" -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/gallery-slider.js" defer></script>
 <!-- about-hero + journey-timeline: React code component'lerin vanilla portu.
      Barba container swap'inde code component'ler mount olmuyordu (PROJECT.md
      Kural B1); bu ikisi her gecişte onEach'ten yeniden kuruluyor. -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/about-hero.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/journey-timeline.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/components/video-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/about-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/journey-timeline.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/components/video-hero.js" defer></script>
 
 <!-- ── Animations — preset'ler; parallax dışında CSS'i yok ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/animations/text-reveal.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/animations/parallax.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@3f50481c6880b37cf800fdd19f561730dcc04b0e/js/animations/reveal.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/animations/text-reveal.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/animations/parallax.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@9187401d161bc540fe5720ab67edcf53186c750b/js/animations/reveal.js" defer></script>
 ```
 
 ---
@@ -127,18 +130,20 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
          MOUNT OLMUYOR (yalniz tam sayfa yuklemede hydrate oluyorlar), bu yuzden
          onlari barindiran sayfalar Barba'ya hic girmemeli: linkler normal
          navigasyon yapar, gecis animasyonu olmaz ama sayfa dogru kurulur.
-         Eslesme yol on-eki ustunden: "/about-us" -> /about-us ve /about-us/...
-         ("/about-us-old" HAYIR).
+         Eslesme yol on-eki ustunden: "/capabilities" -> /capabilities ve
+         /capabilities/... ("/capabilities-old" HAYIR).
          Liste 2026-09'da Designer taranarak cikarildi:
-           /about-us    -> About Hero, Journey Timeline
            /capabilities -> Hero Carousel, Video Hero (Capabilities Template)
+         /about-us LISTEDEN CIKTI: About Hero + Journey Timeline vanilla'ya
+         cevrildi (about-hero.js / journey-timeline.js), React component'leri
+         sayfadan silindi -> artik Barba gecisi ile calisiyor.
          Diger sayfalarda code component YOK. Yeni sayfaya koyarsan listeye ekle.
-         Bu gecici bir cozum: dogrusu bu dordunu vanilla js/ modulune cevirmek
-         (bkz. PROJECT.md Kural B1).
+         /capabilities icin bu gecici bir cozum: dogrusu o ikisini de vanilla
+         js/ modulune cevirmek (bkz. PROJECT.md Kural B1).
          Contact: Webflow native form'u webflow.js YALNIZ tam sayfa yuklemede
          baglar — Barba swap'inden sonra form gonderilmez. Bu yuzden contact
          da tam yuklenir (/start-a-conversation'a tasinirsa o da listede). */
-      preventPaths: ['/about-us', '/capabilities', '/contact-us', '/start-a-conversation'],
+      preventPaths: ['/capabilities', '/contact-us', '/start-a-conversation'],
       onEach: function (container) {
         /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
            eksik/hatali modulun adi konsola dusur. */
@@ -201,10 +206,379 @@ Lighthouse'un "fetchpriority=high uygulanmalıdır" satırı bu durumda yanılt�
 
 ---
 
+## 4) Tablet ve altı — **HTML Embed**, `wrap-main`'in İÇİNDE
+
+Üç bölümün dar ekran yerleşimi. Hepsinin JS'i o genişliklerde sahneyi
+**hiç kurmuyor**; görünen şeyi tamamen bu CSS belirliyor.
+
+**Nereye:** Embed, Barba container'ının (`wrap-main`) İÇİNDE olmalı — ilgili
+section'ın içine ya da yanına koy. **Page Settings → Inside `<head>`'e KOYMA:**
+page-level kod Barba geçişinde çalışmaz (Kural B4), başka bir sayfadan o
+sayfaya geçildiğinde stil hiç gelmez.
+
+Seçiciler bilerek **yalnız data-attribute**: Designer'da sınıf adı/combo
+değişse de tutar. Kök attribute bazı kurallarda iki kez yazılı — combo
+class'ların (0-2-0) üstüne çıkmak için, `!important` gerekmesin diye.
+
+### 4a) Ana sayfa hero — video ARKA PLAN
+
+`hero-cinematic.js` v2.6.0'dan itibaren **<992 px'de pin/FLIP'i hiç kurmuyor**
+(eşik: `data-hero-bp="768"`). Sebep: FLIP medyayı `[data-hero-placeholder]`'ın
+**ölçülen** kutusuna taşıyor — dar ekranda o kutu anlamsızlaşıyor, üstüne pin
+160% viewport scroll yutuyor ve mobil adres çubuğu her açılıp kapandığında
+yeniden ölçüm tetikliyor.
+
+Mobil kurgu: **video bölümün tamamını kaplayan zemin**, başlık üstte, 2. sahne
+metni altta — masaüstündeki 1. sahnenin sadeleşmiş hâli. FLIP'in hedef kutusu
+(`[data-hero-placeholder]`) animasyon olmadığı için gizlenir.
+
+Blok **Designer'daki sarmalayıcı kurgusundan bağımsız**: hero ister üç kardeş
+sarmalayıcı (başlık / medya / sahne) ister tek bir sarmalayıcı içinde olsun
+aynı sonucu verir. Bunun için z-index yarışına hiç girilmiyor — video negatif
+katmana alınıyor, metinler normal akışta kaldığı için otomatik üstte kalıyor,
+section'daki `isolation: isolate` de negatif katmanın sayfanın zeminine
+kaçmasını engelliyor. (Önceki sürüm medyanın sarmalayıcısını
+`:has([data-hero-media])` ile **descendant** olarak seçiyordu: tek sarmalayıcılı
+kurguda o sarmalayıcı metinleri de taşıdığı için hepsi videonun arkasına
+gidiyordu.)
+
+```html
+<style>
+/* ═══ Ana sayfa hero — tablet ve altı (<992px) ═══
+   Video zemin; içerik MUTLAK KONUMLU ve dikeyde ortalı.
+
+   Neden mutlak: Designer'daki sarmalayıcılarda height:100% / 100vh gibi
+   ayarlar kaldığında flex'in justify-content'i ortalayacak boşluk bulamıyor
+   (çocuk bölümü tamamen dolduruyor). Mutlak konum o ayarların TAMAMINI
+   devre dışı bırakıyor — kurgu ne olursa olsun sonuç aynı.
+
+   KURGUDAN BAĞIMSIZ: hero ister üç kardeş sarmalayıcı (başlık / medya /
+   sahne) ister tek sarmalayıcı içinde olsun çalışır. z-index yarışı yok:
+   video negatif katmanda, içerik normal katmanda; section'daki
+   isolation:isolate negatif katmanın sayfanın zeminine kaçmasını engelliyor.
+
+   AKIŞ MODUNA DÖNMEK İSTERSEN (içerik 100svh'ye sığmıyorsa) section'a:
+     style="--hero-m-pos: relative"
+   O zaman bölüm flex column olarak ortalar ve içerikle birlikte uzar. */
+@media (max-width: 991px) {
+
+  /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
+  [data-hero-cinematic] {
+    --hero-m-min: 100svh;      /* bölüm yüksekliği */
+    --hero-m-top: 6rem;        /* üst boşluk (navbar payı) */
+    --hero-m-bottom: 6rem;     /* alt boşluk — üstle eşit = gerçek ortalama */
+    --hero-m-pad: 1.25rem;     /* yan boşluk */
+    --hero-m-gap: 1.5rem;      /* başlık / metin / buton arası */
+    --hero-m-align: center;    /* dikey: center | flex-start | flex-end */
+    --hero-m-x: center;        /* yatay: center | flex-start */
+    --hero-m-text: center;     /* metin hizası: center | left */
+    --hero-m-scrim: none;      /* metin okunmuyorsa: aşağıdaki gradient'i aç */
+    --hero-m-pos: absolute;    /* relative = akış moduna dön */
+  }
+
+  /* 1) Bölüm: sabit yükseklikli sahne + konumlandırma bağlamı.
+        Flex ayarları yalnız --hero-m-pos:relative'e geçilirse iş görür. */
+  [data-hero-cinematic][data-hero-cinematic] {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--hero-m-align, center);
+    gap: var(--hero-m-gap);
+    height: auto;
+    min-height: 100vh;                    /* svh desteklemeyen tarayıcı */
+    min-height: var(--hero-m-min, 100svh);
+    padding: 0;
+    overflow: clip;
+  }
+
+  /* 2) Medyanın ATASI olan sarmalayıcılar konumlandırma bağlamı KURMASIN —
+        medya kaç kat içeride olursa olsun doğrudan bölüme göre yerleşsin. */
+  [data-hero-cinematic][data-hero-cinematic] :has([data-hero-media]) {
+    position: static;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    transform: none;
+  }
+
+  /* 3) VIDEO = ZEMİN. Negatif katman: içerik normal akışta/üst katmanda
+        olduğu için z-index vermeden üstte kalır. */
+  [data-hero-cinematic][data-hero-cinematic] [data-hero-media] {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    transform: none;
+  }
+  [data-hero-cinematic] [data-hero-media] video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: none;
+  }
+
+  /* Okunabilirlik perdesi — videonun üstünde, içeriğin altında. Designer'daki
+     overlay yetiyorsa dokunma; yetmiyorsa --hero-m-scrim'i şuna çevir:
+       linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.15) 45%, rgba(0,0,0,.65)) */
+  [data-hero-cinematic]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--hero-m-scrim, none);
+  }
+
+  /* 4) BAŞLIK KATMANI — bölümü kaplar, içeriği dikeyde ortalar.
+        Sarmalayıcı attribute'lardan bulunuyor, Designer sınıf adına bağlı
+        değil. pointer-events:none: boş alan tıklama yutmasın. */
+  [data-hero-cinematic][data-hero-cinematic] :is(
+    :has(> [data-hero-title]),
+    :has(> [data-hero-desc]),
+    :has(> [data-hero-cta])
+  ) {
+    position: var(--hero-m-pos, absolute);
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--hero-m-align, center);
+    align-items: var(--hero-m-x, center);
+    gap: var(--hero-m-gap);
+    width: auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    margin: 0;
+    padding: var(--hero-m-top) var(--hero-m-pad) var(--hero-m-bottom);
+    text-align: var(--hero-m-text, center);
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+  }
+
+  /* 5) 2. SAHNE — alta yaslı; başlık katmanıyla çakışmaz.
+        Boşsa hiçbir yer kaplamaz. */
+  [data-hero-cinematic][data-hero-cinematic] [data-hero-scene] {
+    position: var(--hero-m-pos, absolute);
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: var(--hero-m-x, center);
+    gap: 1rem;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0 var(--hero-m-pad) var(--hero-m-bottom);
+    text-align: var(--hero-m-text, center);
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: none;
+  }
+
+  /* FLIP'in hedef kutusu animasyon yokken anlamsız */
+  [data-hero-cinematic] [data-hero-placeholder] { display: none; }
+
+  /* 6) İçerik: her koşulda görünür ve tıklanabilir
+        (katmanlar pointer-events:none, etkileşim burada yaşar). */
+  [data-hero-cinematic] [data-hero-title],
+  [data-hero-cinematic] [data-hero-desc],
+  [data-hero-cinematic] [data-hero-cta],
+  [data-hero-cinematic] [data-hero-text] {
+    max-width: 100%;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  /* Akış moduna (--hero-m-pos: relative) geçildiğinde: Designer'dan gelen
+     height:100% / flex:1 ortalayacak boşluk bırakmıyor — sıfırlanır. */
+  [data-hero-cinematic][data-hero-cinematic] > * {
+    flex: 0 0 auto;
+  }
+}
+</style>
+```
+
+`data-hero-bp`'yi değiştirirsen buradaki `991px`'i de değiştir (eşik − 1).
+
+### 4b) Experience Manifesto — statik akış
+
+`manifesto.js` v1.4.0'dan itibaren **<992 px'de `.is-cinema` hiç basılmıyor**
+(eşik: `data-mf-bp`). 300% viewport'luk pin dar ekranda scroll'u yutuyordu,
+merkeze uçan iki metin katmanı da üst üste binip okunmuyordu. Class basılmayınca
+CSS zaten modülün baştan beri taşıdığı **statik fallback'e** düşüyor: split
+düzen + manifesto metni + CTA normal akışta.
+
+Aşağısı o statik hâli mobilde derli toplu yapıyor. Designer'da bu bölümün
+tablet/mobil görünümünü zaten düzenlediysen bu bloğa gerek yok.
+
+```html
+<style>
+/* ═══ Experience Manifesto — tablet ve altı (<992px) ═══
+   .is-cinema basılmaz; her şey akışta, tek kolon. */
+@media (max-width: 991px) {
+
+  [data-manifesto] {
+    --mf-m-gap: 2rem;          /* bloklar arası */
+    --mf-m-pad: 1.25rem;       /* yan boşluk */
+    --mf-m-ratio: 4 / 5;       /* medya oranı */
+    --mf-m-radius: 16px;
+    --mf-m-dim: .35;           /* medya karartması (0 = kapalı) */
+  }
+
+  /* Tek kolon — Designer'daki split grid/flex ne olursa olsun */
+  [data-manifesto][data-manifesto] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mf-m-gap);
+    min-height: 0;                 /* .is-cinema'nın 100svh'si zaten yok */
+    padding-inline: var(--mf-m-pad);
+    overflow: visible;             /* fullbleed açılım yok, kırpmaya gerek yok */
+  }
+
+  /* Medya: tam genişlik, sabit oranlı kutu */
+  [data-manifesto][data-manifesto] [data-mf-media] {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--mf-m-ratio);
+    border-radius: var(--mf-m-radius);
+    overflow: clip;
+    transform: none;
+  }
+  [data-manifesto] [data-mf-media] :is(img, video) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* Overlay'i JS statik modda hiç sürmüyor — sabit bir karartma ver */
+  [data-manifesto] [data-mf-overlay] { opacity: var(--mf-m-dim, .35); }
+
+  /* Manifesto katmanı akışta: absolute merkezleme .is-cinema'ya aitti */
+  [data-manifesto][data-manifesto] [data-mf-manifesto] {
+    position: static;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--mf-m-gap);
+    padding: 0;
+    text-align: left;
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  [data-manifesto] [data-mf-intro],
+  [data-manifesto] [data-mf-text],
+  [data-manifesto] [data-mf-cta] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  [data-manifesto] [data-mf-cta] { pointer-events: auto; }
+}
+</style>
+```
+
+### 4c) Destinations (h-scroll) — Embed GEREKMİYOR
+
+Kart genişliği artık `h-scroll.css` v1.4.0'da: tablette **2.2**, mobilde
+**1.2** kart. Bölümden ayarlanır, CSS yazmana gerek yok:
+
+```
+data-hscroll-spv-t="2.2"     tablet (768–991px)
+data-hscroll-spv-m="1.2"     mobil  (<768px)
+data-hscroll-bp-m="768"      mobil eşiği
+```
+
+Kart yüksekliği aynı yerden: section'a `style="--hscroll-card-h: 46svh"`
+(varsayılan tablet 58svh, mobil 50svh).
+
+Önceki davranış film şeridiydi — genişlik görselin doğal oranından geliyordu,
+o yüzden yatay bir foto telefonda ekrandan taşıyordu. Masaüstünde film şeridi
+aynen duruyor; değişen yalnız ≤991px.
+
+## 5) Galeri slider'ı (lightbox'ın Swiper sürümü)
+
+Sayfadaki galeri, merkez odaklı bir slider olur: aktif görsel ortada ve tam
+boy, komşular küçülmüş ve soluk. Ölçek ve solukluk sürüklemeye bağlı,
+parmağı takip eder. Ortadaki görsele tık → tam ekran lightbox; yandakine tık
+→ önce ortaya gelir. Lightbox'ta gezip kapatınca slider kaldığın görsele
+geçer.
+
+**Sonsuz döngü + otomatik kayma (v1.1.0):** ilk karede solda da görsel var,
+iki yöne sonsuz döner. Bölüm ekrana girince 6 saniyede bir kendi kayar;
+ilk geçiş tam süre sonra (ilk kare görülsün). **Durduğu durumlar:** ekran
+dışındayken, fare üstündeyken, klavye odağı slider'dayken, lightbox
+açıkken, sekme arkadayken ve ziyaretçi "hareketi azalt" tercihindeyken
+(o zaman hiç kendi kaymaz).
+
+**Kurulum — tek attribute.** Head'deki script + CSS yeter, footer'a
+dokunmaya gerek yok (modül kendi kurulur):
+
+```
+Collection List Wrapper   data-lightbox  data-lightbox-layout="slider"
+  Collection List          ← Designer'daki grid ayarı ezilir, sorun değil
+    Collection Item
+      Image                ← multi-image alanına bağlı
+```
+
+**Ayarlar** — Wrapper'a `style="..."` olarak:
+
+| Değişken | Varsayılan | Ne |
+|---|---|---|
+| `--gs-w-d` / `-t` / `-m` | 62% / 72% / 80% | aktif görsel genişliği (masaüstü / tablet / mobil) |
+| `--gs-ratio-d` / `-m` | 16 / 10 · 4 / 5 | görsel oranı |
+| `--gs-gap-d` / `-m` | 1.5rem · 0.75rem | görseller arası |
+| `--gs-side-scale` | 0.86 | yandakilerin ölçeği |
+| `--gs-side-dim` | 0.38 | yandakilerin opaklığı |
+| `--gs-radius` | `--radius--lg` | köşe |
+
+Attribute'lar:
+
+| Attribute | Varsayılan | Ne |
+|---|---|---|
+| `data-gs-autoplay` | `6000` | ms; `"false"` kapatır |
+| `data-gs-loop` | açık | `"false"` → sonsuz döngü kapalı (sonda başa sarar) |
+| `data-gs-rewind` | açık | loop kapalıyken `"false"` → uçlarda durur |
+| `data-gs-speed` | `700` | geçiş süresi, ms |
+
+**Kendi kontrollerin:** Wrapper'ın ebeveynine `[data-gs-prev]`,
+`[data-gs-next]`, `[data-gs-current]`, `[data-gs-total]` koyarsan varsayılan
+bar kurulmaz, seninkiler kullanılır — Designer'da istediğin gibi stillersin.
+Aynı ebeveynde birden çok slider varsa her birini `[data-gs-scope]` ile sar.
+
+**Bilerek yapılanlar:**
+- Swiper 11'in loop'u slide'ları kopyalamıyor, **DOM'da yeniden diziyor**
+  (5 görselde sıra 3,4,0,1,2 oluyor). Lightbox v1.4.0 gerçek sırayı
+  `data-swiper-slide-index`'ten okuyor — numaralar ve ←/→ sırası kaymıyor.
+- **4'ten az görselde** Swiper sol tarafı dolduramıyor (3'te ilk karede sol
+  boş kalıyor, 2'de loop kapanıyor — 390–2200px ölçüldü); set kopyalanıyor.
+  Kopyalar lightbox'a girmez; ortadaki kopyaya tık (ya da Enter) asıl
+  görseli açar.
+- Klavyede **yalnız ortadaki görsel Tab durağı**; diğerlerine ←/→ ve oklarla
+  (Tab sırası loop'un döndürdüğü DOM'da karışıyordu).
+- Autoplay yalnız **klavye** odağında durur: fareyle oka tıklamak ya da
+  lightbox'ı fareyle kapatmak kaymayı durdurmaz.
+- Mobilde komşu ~27px görünür; küçülme merkeze doğru (kendi
+  ortasından küçülseydi komşu ekranın dışına düşüyordu).
+- Swiper gelmeden önce CSS aynı yerleşimi native scroll-snap ile kuruyor —
+  CLS yok (Chromium'da ölçüldü: iki hâlde de görsel piksel piksel aynı yerde).
+
+---
+
 ## Sürüm yükseltme
 
 1. `main`'e merge et, yeni commit SHA'sını al.
-2. Bu dosyadaki ve Webflow head'indeki `3f50481c6880b37cf800fdd19f561730dcc04b0e` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 16 kez geçiyor).
+2. Bu dosyadaki ve Webflow head'indeki `9187401d161bc540fe5720ab67edcf53186c750b` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 20 kez geçiyor).
 3. Publish.
 
 Acilde pin yerine `@main` kullanıp purge edebilirsin: `https://purge.jsdelivr.net/`

@@ -1,13 +1,19 @@
 /*!
- * h-scroll.js v1.1.1  (adapted from Sestek h-scroll v2.0.0)
+ * h-scroll.js v1.2.0  (adapted from Sestek h-scroll v2.0.0)
+ * v1.2.0: spv geri geldi — v1.1.0 slidesPerView:"auto"'ya geçerken kart
+ *         genişliği tamamen görselin doğal oranına kalmıştı: yatay bir foto
+ *         50svh yüksekliğinde telefonda ekrandan taşıyordu. Artık JS aktif
+ *         genişliğe göre --hscroll-spv custom property'sini basıyor,
+ *         h-scroll.css kart genişliğini ondan türetiyor. data-hscroll-spv-t
+ *         ve -spv-m yeniden çalışıyor; "auto" korunduğu için masaüstü film
+ *         şeridi (karışık genişlikler) aynen duruyor.
  * v1.1.1: lazy-load fix — film şeridinde kart genişliği görselden geldiği
  *         için lazy görseller 0 genişlik ölçtürüyordu (kısa pin mesafesi,
  *         boş başlangıç). Track görselleri eager'a çevrilir; her yüklenen
  *         görselde debounce'lu refresh + Swiper update. Erken "distance≤0"
  *         çıkışı kaldırıldı (tween function-based, refresh'te düzelir).
  * v1.1.0: film şeridi modu — Swiper slidesPerView:"auto" (kart genişlikleri
- *         görselin doğal oranından, karışık olabilir; spv attribute'ları
- *         artık kullanılmıyor).
+ *         görselin doğal oranından, karışık olabilir).
  * Cinematic pinned horizontal-scroll destination cards:
  *   Desktop (≥992px) — section pins, vertical scroll drives the card track to
  *   the LEFT (content moves right-to-left, reading direction feels "scroll
@@ -76,6 +82,9 @@
    *                          mobile slidesPerView applies   (default 768)
    *   data-hscroll-spv-t     slides per view on tablet      (default 2.2)
    *   data-hscroll-spv-m     slides per view on mobile      (default 1.2)
+   *                          Ikisi de --hscroll-spv custom property'si olarak
+   *                          root'a yazilir; kart genisligini h-scroll.css
+   *                          ondan turetir (Swiper "auto" o genisligi okur).
    *   data-hscroll-priority  ScrollTrigger refreshPriority — set per page
    *                          position (see PROJECT.md table) (default 1)
    *
@@ -224,6 +233,7 @@
        * style read — no paint happens in between.
        */
       function measure() {
+        applySpv();
         root.classList.remove("is-swiper");
         var cs = getComputedStyle(track);
         var m = {
@@ -232,6 +242,18 @@
         };
         root.classList.add("is-swiper");
         return m;
+      }
+
+      /**
+       * Kaç kart görünsün — kart genişliğini CSS bundan türetir
+       * (.hscroll__card { width: calc(100% / var(--hscroll-spv)) }), Swiper
+       * "auto" da o genişliği okur. Film şeridinde genişlik görselin doğal
+       * oranından geliyordu: yatay bir foto telefonda ekrandan taşıyordu.
+       * CSS'te de varsayılanı var, bu yalnız attribute'ları devreye sokar.
+       */
+      function applySpv() {
+        root.style.setProperty("--hscroll-spv",
+          String(global.innerWidth < bpM ? spvM : spvT));
       }
 
       var m = measure();                                  // ends with .is-swiper set
@@ -270,6 +292,7 @@
       // and hand the untouched DOM back to the pin setup below.
       return function () {
         sw.destroy(true, true);                           // true,true → inline styles cleaned
+        root.style.removeProperty("--hscroll-spv");       // masaüstü film şeridine karışma
         root.classList.remove("is-swiper");
         viewport.classList.remove("swiper");
         track.classList.remove("swiper-wrapper");

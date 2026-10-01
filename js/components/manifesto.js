@@ -1,5 +1,5 @@
 /*!
- * manifesto.js v1.3.0
+ * manifesto.js v1.4.0
  * "Experience Manifesto" — pinli, scrub'lı üç vuruşluk sinematik bölüm.
  * Split düzenli bir section'dan (etiket + intro metni solda, medya sağda)
  * marka anına dönüşür:
@@ -40,6 +40,13 @@
  *   data-mf-priority   ScrollTrigger refreshPriority          (default 8 —
  *                      PROJECT.md tablosuna kayıtlı; hero=10'un altında;
  *                      sayfa haritası markup'tan okunsun diye açıkça ver)
+ *   data-mf-bp         sinematik modun eşiği, px              (default 992 —
+ *                      ALTINDA pin/sahne HİÇ kurulmaz, statik akış kalır)
+ *
+ * TABLET VE ALTI (<data-mf-bp): 300% viewport'luk pin + merkeze uçan iki
+ * metin katmanı dar ekranda hem okunmaz hem de scroll'u yutuyor. O
+ * genişliklerde .is-cinema hiç basılmaz → split düzen + manifesto metni +
+ * CTA normal akışta durur (aşağıdaki statik fallback'in ta kendisi).
  *
  * Sinematik mod yalnız JS aktifken kurulur (.is-cinema class'ı JS basar):
  * manifesto katmanı o zaman merkezde absolute konumlanır. JS/GSAP yokken ya
@@ -110,8 +117,6 @@
       overlay.setAttribute("aria-hidden", "true");
       media.appendChild(overlay);
     }
-
-    root.classList.add("is-cinema");
 
     /* Immerse rengi: koyu görsel intro'nun altına girdiğinde metin bu renge
        döner (scrub'la geri sarılabilir tween). data-mf-immerse="false" kapatır;
@@ -265,13 +270,34 @@
       }
     }
 
-    build();
+    /* ── Sinematik mod eşiği ──
+       ALTINDA pin/sahne HİÇ kurulmaz: 300% viewport'luk pin dar ekranda
+       scroll'u yutuyor, merkeze uçan iki metin katmanı da okunmuyor.
+       .is-cinema basılmadığı için CSS zaten statik akışa düşüyor — bu
+       modülün baştan beri taşıdığı no-JS fallback'in ta kendisi.
+
+       gsap.matchMedia BİLEREK: tablet döndürülünce eşik geçişinde kurulumu
+       kendisi söküp yeniden kuruyor. Elle if yazsaydık döndürmede pin
+       asılı kalırdı. Eşik: data-mf-bp="992" */
+    var BP = attrNum(root, "data-mf-bp", 992);
+    var mm = gsap.matchMedia();
+    mm.add("(min-width: " + BP + "px)", function () {
+      root.classList.add("is-cinema");
+      build();
+      return function () {
+        teardown();
+        root.classList.remove("is-cinema");
+      };
+    });
 
     // Genişlik değişiminde satır kırılımları ve ölçüler bayatlıyor —
     // debounce ile komple yeniden kur (yükseklik değişimi — mobil URL bar —
     // rebuild tetiklemez; ScrollTrigger kendi refresh'iyle idare eder).
     var lastW = global.innerWidth, rTimer;
     function onResize() {
+      /* Sinema kurulu değilse (eşik altı) rebuild YOK: teardown+build pin'i
+         dar ekranda geri getirirdi. Eşik geçişini matchMedia yönetiyor. */
+      if (!root.classList.contains("is-cinema")) { lastW = global.innerWidth; return; }
       if (global.innerWidth === lastW) return;
       clearTimeout(rTimer);
       rTimer = setTimeout(function () {
@@ -287,6 +313,7 @@
       destroy: function () {
         clearTimeout(rTimer);
         global.removeEventListener("resize", onResize);
+        mm.revert();   // eşik kurulumunu (pin + sahne) tamamen söker
       },
     };
   }
