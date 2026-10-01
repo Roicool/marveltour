@@ -1,9 +1,5 @@
 /*!
- * hero-frame.js v1.2.0
- * v1.2.0: TABLET VE ALTI (<992px, data-hf-bp) pin/kadraj açılışı HİÇ
- *         kurulmaz — hero açılışın vardığı KAPAK hâlini statik gösterir
- *         (tam ekran görsel + scrim + açık mürekkep başlık; hero-frame.css).
- *         Başlık girişi her genişlikte oynar.
+ * hero-frame.js v1.1.0
  * v1.1.0: [data-hf-fade] kağıt eriyiği (görsel alta doğru zemine erir —
  *         taşan başlık HER görselde okunur; kapağa açılırken söner, yerini
  *         koyu scrim alır) + data-hf-parallax iç drift (pinli sahnede preset
@@ -42,9 +38,6 @@
  *   data-hf-distance   pin mesafesi, %vh                    (default 120)
  *   data-hf-ink        kapakta başlığın alacağı renk        (default #f7f5f0)
  *   data-hf-parallax   görsel iç drift dozu, yPercent       (default 5; 0 kapatır)
- *   data-hf-bp         sinematik modun eşiği, px            (default 992 —
- *                      altında statik kapak; değiştirirsen hero-frame.css'teki
- *                      max-width: 991px'i de değiştir)
  *   data-hf-priority   ScrollTrigger refreshPriority        (default 10 —
  *                      sayfanın EN ÜSTÜ varsayılır; hero başka konumdaysa
  *                      tabloya göre AÇIKÇA ver)
@@ -106,41 +99,7 @@
     var distance = attrNum(root, "data-hf-distance", 120);
     var priority = attrNum(root, "data-hf-priority", 10);
     var ink = root.getAttribute("data-hf-ink") || "#f7f5f0";
-    var img = media.querySelector("img, video");
 
-    // İçerik girişi — bir kez, scroll'suz, HER genişlikte (LCP'ye dokunmaz:
-    // görsel gizlenmez)
-    if (title) {
-      gsap.from(title, { autoAlpha: 0, y: 24, duration: 0.8, ease: "power3.out", delay: 0.15 });
-    }
-
-    /* ── Tablet ve altı: pin/kadraj açılışı HİÇ kurulmaz ──
-       Dar ekranda kadraj zaten ekranın çoğunu kaplıyor — 120% viewport'luk
-       pin küçük bir büyüme için scroll yutar, mobil adres çubuğu her
-       oynadığında da yeniden ölçüm tetikler. Bu genişliklerde hero, açılışın
-       VARDIĞI hâli statik gösterir: tam ekran kapak (hero-frame.css,
-       max-width: 991px — eşiği değiştirirsen oradaki media query'yi de değiştir).
-
-       gsap.matchMedia BİLEREK: tablet döndürülünce eşik geçişinde kurulumu
-       kendisi söküp yeniden kuruyor. Eşik: data-hf-bp="992" */
-    var BP = attrNum(root, "data-hf-bp", 992);
-    var mm = gsap.matchMedia();
-    mm.add("(min-width: " + BP + "px)", function () {
-      var touched = buildCinema();
-      /* matchMedia tween'leri geri alıyor ama scrub timeline'ının ilk
-         boyamada yazdığı inline değerler (radius 12px, başlık rengi…)
-         kalıyordu — döndürmede kapak köşeli, başlık koyu kalırdı. */
-      return function () {
-        root.classList.remove("is-cinema");
-        touched.forEach(function (pair) {
-          if (pair[0]) gsap.set(pair[0], { clearProps: pair[1] });
-        });
-      };
-    });
-
-    return { root: root, destroy: function () { mm.revert(); } };
-
-    function buildCinema() {
     root.classList.add("is-cinema");
 
     // Katmanlar — markup'ta yoksa JS ekler (media'nın çocuğu: transform'unu
@@ -159,6 +118,8 @@
     }
     var fade = layer("data-hf-fade");
     var scrim = layer("data-hf-scrim");
+
+    var img = media.querySelector("img, video");
 
     // Kadrajın başlangıç radius'u Designer'dan okunur — kapakta 0'a düzleşir
     var radius0 = parseFloat(global.getComputedStyle(media).borderRadius) || 0;
@@ -184,6 +145,11 @@
       cover.scale = Math.max(s.width / m.width, s.height / m.height);
       cover.x = (s.left + s.width / 2) - (m.left + m.width / 2);
       cover.y = (s.top + s.height / 2) - (m.top + m.height / 2);
+    }
+
+    // İçerik girişi — bir kez, scroll'suz (LCP'ye dokunmaz: görsel gizlenmez)
+    if (title) {
+      gsap.from(title, { autoAlpha: 0, y: 24, duration: 0.8, ease: "power3.out", delay: 0.15 });
     }
 
     // İç hareket: Ken Burns oturması + scroll drifti (parallax dili).
@@ -250,14 +216,7 @@
       }, 0.34);
     }
 
-    // Eşik altına inince temizlenecek inline değerler
-    return [
-      [media, "transform,transformOrigin,borderRadius"],
-      [img, "transform"],
-      [[fade, scrim], "opacity,visibility"],
-      [inkTargets.length ? inkTargets : null, "color"],
-    ];
-    } // buildCinema
+    return { root: root, destroy: function () {} };
   }
 
   /**

@@ -1,11 +1,10 @@
 /*!
- * hero-frame.css v1.2.0
+ * hero-frame.css v1.1.0
  * Behavioural CSS for js/components/hero-frame.js — kadraj hero'sunun
  * iskeleti. Kadrajın boyutu/oranı/radius'u, tipografi ve renkler Webflow
  * Designer + RC token'larında.
  * v1.1.0: [data-hf-fade] kağıt eriyiği katmanı (taşan başlık her görselde
  * okunur) + katman z sırası.
- * v1.2.0: ≤991px statik kapak (JS pin kurmuyor — bkz. hero-frame.js).
  */
 
 [data-hero-frame] {
@@ -72,100 +71,4 @@
 [data-hero-frame].is-cinema [data-hf-title] {
   position: relative;
   z-index: 2;
-}
-
-/* ── Tablet ve altı: statik KAPAK (v1.2.0) ──────────────────────────
-   JS bu genişliklerde pin kurmuyor (data-hf-bp, default 992 — eşiği
-   değiştirirsen buradaki 991px'i de değiştir). Hero, masaüstü açılışının
-   VARDIĞI hâli gösterir: görsel section'ı tam doldurur, scrim yükselir,
-   başlık açık mürekkeple altta durur. JS'siz / reduced-motion'da da aynı.
-
-   Seçiciler bilerek ÇİFT attribute ([data-hero-frame][data-hero-frame]):
-   sayfa embed'indeki .section_destination-hero / .destination-hero_*
-   kuralları bu dosyadan SONRA yükleniyor; tek attribute aynı specificity'de
-   onlara yenilirdi (justify-content: center, negatif margin-top…).
-
-   AYARLAR — section'a inline: style="--hf-m-h: 88svh"
-     --hf-m-h      kapak yüksekliği          (default 100svh)
-     --hf-m-ink    başlık rengi              (default #f7f5f0 — data-hf-ink ile aynı)
-     --hf-m-pad    alt boşluk                (default spacing--8 / 3rem)  */
-@media (max-width: 991px) {
-  [data-hero-frame][data-hero-frame] {
-    isolation: isolate;            /* görsel z:-1 section zemininin ÜSTÜNDE kalır */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    min-height: var(--hf-m-h, 100svh);
-    padding-bottom: calc(var(--hf-m-pad, var(--spacing--8, 3rem)) + env(safe-area-inset-bottom, 0px));
-    overflow: clip;
-  }
-
-  /* Görselin konumu SECTION'a göre: aradaki container/wrapper'lar
-     position verirse inset: 0 onların kutusuna otururdu. */
-  [data-hero-frame][data-hero-frame] :has([data-hf-media]) {
-    position: static;
-  }
-
-  [data-hero-frame][data-hero-frame] [data-hf-media] {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    width: auto;
-    height: auto;
-    max-width: none;
-    aspect-ratio: auto;
-    margin: 0;
-    border-radius: 0;
-  }
-
-  /* Wrapper olsa da olmasa da görsel kutuyu doldurur */
-  [data-hero-frame][data-hero-frame] [data-hf-media] :is(img, video) {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Kapak karanlığı — CSS'ten (JS katmanlarına bağlı değil). Üstte hafif
-     bir koyuluk da var: şeffaf navbar fotoğrafın açık yerinde kaybolmasın. */
-  [data-hero-frame][data-hero-frame] [data-hf-media]::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-      linear-gradient(
-        to top,
-        color-mix(in oklab, var(--neutral--950, #0a0a0a) 78%, transparent),
-        color-mix(in oklab, var(--neutral--950, #0a0a0a) 32%, transparent) 42%,
-        transparent 70%
-      ),
-      linear-gradient(
-        to bottom,
-        color-mix(in oklab, var(--neutral--950, #0a0a0a) 35%, transparent),
-        transparent 22%
-      );
-  }
-
-  /* Masaüstünden dönülünce JS'in eklediği katmanlar DOM'da kalıyor —
-     kağıt eriyiği kapakta yanlış olur, scrim'i ::after veriyor. */
-  [data-hero-frame][data-hero-frame] :is([data-hf-fade], [data-hf-scrim]) {
-    display: none;
-  }
-
-  [data-hero-frame][data-hero-frame] [data-hf-title] {
-    position: relative;
-    z-index: 1;
-    margin-top: 0;
-    color: var(--hf-m-ink, #f7f5f0);
-  }
-
-  [data-hero-frame][data-hero-frame] [data-hf-title] * {
-    color: inherit;
-  }
-
-  [data-hero-frame][data-hero-frame] [data-hf-title] p {
-    opacity: 0.86;
-  }
 }
