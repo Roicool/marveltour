@@ -511,6 +511,13 @@ parmağı takip eder. Ortadaki görsele tık → tam ekran lightbox; yandakine t
 → önce ortaya gelir. Lightbox'ta gezip kapatınca slider kaldığın görsele
 geçer.
 
+**Sonsuz döngü + otomatik kayma (v1.1.0):** ilk karede solda da görsel var,
+iki yöne sonsuz döner. Bölüm ekrana girince 6 saniyede bir kendi kayar;
+ilk geçiş tam süre sonra (ilk kare görülsün). **Durduğu durumlar:** ekran
+dışındayken, fare üstündeyken, klavye odağı slider'dayken, lightbox
+açıkken, sekme arkadayken ve ziyaretçi "hareketi azalt" tercihindeyken
+(o zaman hiç kendi kaymaz).
+
 **Kurulum — tek attribute.** Head'deki script + CSS yeter, footer'a
 dokunmaya gerek yok (modül kendi kurulur):
 
@@ -532,8 +539,14 @@ Collection List Wrapper   data-lightbox  data-lightbox-layout="slider"
 | `--gs-side-dim` | 0.38 | yandakilerin opaklığı |
 | `--gs-radius` | `--radius--lg` | köşe |
 
-Attribute'lar: `data-gs-speed="700"` (ms), `data-gs-rewind="false"` (uçlarda
-dur; varsayılan sonda başa sarar).
+Attribute'lar:
+
+| Attribute | Varsayılan | Ne |
+|---|---|---|
+| `data-gs-autoplay` | `6000` | ms; `"false"` kapatır |
+| `data-gs-loop` | açık | `"false"` → sonsuz döngü kapalı (sonda başa sarar) |
+| `data-gs-rewind` | açık | loop kapalıyken `"false"` → uçlarda durur |
+| `data-gs-speed` | `700` | geçiş süresi, ms |
 
 **Kendi kontrollerin:** Wrapper'ın ebeveynine `[data-gs-prev]`,
 `[data-gs-next]`, `[data-gs-current]`, `[data-gs-total]` koyarsan varsayılan
@@ -541,8 +554,17 @@ bar kurulmaz, seninkiler kullanılır — Designer'da istediğin gibi stillersin
 Aynı ebeveynde birden çok slider varsa her birini `[data-gs-scope]` ile sar.
 
 **Bilerek yapılanlar:**
-- `loop` yok, `rewind` var — loop slide'ları kopyalıyor, lightbox "12 / 24"
-  derdi.
+- Swiper 11'in loop'u slide'ları kopyalamıyor, **DOM'da yeniden diziyor**
+  (5 görselde sıra 3,4,0,1,2 oluyor). Lightbox v1.4.0 gerçek sırayı
+  `data-swiper-slide-index`'ten okuyor — numaralar ve ←/→ sırası kaymıyor.
+- **4'ten az görselde** Swiper sol tarafı dolduramıyor (3'te ilk karede sol
+  boş kalıyor, 2'de loop kapanıyor — 390–2200px ölçüldü); set kopyalanıyor.
+  Kopyalar lightbox'a girmez; ortadaki kopyaya tık (ya da Enter) asıl
+  görseli açar.
+- Klavyede **yalnız ortadaki görsel Tab durağı**; diğerlerine ←/→ ve oklarla
+  (Tab sırası loop'un döndürdüğü DOM'da karışıyordu).
+- Autoplay yalnız **klavye** odağında durur: fareyle oka tıklamak ya da
+  lightbox'ı fareyle kapatmak kaymayı durdurmaz.
 - Mobilde komşu ~27px görünür; küçülme merkeze doğru (kendi
   ortasından küçülseydi komşu ekranın dışına düşüyordu).
 - Swiper gelmeden önce CSS aynı yerleşimi native scroll-snap ile kuruyor —

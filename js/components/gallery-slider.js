@@ -1,5 +1,10 @@
 /*!
- * gallery-slider.js v1.0.0
+ * gallery-slider.js v1.1.0
+ * v1.1.0: SONSUZ DÖNGÜ + AUTOPLAY. İlk karede solda da görsel var; 6 sn'de
+ *         bir kendi kayar, yalnız GÖRÜNÜRKEN (fare üstündeyken, odak
+ *         içerideyken, lightbox açıkken ve hareket azaltma tercihinde durur).
+ *         4'ten az görselde set kopyalanır (loop'un iki yanı doldurabilmesi
+ *         için); kopyalar lightbox'a girmez.
  * Lightbox galerisinin SAYFA İÇİ Swiper sürümü — merkez odaklı slider.
  *   - Aktif görsel ortada ve tam boy; komşular küçülmüş ve soluk. Ölçek ve
  *     solukluk SÜRÜKLEMEYE BAĞLI (slide.progress): parmağı takip eder,
@@ -17,15 +22,19 @@
  * sokmak o sözü bozardı; bu modül lightbox'la yalnız DOM + event üzerinden
  * konuşur (marveltour:lightbox-close).
  *
- * İKİ TUZAK, KAPALI:
- *   - loop YOK, rewind VAR: Swiper'ın loop'u slide'ları kopyalıyor; lightbox
- *     kopyaları ayrı görsel sayıp "12 / 24" derdi. rewind sonda başa sarar,
- *     kopya üretmez.
+ * TUZAKLAR, KAPALI:
+ *   - Swiper 11 loop'u slide'ları KOPYALAMIYOR, DOM'da yeniden diziyor
+ *     (ölçüldü: 5 görselde DOM sırası 3,4,0,1,2). Lightbox v1.4.0 gerçek
+ *     sırayı data-swiper-slide-index'ten okuyor — numaralar kaymıyor.
+ *   - 4'ten az görselde Swiper solu dolduramıyor; set kopyalanır. Kopyanın
+ *     tıkı asıl görsele yönlendirilir, lightbox kopyayı hiç görmez.
  *   - Sürükleme bitince gelen tık lightbox'ı AÇMAZ: Swiper preventClicks ile
  *     tıkı preventDefault'lar, lightbox defaultPrevented'a bakıyor.
  *   - Swiper keyboard modülü KAPALI: açık lightbox'ın ←/→'sıyla çakışıp
  *     arkadaki slider'ı da kaydırıyordu. Klavye yalnız odak slider'ın
- *     içindeyken çalışır.
+ *     içindeyken çalışır; YALNIZ ortadaki görsel Tab durağıdır.
+ *   - Autoplay yalnız KLAVYE odağında durur (son girdi türü izlenir —
+ *     :focus-visible lightbox'ın programatik odağını ayıramıyordu).
  *
  * CLS YOK: Swiper gelmeden önce CSS aynı yerleşimi native scroll-snap ile
  * kuruyor (ilk görsel ortada). Swiper kurulunca birebir aynı konumdan
@@ -40,8 +49,11 @@
  *   (lightbox'la aynı kural).
  *
  * Root attribute'ları (hepsi opsiyonel):
+ *   data-gs-autoplay ms ya da "false"                 (default 6000)
+ *   data-gs-loop     "false" → sonsuz döngü kapalı    (default: açık)
  *   data-gs-speed    geçiş süresi, ms                 (default 700)
- *   data-gs-rewind   "false" → uçlarda durur          (default: başa sarar)
+ *   data-gs-rewind   loop kapalıyken: "false" → uçlarda durur
+ *                                                     (default: başa sarar)
  *
  * KENDİ KONTROLLERİN (opsiyonel): Root'un ebeveyninde (ya da en yakın
  * [data-gs-scope] içinde) şunlar varsa onlar kullanılır, varsayılan bar
@@ -63,7 +75,10 @@
 
   var SKIP = ".w-condition-invisible, .w-dyn-empty, .swiper-slide-duplicate, [data-lightbox-ignore]";
   var ROOTS = '[data-lightbox][data-lightbox-layout="slider"]';
-  var PRELOAD = 2; // aktifin iki yanında kaç görsel önden yüklensin
+  var PRELOAD = 2;        // aktifin iki yanında kaç görsel önden yüklensin
+  var MIN_LOOP = 4;       // loop'un iki yanı da doldurduğu en az slide (ölçüldü)
+  var AUTO_VISIBLE = 0.35;// autoplay için bölümün ne kadarı görünür olmalı
+  var FOCUSABLE = "a[href], button, input, select, textarea, [tabindex]";
 
   var LABELS = {
     prev: "Previous image",
@@ -77,6 +92,13 @@
   };
 
   var instances = [];
+
+  /* Son girdi türü — autoplay yalnız KLAVYE odağında durur (bkz. setup). */
+  var lastInput = "pointer";
+  doc.addEventListener("pointerdown", function () { lastInput = "pointer"; }, true);
+  doc.addEventListener("keydown", function (e) {
+    if (!e.altKey && !e.ctrlKey && !e.metaKey) lastInput = "keyboard";
+  }, true);
 
   function pad(n) { return (n < 10 ? "0" : "") + n; }
 
@@ -181,6 +203,31 @@
     };
   }
 
+  /** Kopya slide'ı lightbox'tan, odaktan ve ekran okuyucudan çıkarır. */
+  function stripClone(k) {
+    k.classList.add("swiper-slide-duplicate", "mt-gs__clone");
+    k.setAttribute("data-lightbox-ignore", "");
+    k.setAttribute("aria-hidden", "true");
+    /* inert DEĞİL: inert kopyayı tıklanamaz yapıyor, yandaki kopyaya tık
+       ortaya getirmiyordu. Yalnız odak sırasından çıkarılır. */
+    var all = [k].concat(Array.prototype.slice.call(k.querySelectorAll("*")));
+    all.forEach(function (el) {
+      ["role", "data-lb-key", "aria-haspopup", "aria-label", "id"].forEach(function (a) {
+        el.removeAttribute(a);
+      });
+      el.classList.remove("mt-lb-trigger");
+      if (el.matches("a[href], button, input, select, textarea, [tabindex]")) el.setAttribute("tabindex", "-1");
+      else el.removeAttribute("tabindex");
+      if (el.tagName === "IMG") el.setAttribute("loading", "eager"); // aynı URL, cache'ten
+    });
+  }
+
+  /** Bir hücrenin lightbox item'ı: explicit [data-lightbox-item] ya da ilk img. */
+  function itemIn(cell) {
+    if (cell.matches("[data-lightbox-item], img")) return cell;
+    return cell.querySelector("[data-lightbox-item]") || cell.querySelector("img");
+  }
+
   /** --gs-gap'i px'e çözer (rem/clamp olabilir; Swiper yalnız px anlar). */
   function gapPx(root) {
     var probe = doc.createElement("div");
@@ -234,20 +281,50 @@
     track.classList.add("swiper-wrapper");
     cells.forEach(function (c) { c.classList.add("swiper-slide"); });
 
-    var ctrl = customControls(root);
-    var built = null;
-    if (!ctrl) { built = buildBar(root); ctrl = built; }
-    else root.classList.add("mt-gs--custom-controls");
-
+    var N = cells.length;                 // GERÇEK görsel sayısı (kopyalar hariç)
     var reduce = prefersReduced();
     var speed = parseInt(root.getAttribute("data-gs-speed"), 10);
     if (isNaN(speed) || speed < 0) speed = 700;
-    var rewind = flag(root.getAttribute("data-gs-rewind"), true);
+    var loop = flag(root.getAttribute("data-gs-loop"), true);
+    var rewind = !loop && flag(root.getAttribute("data-gs-rewind"), true);
+    var autoMs = parseInt(root.getAttribute("data-gs-autoplay"), 10);
+    if (root.getAttribute("data-gs-autoplay") === "false") autoMs = 0;
+    if (isNaN(autoMs)) autoMs = 6000;
+    var canAuto = autoMs > 0 && !reduce;  // hareket azaltma tercihinde ASLA kendi kaymaz
+
+    /* Loop için en az MIN_LOOP slide gerekiyor: daha azında Swiper solu
+       dolduramıyor (3 görselde ilk karede sol boş kalıyordu, 2'de loop'u
+       kapatıp uyarı veriyordu — Chromium'da 390–2200px ölçüldü). Az görselde
+       set kopyalanır. Kopyalar lightbox'a GİRMEZ (data-lightbox-ignore +
+       .swiper-slide-duplicate), odak almaz, ekran okuyucuya kapalı. */
+    var clones = [];
+    var copies = loop ? Math.ceil(MIN_LOOP / N) - 1 : 0;   // 2 → 1 kopya (4), 3 → 1 kopya (6), 4+ → 0
+    for (var set = 0; set < copies; set++) {
+      cells.forEach(function (c) {
+        var k = c.cloneNode(true);
+        stripClone(k);
+        k._gsOrigin = c;
+        track.appendChild(k);
+        clones.push(k);
+      });
+    }
+
+    var ctrl = customControls(root);
+    if (!ctrl) ctrl = buildBar(root);
+    else root.classList.add("mt-gs--custom-controls");
+
+    /* Gerçek sıra: loop DOM'u yeniden diziyor, kopyalar N'in katı ekliyor →
+       realIndex % N. */
+    function realOf(s) { return ((s.realIndex % N) + N) % N; }
+    function slideIndexOf(slide) {
+      var k = parseInt(slide.getAttribute("data-swiper-slide-index"), 10);
+      return isNaN(k) ? sw.slides.indexOf(slide) : k;
+    }
 
     function paintCounter(s) {
-      if (ctrl.current) ctrl.current.textContent = pad(s.activeIndex + 1);
-      if (ctrl.total) ctrl.total.textContent = pad(cells.length);
-      if (!rewind) {
+      if (ctrl.current) ctrl.current.textContent = pad(realOf(s) + 1);
+      if (ctrl.total) ctrl.total.textContent = pad(N);
+      if (!loop && !rewind) {
         if (ctrl.prev) ctrl.prev.setAttribute("aria-disabled", s.isBeginning ? "true" : "false");
         if (ctrl.next) ctrl.next.setAttribute("aria-disabled", s.isEnd ? "true" : "false");
       }
@@ -266,8 +343,52 @@
       for (var i = 0; i < s.slides.length; i++) {
         var raw = s.slides[i].progress || 0;
         var p = Math.min(Math.abs(raw), 1);
+        if (p < 0.002) p = 0;               // loop'ta alt-piksel yuvarlama ortadakini 0.9999'da bırakıyordu
         s.slides[i].style.setProperty("--gs-p", p.toFixed(4));
         s.slides[i].style.setProperty("--gs-ox", raw < 0 ? "0%" : raw > 0 ? "100%" : "50%");
+      }
+    }
+
+    var followFocus = false;              // ←/→ ile gezilirken odak ortadakini izlesin
+
+    /* YALNIZ ORTADAKİ GÖRSEL TAB DURAĞI (WAI-ARIA carousel kalıbı). Loop
+       DOM'u döndürdüğü için Tab sırası karışıyordu (Kaş → Mardin → Kapadokya
+       → …), Swiper'ın odak işleyicisi de kısmen görünen komşuyu "zaten
+       görünür" sayıp ortaya getirmiyordu. Diğer görsellere ←/→ ve oklarla.
+       Aktif slide CLASS'ına değil activeIndex'e bakılır: slideChange sınıflar
+       güncellenmeden önce tetikleniyor. */
+    function syncTabStops(s) {
+      var activeSlide = s.slides[s.activeIndex];
+      for (var i = 0; i < s.slides.length; i++) {
+        var sl = s.slides[i], on = sl === activeSlide;
+        var nodes = Array.prototype.slice.call(sl.querySelectorAll(FOCUSABLE));
+        if (sl.matches(FOCUSABLE)) nodes.push(sl);
+        nodes.forEach(function (el) { el.setAttribute("tabindex", on ? "0" : "-1"); });
+        if (sl._gsOrigin) {
+          /* Ortaya gelen KOPYA klavyeyle de açılabilsin: lightbox'ın
+             Enter/Space yolu ([data-lb-key] → click) kopya tıkını asıl
+             görsele yönlendiren handler'a düşer. */
+          var it = itemIn(sl), orig = itemIn(sl._gsOrigin);
+          if (on) {
+            sl.removeAttribute("aria-hidden");
+            if (it) {
+              it.setAttribute("tabindex", "0");
+              it.setAttribute("role", "button");
+              it.setAttribute("data-lb-key", "");
+              var lbl = orig && (orig.getAttribute("aria-label") || orig.getAttribute("alt"));
+              if (lbl) it.setAttribute("aria-label", lbl);
+            }
+          } else {
+            sl.setAttribute("aria-hidden", "true");
+            if (it) { it.setAttribute("tabindex", "-1"); it.removeAttribute("data-lb-key"); }
+          }
+        }
+      }
+      /* ←/→ ile gezilirken odak bir görseldeyse yeni ortadakine geçer */
+      var a = doc.activeElement;
+      if (followFocus && a && a.closest && a.closest(".mt-gs__slide") && activeSlide && !activeSlide.contains(a)) {
+        var t = activeSlide.querySelector('[tabindex="0"]') || (activeSlide.matches(FOCUSABLE) ? activeSlide : null);
+        if (t) { try { t.focus({ preventScroll: true }); } catch (err) { t.focus(); } }
       }
     }
 
@@ -276,8 +397,9 @@
       centeredSlides: true,
       spaceBetween: gapPx(root),
       speed: reduce ? 0 : speed,
+      loop: loop,                  // v11 loop kopyalamaz, DOM'u dizer — lightbox
+                                   // data-swiper-slide-index ile gerçek sırayı okur
       rewind: rewind,
-      loop: false,                 // BİLEREK — bkz. dosya başlığı
       keyboard: { enabled: false },// BİLEREK — lightbox ←/→ ile çakışıyordu
       grabCursor: true,
       watchSlidesProgress: true,
@@ -289,14 +411,23 @@
          mobil 65px. */
       longSwipesRatio: 0.2,
       resistanceRatio: 0.6,
+      /* Kullanıcı dokunsa da durmaz (sayaç sıfırlanır); fare üstündeyken
+         bekler. Görünürlük / odak / lightbox kapısı aşağıda. */
+      autoplay: canAuto ? { delay: autoMs, disableOnInteraction: false, pauseOnMouseEnter: true } : false,
       a11y: { enabled: true, containerMessage: LABELS.region },
       on: {
-        init: function (s) { paintCounter(s); paintProgress(s); preloadAround(cells, s.activeIndex); },
+        init: function (s) { paintCounter(s); paintProgress(s); preloadAround(cells, realOf(s)); syncTabStops(s); },
         progress: paintProgress,
         setTransition: function (s, d) {
           for (var i = 0; i < s.slides.length; i++) s.slides[i].style.transitionDuration = d + "ms";
         },
-        slideChange: function (s) { paintCounter(s); preloadAround(cells, s.activeIndex); },
+        slideChange: function (s) { paintCounter(s); preloadAround(cells, realOf(s)); syncTabStops(s); },
+        /* Loop DOM'u yeniden dizdikten sonra Tab durağını tazele. (Loop,
+           odaklı düğümü taşıyınca odak kayboluyordu; kök sebep ortada olmayan
+           görselin Tab ile odak alıp kaymayı tetiklemesiydi — yalnız
+           ortadakinin Tab durağı olmasıyla ortadan kalktı, Chromium'da
+           doğrulandı.) */
+        loopFix: syncTabStops,
         resize: function (s) {
           // Boşluk token'ı fluid olabilir (clamp/rem) — px'i her resize'da tazele
           s.params.spaceBetween = s.originalParams.spaceBetween = gapPx(root);
@@ -304,6 +435,12 @@
         },
       },
     });
+
+    /* Swiper a11y slide etiketini kopyalarla birlikte sayıyor ("1 / 6");
+       gerçek görsel sayısıyla düzelt. */
+    if (clones.length) {
+      cells.forEach(function (c, i) { c.setAttribute("aria-label", (i + 1) + " / " + N); });
+    }
 
     function go(delta) {
       if (delta > 0) sw.slideNext(); else sw.slidePrev();
@@ -313,18 +450,34 @@
     if (ctrl.prev) ctrl.prev.addEventListener("click", onPrev);
     if (ctrl.next) ctrl.next.addEventListener("click", onNext);
 
-    /* Yandaki görsele tık: önce ORTAYA gelsin, lightbox açılmasın. Capture'da
-       ve Swiper'ın kendi click handler'ından SONRA kayıtlı — o sürükleme
-       sonu tıkı zaten defaultPrevented yapmış oluyor. */
+    /* Tık yönlendirmesi. Capture'da ve Swiper'ın kendi click handler'ından
+       SONRA kayıtlı — o, sürükleme sonu tıkı zaten defaultPrevented yapıyor.
+         - yandaki görsel → ortaya gelsin, lightbox açılmasın
+         - ortadaki KOPYA → lightbox kopyayı tanımaz; tık asıl görsele
+           yönlendirilir (lightbox'ın kendi yolundan açılır: doğru grup,
+           doğru sıra, doğru odak iadesi) */
+    var forwarding = false;
     function onClickCapture(e) {
-      if (e.defaultPrevented) return;
+      if (forwarding || e.defaultPrevented) return;
       var slide = e.target.closest && e.target.closest(".mt-gs__slide");
       if (!slide || slide.parentNode !== track) return;
-      var i = cells.indexOf(slide);
-      if (i < 0 || i === sw.activeIndex) return;   // ortadaki → lightbox'a bırak
-      e.preventDefault();
-      e.stopPropagation();
-      sw.slideTo(i);
+      if (!slide.classList.contains("swiper-slide-active")) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (loop) sw.slideToLoop(slideIndexOf(slide));
+        else sw.slideTo(sw.slides.indexOf(slide));
+        return;
+      }
+      if (slide._gsOrigin) {
+        e.preventDefault();
+        e.stopPropagation();
+        var target = itemIn(slide._gsOrigin);
+        if (!target) return;
+        forwarding = true;
+        try {
+          target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+        } finally { forwarding = false; }
+      }
     }
     host.addEventListener("click", onClickCapture, true);
 
@@ -332,20 +485,65 @@
        dialog'da olduğu için çakışma yok). */
     function onKey(e) {
       if (e.altKey || e.ctrlKey || e.metaKey) return;
-      if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
-      else if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+      var d = e.key === "ArrowLeft" ? -1 : e.key === "ArrowRight" ? 1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      followFocus = true;
+      try { go(d); } finally { followFocus = false; }
     }
     root.addEventListener("keydown", onKey);
+
+    /* ── Autoplay kapısı: yalnız GÖRÜNÜRKEN, odak içeride değilken ve
+       lightbox kapalıyken kayar. Görünür olunca ilk geçiş TAM bir süre
+       sonra (kullanıcı ilk kareyi görsün). Sekme arkadayken Swiper zaten
+       duruyor. */
+    var inView = false, focusIn = false, lbOpen = false, io = null;
+    function gate() {
+      if (!canAuto || !sw.autoplay) return;
+      var want = inView && !focusIn && !lbOpen;
+      if (want && !sw.autoplay.running) sw.autoplay.start();
+      else if (!want && sw.autoplay.running) sw.autoplay.stop();
+    }
+    if (canAuto && sw.autoplay) {
+      sw.autoplay.stop();          // viewport'a girene kadar bekle
+      if (typeof global.IntersectionObserver === "function") {
+        io = new global.IntersectionObserver(function (entries) {
+          inView = entries[entries.length - 1].isIntersecting;
+          gate();
+        }, { threshold: AUTO_VISIBLE });
+        io.observe(host);
+      } else { inView = true; gate(); }
+    }
+    /* Yalnız KLAVYE odağı durdurur: klavyeyle gezenin altından içerik
+       kaymamalı. Fareyle oka tıklamak ya da lightbox'ın kapanışta odağı
+       görsele iade etmesi autoplay'i kalıcı durduruyordu. :focus-visible
+       bunu ayıramadı — lightbox odağı programatik verdiği için Chrome onu
+       klavye odağı sayıyor (Chromium'da ölçüldü). Son girdi türü izlenir. */
+    function onFocusIn() { focusIn = lastInput === "keyboard"; gate(); }
+    function onFocusOut(e) {
+      if (e.relatedTarget && root.contains(e.relatedTarget)) return;
+      focusIn = false; gate();
+    }
+    root.addEventListener("focusin", onFocusIn);
+    root.addEventListener("focusout", onFocusOut);
+    function onLightboxOpen() { lbOpen = true; gate(); }
 
     /* Lightbox kapanınca kaldığın görsele geç (animasyonsuz — overlay
        kapanırken arkada kayma görünmesin). */
     function onLightboxClose(e) {
+      lbOpen = false;
       var el = e.detail && e.detail.item;
-      if (!el || !root.contains(el)) return;
-      var slide = el.closest(".mt-gs__slide");
-      var i = cells.indexOf(slide);
-      if (i >= 0 && i !== sw.activeIndex) sw.slideTo(i, 0);
+      if (el && root.contains(el)) {
+        var slide = el.closest(".mt-gs__slide");
+        var i = cells.indexOf(slide);
+        if (i >= 0 && i !== realOf(sw)) {
+          if (loop) sw.slideToLoop(i, 0);
+          else sw.slideTo(sw.slides.indexOf(slide), 0);
+        }
+      }
+      gate();
     }
+    doc.addEventListener("marveltour:lightbox-open", onLightboxOpen);
     doc.addEventListener("marveltour:lightbox-close", onLightboxClose);
 
     root.classList.add("is-ready");
@@ -354,12 +552,17 @@
       root: root,
       swiper: sw,
       destroy: function () {
+        if (io) io.disconnect();
+        doc.removeEventListener("marveltour:lightbox-open", onLightboxOpen);
         doc.removeEventListener("marveltour:lightbox-close", onLightboxClose);
         host.removeEventListener("click", onClickCapture, true);
         root.removeEventListener("keydown", onKey);
+        root.removeEventListener("focusin", onFocusIn);
+        root.removeEventListener("focusout", onFocusOut);
         if (ctrl.prev) ctrl.prev.removeEventListener("click", onPrev);
         if (ctrl.next) ctrl.next.removeEventListener("click", onNext);
         try { sw.destroy(true, true); } catch (err) {}
+        clones.forEach(function (k) { if (k.parentNode) k.parentNode.removeChild(k); });
       },
     };
   }

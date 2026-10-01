@@ -1,5 +1,8 @@
 /*!
- * lightbox.js v1.3.0
+ * lightbox.js v1.4.0
+ * v1.4.0: Swiper loop desteği — loop DOM'u yeniden dizse de görseller
+ *         data-swiper-slide-index'e göre GERÇEK sırada toplanır. Açılışta
+ *         `marveltour:lightbox-open` yayılır (slider autoplay'i durur).
  * v1.3.0: kapanışta document'a `marveltour:lightbox-close` (detail: index,
  *         item) yayılır — gallery-slider kaldığın görsele geçer. Odak iadesi
  *         artık SON BAKILAN görsele (galeri görselinden açıldıysa).
@@ -77,6 +80,7 @@
  *   Marveltour.lightbox.open("grup-adi" | rootElement, index?)  index 0'dan
  *   Marveltour.lightbox.close() / .next() / .prev()
  * Event'ler (document):
+ *   marveltour:lightbox-open    detail: { index, item }  — açılan görsel
  *   marveltour:lightbox-close   detail: { index, item }  — item, son bakılan
  *                               görselin sayfadaki elemanı
  *
@@ -251,7 +255,25 @@
       var item = toItem(el, captions);
       if (item) out.push(item);
     }
-    return out;
+    return bySwiperIndex(out);
+  }
+
+  /* Swiper loop'u (v9+) slide'ları KOPYALAMIYOR, DOM'da yeniden diziyor:
+     ilk görsel sona, son görsel başa taşınabiliyor. Lightbox DOM sırasıyla
+     toplasaydı numaralar ve ←/→ sırası kayardı. Swiper her slide'a gerçek
+     sırasını data-swiper-slide-index olarak yazıyor — varsa ona göre diz
+     (kararlı: index'i olmayanlar yerinde kalır). */
+  function bySwiperIndex(items) {
+    var keyed = false;
+    var withKey = items.map(function (it, i) {
+      var host = it.el.closest("[data-swiper-slide-index]");
+      var k = host ? parseInt(host.getAttribute("data-swiper-slide-index"), 10) : NaN;
+      if (!isNaN(k)) keyed = true;
+      return { it: it, k: isNaN(k) ? i : k, i: i };
+    });
+    if (!keyed) return items;
+    withKey.sort(function (a, b) { return a.k - b.k || a.i - b.i; });
+    return withKey.map(function (w) { return w.it; });
   }
 
   /** Tıklanan root'un grubunu (aynı adlı tüm root'lar) toplar. */
@@ -470,6 +492,8 @@
 
     if (!state.open) {
       state.open = true;
+      /* Sayfa tarafı (gallery-slider autoplay vb.) arkada durabilsin */
+      emit("marveltour:lightbox-open", { index: index, item: group.items[index] ? group.items[index].el : null });
       state.returnFocus = trigger || doc.activeElement;
       lock();
       ui.root.classList.remove("is-closing");
