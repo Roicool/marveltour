@@ -134,8 +134,11 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
            /capabilities -> Hero Carousel, Video Hero (Capabilities Template)
          Diger sayfalarda code component YOK. Yeni sayfaya koyarsan listeye ekle.
          Bu gecici bir cozum: dogrusu bu dordunu vanilla js/ modulune cevirmek
-         (bkz. PROJECT.md Kural B1). */
-      preventPaths: ['/about-us', '/capabilities'],
+         (bkz. PROJECT.md Kural B1).
+         Contact: Webflow native form'u webflow.js YALNIZ tam sayfa yuklemede
+         baglar — Barba swap'inden sonra form gonderilmez. Bu yuzden contact
+         da tam yuklenir (/start-a-conversation'a tasinirsa o da listede). */
+      preventPaths: ['/about-us', '/capabilities', '/contact-us', '/start-a-conversation'],
       onEach: function (container) {
         /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
            eksik/hatali modulun adi konsola dusur. */
