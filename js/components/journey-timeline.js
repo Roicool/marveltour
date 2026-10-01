@@ -1,5 +1,5 @@
 /*!
- * journey-timeline.js v1.0.0
+ * journey-timeline.js v1.1.0
  * react/components/JourneyTimeline'ın vanilla portu. Code component'ler Barba
  * container swap'inde mount olmadığı için (PROJECT.md Kural B1) zaman çizelgesi
  * sayfa geçişlerinde ölüyordu; bu modül container-scoped ve yeniden
