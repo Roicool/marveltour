@@ -1,5 +1,10 @@
 /*!
- * h-scroll.css v1.4.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.5.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.5.0: SLIDER MODU ([data-hscroll-mode="slider"]) — masaüstünde de
+ *         Swiper: 100svh pin yüksekliği kalkar, kart genişliği spv'den
+ *         (default 3.2; data-hscroll-spv-d="auto" → film şeridi), kart
+ *         yüksekliği 60svh. JS'ten önce aynı ölçülerde scroll-snap fallback.
+ *         Oklar ([data-hscroll-prev/next]) yalnız Swiper sürerken görünür.
  * v1.4.0: TABLET/MOBİL kart genişliği — film şeridi (v1.3.0) genişliği
  *         görselin doğal oranına bırakmıştı: 50svh yüksekliğindeki yatay bir
  *         foto telefonda ekrandan taşıyordu. ≤991px'te genişlik artık
@@ -266,4 +271,79 @@
   position: relative;
   height: auto;                   /* equal-height cards via flex stretch */
   transition-property: transform;
+}
+
+/* ── Oklar — Designer'daki [data-hscroll-prev] / [data-hscroll-next] ── */
+/*
+ * Görünüm (ikon, çap, renk) Designer'ın; burada yalnız DURUM. Oklar yalnız
+ * Swiper sürerken anlamlı: pin modunda, JS'ten önce ve Swiper yokken
+ * visibility:hidden — yer kaplamaya devam eder, açılınca kayma (CLS) olmaz.
+ * Swiper başta/sonda .is-disabled, kartlar ekrana sığıyorsa .is-locked basar.
+ */
+[data-hscroll]:not(.is-swiper) :is([data-hscroll-prev], [data-hscroll-next]) {
+  visibility: hidden;
+}
+[data-hscroll] :is([data-hscroll-prev], [data-hscroll-next]) {
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+[data-hscroll] :is([data-hscroll-prev], [data-hscroll-next]).is-disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+[data-hscroll] :is([data-hscroll-prev], [data-hscroll-next]).is-locked {
+  display: none;
+}
+
+/* ── Slider modu — masaüstü (≥992px) ─────────────────────────── */
+/*
+ * data-hscroll-mode="slider": h-scroll.js pin kurmaz, Swiper masaüstünde de
+ * çalışır. ≤991px kuralları yukarıdakilerle AYNI — yalnız masaüstü değişir.
+ * Seçiciler bilerek [data-hscroll][data-hscroll-mode] (çift attribute):
+ * yukarıdaki pin kurallarını ([data-hscroll]:has(...)) specificity ile ezer.
+ */
+@media (min-width: 992px) {
+  [data-hscroll][data-hscroll-mode="slider"] {
+    --hscroll-card-h: 60svh;
+    --hscroll-spv: 3.2;           /* JS data-hscroll-spv-d'yi inline basar */
+    min-height: 0;                /* pin yok → section içerik yüksekliğinde */
+  }
+
+  [data-hscroll][data-hscroll-mode="slider"] .hscroll__viewport {
+    min-height: 0;
+  }
+
+  /* Kart genişliği spv'den; "auto" verilmişse film şeridi (görsel oranı) */
+  [data-hscroll][data-hscroll-mode="slider"]:not([data-hscroll-spv-d="auto"]) .hscroll__card {
+    width: calc(100% / var(--hscroll-spv, 3.2));
+  }
+  [data-hscroll][data-hscroll-mode="slider"]:not([data-hscroll-spv-d="auto"]) .hscroll__card [data-hscroll-img],
+  [data-hscroll][data-hscroll-mode="slider"]:not([data-hscroll-spv-d="auto"]) .hscroll__card img {
+    width: 100%;
+    max-width: 100%;
+    height: var(--hscroll-card-h);
+  }
+
+  /* Fallback (JS'ten önce / Swiper yokken) — ≤991px bloğunun masaüstü eşi */
+  [data-hscroll][data-hscroll-mode="slider"]:not(.is-swiper) .hscroll__viewport {
+    overflow: visible;
+  }
+  [data-hscroll][data-hscroll-mode="slider"]:not(.is-swiper) .hscroll__track {
+    width: auto;
+    max-width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--hscroll-gutter,
+      max(var(--view--px, var(--spacing--6)),
+          calc((100% - var(--container--2xl, 86rem)) / 2)));
+    scrollbar-width: none;
+    will-change: auto;
+  }
+  [data-hscroll][data-hscroll-mode="slider"]:not(.is-swiper) .hscroll__track::-webkit-scrollbar {
+    display: none;
+  }
+  [data-hscroll][data-hscroll-mode="slider"]:not(.is-swiper) .hscroll__card {
+    scroll-snap-align: start;
+  }
 }
