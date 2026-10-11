@@ -275,7 +275,10 @@ gidiyordu.)
 
   /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
   [data-hero-cinematic] {
-    --hero-m-min: 100svh;      /* bölüm yüksekliği */
+    --hero-m-min: 100lvh;      /* bölüm yüksekliği — lvh: iOS Safari'nin yarı
+                                  saydam alt çubuğunun ALTINA da uzanır; svh
+                                  çubuğun üstünde biter, altından sonraki
+                                  bölüm görünür */
     --hero-m-top: 6rem;        /* üst boşluk (navbar payı) */
     --hero-m-bottom: 6rem;     /* alt boşluk — üstle eşit = gerçek ortalama */
     --hero-m-pad: 1.25rem;     /* yan boşluk */
