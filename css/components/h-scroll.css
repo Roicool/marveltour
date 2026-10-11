@@ -1,5 +1,8 @@
 /*!
- * h-scroll.css v1.5.0  (adapted from Sestek h-scroll.css v2.2.1)
+ * h-scroll.css v1.5.1  (adapted from Sestek h-scroll.css v2.2.1)
+ * v1.5.1: Swiper modunda kart yüksekliği sabit (--hscroll-card-h), görsel
+ *         kartı doldurur — en uzun karta stretch görselin altında boşluk
+ *         bırakıyor, .overlay onu gri şerit olarak boyuyordu.
  * v1.5.0: SLIDER MODU ([data-hscroll-mode="slider"]) — masaüstünde de
  *         Swiper: 100svh pin yüksekliği kalkar, kart genişliği spv'den
  *         (default 3.2; data-hscroll-spv-d="auto" → film şeridi), kart
@@ -273,6 +276,25 @@
   transition-property: transform;
 }
 
+/* ── Kart = görsel yüksekliği (Swiper modu) ──────────────────── */
+/*
+ * Track flex stretch ile kartları EN UZUN karta eşitliyordu: bir kartta
+ * birkaç px fazlalık (statik bir eleman, alt satıra kayan isim…) olunca
+ * diğerlerinde görselin altı boş kalıyor, kartı kaplayan .overlay gradyanı
+ * o boşluğu krem zemin üstünde GRİ şerit olarak boyuyordu. Kart yüksekliği
+ * sabitlenir, görsel kartı doldurur (height:100% artık bir şeye dayanır).
+ */
+@media (max-width: 991px) {
+  [data-hscroll][data-hscroll] .hscroll__card {
+    height: var(--hscroll-card-h);
+    align-self: flex-start;
+  }
+  [data-hscroll][data-hscroll] .hscroll__card [data-hscroll-img],
+  [data-hscroll][data-hscroll] .hscroll__card img {
+    height: 100%;
+  }
+}
+
 /* ── Oklar — Designer'daki [data-hscroll-prev] / [data-hscroll-next] ── */
 /*
  * Görünüm (ikon, çap, renk) Designer'ın; burada yalnız DURUM. Oklar yalnız
@@ -312,6 +334,12 @@
 
   [data-hscroll][data-hscroll-mode="slider"] .hscroll__viewport {
     min-height: 0;
+  }
+
+  /* Kart = görsel yüksekliği (bkz. "Kart = görsel yüksekliği" — gri şerit) */
+  [data-hscroll][data-hscroll-mode="slider"] .hscroll__card {
+    height: var(--hscroll-card-h);
+    align-self: flex-start;
   }
 
   /* Kart genişliği spv'den; "auto" verilmişse film şeridi (görsel oranı) */
