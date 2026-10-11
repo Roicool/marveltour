@@ -1,6 +1,9 @@
 /* ============================================================
-   Marveltour — navbar.css v3.7.1
+   Marveltour — navbar.css v3.7.2
    js/components/navbar.js'in companion CSS'i.
+
+   v3.7.2 — Mobil çekmecede CTA footer'ı (ve üst ayracı) her görünümde en altta:
+            Designer'ın tablet display:block'u flex column'a çevrildi.
 
    v3.7.1 — Mobil çekmecede açıklama ve destinasyon listesi tam genişlik;
             44ch / 34rem sınırları yalnız masaüstü mega menüde kalıyor.
@@ -417,6 +420,17 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
    tablette açıklama 44ch'de (Designer), liste 34rem'de yarıda kalıyordu.
    Media query bilerek YOK: çekmece hangi genişlikte görünürse görünsün
    (Designer breakpoint'i değişse de) kural onunla birlikte gelir. */
+/* Footer (CTA + üst ayraç) HER görünümde çekmecenin en altında. Designer'da
+   .mt-nav__mobile tablet breakpoint'inde display:block — flex olmayınca
+   .mt-nav__mobile-scroll'un flex:1'i çalışmıyor, footer içeriğin hemen
+   altına yapışıyordu. Çekmece yalnız ≤991px'te var. min-height:0 →
+   uzun listede footer yerinde kalır, içerik kendi içinde kayar. */
+@media (max-width: 991px) {
+  .mt-nav .mt-nav__mobile { display: flex; flex-direction: column; }
+  .mt-nav .mt-nav__mobile-scroll { flex: 1 1 auto; min-height: 0; }
+  .mt-nav .mt-nav__mobile-footer { flex: none; margin-top: auto; }
+}
+
 .mt-nav__mobile { --mt-nav-tag-max: none; }
 .mt-nav__mobile .mt-nav__explore-desc { max-width: none; }
 
