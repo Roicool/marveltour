@@ -1,6 +1,10 @@
 /* ============================================================
-   Marveltour — navbar.css v3.7.2
+   Marveltour — navbar.css v3.7.3
    js/components/navbar.js'in companion CSS'i.
+
+   v3.7.3 — Mobil bölge görünümünde aktif başlık linki ("All destinations →",
+            bölge başlıkları) tıklanamıyordu: stack-item pointer-events kuralı
+            yalnız masaüstü paneli kapsıyordu.
 
    v3.7.2 — Mobil çekmecede CTA footer'ı (ve üst ayracı) her görünümde en altta:
             Designer'ın tablet display:block'u flex column'a çevrildi.
@@ -147,6 +151,10 @@ body.mt-nav-lock .mt-nav__mobile-scroll {
    kalır ve hero üstündeki tıklamaları yutar. pointer-events yalnız panel açıkken. */
 .mt-nav__stack > .mt-nav__stack-item.is-active { opacity: 1; visibility: inherit; }
 .mt-nav__panel.is-open .mt-nav__stack > .mt-nav__stack-item.is-active { pointer-events: auto; }
+/* Mobil çekmecedeki bölge görünümü de aynı stack'i kullanıyor: yukarıdaki
+   kural yalnız masaüstü paneli kapsadığı için "All destinations →" ve
+   bölge başlık linkleri görünür ama TIKLANAMAZ kalıyordu. */
+.mt-nav.is-mobile-open .mt-nav__mobile .mt-nav__stack > .mt-nav__stack-item.is-active { pointer-events: auto; }
 .mt-nav__stack--media > .mt-nav__stack-item { display: block; }
 
 /* ---------- CAPABILITIES: Journal ↔ tour kartı takası (v3.7.0) ----------
