@@ -1,5 +1,10 @@
 /**
- * engine.ts — v1.1.0 (imleç-takip ok, kontrol satırı okları)
+ * engine.ts — v1.2.0
+ * v1.2.0 — İmleç-takip ok kolondan çıkıp geri girince donuyordu (enter/leave
+ *          tween'leri overwrite:true ile quickTo'yu öldürüyordu → "auto").
+ *          Masaüstünde karta basıp sürükleyince kartın kopyası sürükleniyordu
+ *          (native link/img drag) → carousel'de dragstart her genişlikte kapalı.
+ * v1.1.0 — imleç-takip ok, kontrol satırı okları
  * js/components/hero-carousel.js v1.0.0'ın birebir portu (GSAP).
  * React yalnız iskeleti ve kart şablonlarını render eder; bu motor
  * orijinaldeki gibi DOM'u sürer: 5'li sanal pencere (xPercent), responsive
@@ -405,6 +410,14 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
     });
   }
 
+  /* ── Native sürükleme: HER genişlikte kapalı ──
+     Kartlar <a><img>. Masaüstünde (≥bpDrag) drag motoru yok; fareyle
+     kaydırmaya çalışan ziyaretçi tarayıcının link/görsel sürüklemesini
+     başlatıyor, imlecin altında kartın yarı saydam KOPYASI geziyordu. */
+  const noNativeDrag = (e: Event) => e.preventDefault();
+  carousel.addEventListener("dragstart", noNativeDrag);
+  destroyers.push(() => carousel.removeEventListener("dragstart", noNativeDrag));
+
   /* ── İmleci takip eden yuvarlak ok (prev/next hover kolonları) ────
      Squarespace davranışı: kolon üstünde imleç yerine yumuşak takip eden
      bir daire; yön sınıfı (is-prev / is-next) oku çevirir; tıklamada
@@ -423,15 +436,22 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
       };
       const enter = (e: PointerEvent) => {
         const r = carousel.getBoundingClientRect();
-        gsap.set(cursor, { x: e.clientX - r.left, y: e.clientY - r.top });
+        /* Başlangıcı quickTo'nun kendisiyle sıfırla (gsap.set yarıda kalan
+           takip tween'iyle yarışıyordu: ok bir kare eski yere zıplıyordu). */
+        qx(e.clientX - r.left, e.clientX - r.left);
+        qy(e.clientY - r.top, e.clientY - r.top);
         cursor.classList.toggle("is-prev", dir === "prev");
         cursor.classList.toggle("is-next", dir === "next");
         carousel.classList.add("is-hover-" + dir);
-        gsap.to(cursor, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out", overwrite: true });
+        /* overwrite "auto" — true OLMAMALI: true imlecin TÜM tween'lerini,
+           quickTo'nun x/y takip tween'leri dahil öldürüyor; ölü quickTo bir
+           daha hareket etmiyor → kolondan çıkıp geri girince ok donup
+           kalıyordu. "auto" yalnız çakışan autoAlpha/scale'i keser. */
+        gsap.to(cursor, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out", overwrite: "auto" });
       };
       const leave = () => {
         carousel.classList.remove("is-hover-" + dir);
-        gsap.to(cursor, { autoAlpha: 0, scale: 0.6, duration: 0.25, ease: "power2.in", overwrite: true });
+        gsap.to(cursor, { autoAlpha: 0, scale: 0.6, duration: 0.25, ease: "power2.in", overwrite: "auto" });
       };
       const press = () => {
         gsap.fromTo(cursor, { scale: 0.85 }, { scale: 1, duration: 0.45, ease: "elastic.out(1, 0.5)", overwrite: "auto" });
