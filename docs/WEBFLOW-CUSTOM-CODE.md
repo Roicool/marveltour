@@ -1,6 +1,6 @@
 # Webflow Custom Code — kopyala/yapıştır
 
-Yayındaki pin: **`42731a3af107ca69a6704a51becb7b410d038db3`** (process-steps v1.2.0 · journey-timeline css v3.1.1 + js v1.1.0 · contact preventPaths · navbar v2.4.1 + css v3.6.0 · barba-init v1.8.0 · hero-cinematic v2.6.0 · manifesto v1.4.0 · h-scroll v1.2.0 · expertise-showcase v1.7.1 · lightbox v1.4.0 · gallery-slider v1.1.0 · about-hero + journey-timeline + video-hero · 2026-10-01)
+Yayındaki pin: **`db7cf11aeba4810be5288da2c704272ec6addc9c`** (accordion v2.0.0 · navbar v2.5.0 + css v3.7.3 · h-scroll v1.3.0 + css v1.5.2 · static-slider v1.0.0 · utils.css v1.1.2 · process-steps v1.2.0 · journey-timeline css v3.2.0 + js v1.1.0 · contact preventPaths · barba-init v1.8.0 · hero-cinematic v2.6.0 · manifesto v1.4.0 · expertise-showcase v1.7.1 · lightbox v1.4.0 · gallery-slider v1.1.0 · about-hero + journey-timeline + video-hero · 2026-10-16)
 
 Aşağıdaki iki blok sitenin TAMAMI. Barba kullanıldığı için hepsi
 **Site Settings → Custom Code**'a girer; page-level custom code sayfa
@@ -21,14 +21,14 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 ## 1) Site Settings → Custom Code → **Head Code**
 
 ```html
-<!-- ═══ Marveltour — pin: 9187401d161bc540fe5720ab67edcf53186c750b ═══ -->
+<!-- ═══ Marveltour — pin: db7cf11aeba4810be5288da2c704272ec6addc9c ═══ -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
-<!-- CSS — 20 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
+<!-- CSS — 21 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
      sırası, bozma. Modül CSS'lerini media="print" onload ile non-blocking
      YAPMA: pinli ScrollTrigger bölümleri (hero-cinematic, h-scroll, manifesto,
      stat-counter…) CSS geç geldiğinde yanlış ölçüp layout kaydırıyor. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/core/utils.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/navbar.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/stagger-button.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/animations/parallax.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/hero-cinematic.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/hero-frame.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/hero-carousel.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/marquee.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/h-scroll.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/expertise-showcase.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/effects/noise.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/manifesto.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/process-steps.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/accordion.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/stat-counter.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/lightbox.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/gallery-slider.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/about-hero.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/journey-timeline.css,gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/css/components/video-hero.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/core/utils.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/navbar.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/stagger-button.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/animations/parallax.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/hero-cinematic.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/hero-frame.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/hero-carousel.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/marquee.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/h-scroll.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/expertise-showcase.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/effects/noise.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/manifesto.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/process-steps.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/accordion.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/stat-counter.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/lightbox.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/gallery-slider.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/static-slider.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/about-hero.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/journey-timeline.css,gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/css/components/video-hero.css">
 
 <!-- ── Vendor ── -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
@@ -41,9 +41,9 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 
 <!-- ── Core — bu sırayla ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/core/lenis-init.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/core/utils.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/core/barba-init.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/core/lenis-init.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/core/utils.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/core/barba-init.js" defer></script>
 
 <!-- ── Navbar — YALNIZ DAVRANIŞ ──
      Bar, mega menü, paneller, Collection List'ler ve mobil görünümler
@@ -52,37 +52,40 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
      KOYMA. Destinasyonlar hem masaüstünde hem mobilde TEK Collection List'ten
      gelir: her link data-region ile Region alanına bağlı, JS aktif satıra göre
      eşleşmeyeni gizler (sayfa başına 20 Collection List sınırı için şart). -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/navbar.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/navbar.js" defer></script>
 
 <!-- ── Components ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/stagger-button.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/hero-cinematic.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/hero-frame.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/hero-carousel.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/marquee.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/step-scroll.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/h-scroll.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/expertise-showcase.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/manifesto.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/process-steps.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/stat-counter.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/accordion.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/stagger-button.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/hero-cinematic.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/hero-frame.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/hero-carousel.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/marquee.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/step-scroll.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/h-scroll.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/expertise-showcase.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/manifesto.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/process-steps.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/stat-counter.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/accordion.js" defer></script>
 <!-- lightbox: bağımlılıksız, init YOK (kendi kurulur); galeri köküne data-lightbox -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/lightbox.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/lightbox.js" defer></script>
 <!-- gallery-slider: lightbox'ın sayfa içi Swiper sürümü, init YOK (kendi kurulur);
      Collection List Wrapper'a data-lightbox data-lightbox-layout="slider" -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/gallery-slider.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/gallery-slider.js" defer></script>
+<!-- static-slider: gallery-slider'ın CMS'SİZ kopyası, init YOK (kendi kurulur);
+     kök Div'e data-lightbox data-lightbox-layout="static-slider" -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/static-slider.js" defer></script>
 <!-- about-hero + journey-timeline: React code component'lerin vanilla portu.
      Barba container swap'inde code component'ler mount olmuyordu (PROJECT.md
      Kural B1); bu ikisi her gecişte onEach'ten yeniden kuruluyor. -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/about-hero.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/journey-timeline.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/components/video-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/about-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/journey-timeline.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/components/video-hero.js" defer></script>
 
 <!-- ── Animations — preset'ler; parallax dışında CSS'i yok ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/animations/text-reveal.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/animations/parallax.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@42731a3af107ca69a6704a51becb7b410d038db3/js/animations/reveal.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/animations/text-reveal.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/animations/parallax.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@db7cf11aeba4810be5288da2c704272ec6addc9c/js/animations/reveal.js" defer></script>
 ```
 
 ---
@@ -264,7 +267,10 @@ gidiyordu.)
 
   /* ── Ayar düğmeleri: yalnız bu değerlerle oyna ── */
   [data-hero-cinematic] {
-    --hero-m-min: 100svh;      /* bölüm yüksekliği */
+    --hero-m-min: 100lvh;      /* bölüm yüksekliği — lvh: iOS Safari'nin yarı
+                                  saydam alt çubuğunun ALTINA da uzanır; svh
+                                  çubuğun üstünde biter, altından sonraki
+                                  bölüm görünür */
     --hero-m-top: 6rem;        /* üst boşluk (navbar payı) */
     --hero-m-bottom: 6rem;     /* alt boşluk — üstle eşit = gerçek ortalama */
     --hero-m-pad: 1.25rem;     /* yan boşluk */
@@ -506,6 +512,26 @@ Kart yüksekliği aynı yerden: section'a `style="--hscroll-card-h: 46svh"`
 o yüzden yatay bir foto telefonda ekrandan taşıyordu. Masaüstünde film şeridi
 aynen duruyor; değişen yalnız ≤991px.
 
+#### Slider modu (h-scroll v1.3.0)
+
+Aynı component pinli yatay scroll yerine her genişlikte slider olabilir.
+Section'a attribute ver:
+
+```
+data-hscroll-mode="slider"   pin/scrub/parallax yok; Swiper masaüstünde de
+data-hscroll-spv-d="3.2"     masaüstü kart sayısı ("auto" = film şeridi)
+```
+
+Tablet ve mobil ayarları (`-spv-t`, `-spv-m`) aynen geçerli. Masaüstü kart
+yüksekliği 60svh (`--hscroll-card-h` ile değişir). Trackpad'in yatay kaydırması
+slider'ı sürer, dikey tekerlek sayfayı kaydırır.
+
+**Oklar (opsiyonel):** section içinde iki buton/div → `data-hscroll-prev` ve
+`data-hscroll-next`. Görünüm Designer'ın; JS bağlar. Başta/sonda
+`.is-disabled` (soluk, tıklanmaz), kartlar ekrana sığıyorsa `.is-locked`
+(gizli). Pinli modda ve JS'ten önce `visibility: hidden` — yer kaplar, kayma
+olmaz. Normal (pinli) modda da tablet/mobil Swiper'ında çalışırlar.
+
 ## 5) Galeri slider'ı (lightbox'ın Swiper sürümü)
 
 Sayfadaki galeri, merkez odaklı bir slider olur: aktif görsel ortada ve tam
@@ -575,10 +601,27 @@ Aynı ebeveynde birden çok slider varsa her birini `[data-gs-scope]` ile sar.
 
 ---
 
+### 5b) CMS'siz galeri slider'ı (static-slider)
+
+`gallery-slider`'ın birebir kopyası, ona dokunmaz; ikisi aynı sayfada
+bağımsız çalışır. Fark: Collection List gerekmez.
+
+```
+Div   data-lightbox data-lightbox-layout="static-slider"   ← kök
+  Div                                                       ← track (kökün İLK çocuğu)
+    Div > Image   × N                                       ← slide
+    (ya da doğrudan Image × N)
+```
+
+Ayarlar gallery-slider'la aynı, önek `ss`: `data-ss-autoplay`,
+`data-ss-loop`, `data-ss-speed`, `data-ss-rewind`; kendi kontrollerin için
+`data-ss-prev/next/current/total` (+ `data-ss-scope`); CSS değişkenleri
+`--ss-w-d`, `--ss-ratio-d` vb. Lightbox aynı (`data-lightbox`).
+
 ## Sürüm yükseltme
 
 1. `main`'e merge et, yeni commit SHA'sını al.
-2. Bu dosyadaki ve Webflow head'indeki `9187401d161bc540fe5720ab67edcf53186c750b` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 20 kez geçiyor).
+2. Bu dosyadaki ve Webflow head'indeki `db7cf11aeba4810be5288da2c704272ec6addc9c` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 21 kez geçiyor).
 3. Publish.
 
 Acilde pin yerine `@main` kullanıp purge edebilirsin: `https://purge.jsdelivr.net/`

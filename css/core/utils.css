@@ -1,8 +1,10 @@
 /*!
  * Marveltour — core/utils.css
- * v1.1.1  (adapted from sestek search.css v1.7.1 + pagination.css v1.3.0 +
+ * v1.1.2  (adapted from sestek search.css v1.7.1 + pagination.css v1.3.0 +
  *          dropdown.css v1.3.0 + blog-slider-pro.css v1.0.0 + TOC/marker
  *          inline styles)
+ * v1.1.2: Blog Slider Pro — Swiper çekirdek CSS'i eklendi (head swiper-bundle.css
+ *         yüklemiyor): kartlar sıkışmıyor, Designer liste düzeni eziliyor.
  * v1.1.1: TOC vurguları brand-primary yerine brand-secondary (sunlight/sun
  *         sarı ailesi) token'larına alındı.
  * ------------------------------------------------------------
@@ -12,7 +14,7 @@
  *   3. Search overlay ([data-search-*], .search__result)
  *   4. Pagination (.pagination-*, native Webflow pagination gizleme)
  *   5. Dropdown ([data-dropdown-*], .dropdown__item)
- *   6. Blog Slider Pro ([data-blog-slider-pro] — Swiper CSS'i AYRICA gerekir)
+ *   6. Blog Slider Pro ([data-blog-slider-pro] — Swiper çekirdek CSS'i bu dosyada)
  *
  * Renkler RC token'ları üzerinden: --brand-primary--* (bordo #470e2d ailesi),
  * --brand-secondary--* (sunlight #f6d967 / sun #f0c601 — TOC vurguları),
@@ -656,7 +658,7 @@ html.search-lock { overflow: hidden; }
 }
 
 /* ══ Blog Slider Pro — Swiper kart carousel ══════════════════════ */
-/* Swiper'ın kendi CSS'i (swiper-bundle.min.css) AYRICA yüklenmeli. */
+/* Swiper çekirdek kuralları aşağıda — swiper-bundle.css GEREKMEZ. */
 
 [data-blog-slider-pro] {
   position: relative;
@@ -668,6 +670,38 @@ html.search-lock { overflow: hidden; }
 [data-blog-slider-pro] .swiper-slide {
   height: auto;
 }
+
+/* Swiper ÇEKİRDEĞİ — swiper-bundle.css head'de YÜKLENMİYOR (yalnız JS).
+   Bunlar olmadan slide'lar flex-shrink:1 kalıyor ve Designer'daki liste
+   düzeni (flex + gap / grid) ezilmiyordu: kartlar ekrana sığmak için
+   sıkışıyordu (12 kart → 85px). Swiper genişliği slide'lara inline yazar;
+   boşluğu spaceBetween verir, o yüzden Designer gap'i sıfırlanır.
+   Seçiciler (0,3,0) — Webflow'un liste/item sınıflarını (combo dahil) ezer. */
+[data-blog-slider-pro].swiper-initialized [data-bs-wrapper] {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  grid-template-columns: none;
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+  box-sizing: content-box;
+  transition-property: transform;
+  transition-timing-function: initial;
+}
+[data-blog-slider-pro].swiper-initialized [data-bs-slide] {
+  position: relative;
+  flex-shrink: 0;
+  max-width: none;
+  margin-left: 0;
+  transition-property: transform;
+}
+[data-blog-slider-pro].swiper-horizontal { touch-action: pan-y; }
+[data-blog-slider-pro] .swiper-button-lock { display: none; }
 
 /* Edge mask/fade — JS data-bs-fade > 0 iken .bs-faded + --bs-fade basar.
    SAĞ (trailing) kenar yumuşak erir; sol kenar net kalır. */

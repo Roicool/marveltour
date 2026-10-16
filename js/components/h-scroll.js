@@ -1,5 +1,12 @@
 /*!
- * h-scroll.js v1.2.0  (adapted from Sestek h-scroll v2.0.0)
+ * h-scroll.js v1.3.0  (adapted from Sestek h-scroll v2.0.0)
+ * v1.3.0: SLIDER MODU — data-hscroll-mode="slider": pin/scrub/parallax hiç
+ *         kurulmaz, Swiper HER genişlikte çalışır (masaüstü dahil). Masaüstü
+ *         kart sayısı data-hscroll-spv-d (default 3.2; "auto" = film şeridi).
+ *         Masaüstünde trackpad'in yatay kaydırması slider'ı sürer (dikey
+ *         tekerlek sayfada kalır). Oklar: Designer'da [data-hscroll-prev] /
+ *         [data-hscroll-next] — JS bağlar, üretmez. Attribute yoksa davranış
+ *         v1.2.0 ile birebir aynı.
  * v1.2.0: spv geri geldi — v1.1.0 slidesPerView:"auto"'ya geçerken kart
  *         genişliği tamamen görselin doğal oranına kalmıştı: yatay bir foto
  *         50svh yüksekliğinde telefonda ekrandan taşıyordu. Artık JS aktif
@@ -87,11 +94,17 @@
    *                          ondan turetir (Swiper "auto" o genisligi okur).
    *   data-hscroll-priority  ScrollTrigger refreshPriority — set per page
    *                          position (see PROJECT.md table) (default 1)
+   *   data-hscroll-mode      "slider" → pin yok, her genişlikte Swiper
+   *   data-hscroll-spv-d     slider modunda masaüstü kart sayısı (default
+   *                          3.2; "auto" = görselin doğal oranı, film şeridi)
    *
    * Children:
    *   .hscroll__viewport     wrapper around the track (Swiper container)
    *   [data-hscroll-track]   the flex row that translates on x
    *   [data-hscroll-card]    a card inside the track (any count works)
+   *   [data-hscroll-prev]    ops. önceki oku (Designer butonu) — Swiper
+   *   [data-hscroll-next]    ops. sonraki oku    modunda bağlanır, pin
+   *                          modunda gizli (h-scroll.css)
    *
    * @param {string} [selector="[data-hscroll]"]
    */
@@ -134,6 +147,13 @@
     var bpM      = num(root, "data-hscroll-bp-m", 768);
     var spvT     = num(root, "data-hscroll-spv-t", 2.2);
     var spvM     = num(root, "data-hscroll-spv-m", 1.2);
+    // Slider modu: pin yok, Swiper HER genişlikte. Masaüstü spv'si "auto"
+    // olabilir (film şeridi — kart genişliği görselin doğal oranından).
+    var slider   = root.getAttribute("data-hscroll-mode") === "slider";
+    var spvD     = root.getAttribute("data-hscroll-spv-d") === "auto"
+      ? "auto" : num(root, "data-hscroll-spv-d", 3.2);
+    var prevBtn  = root.querySelector("[data-hscroll-prev]");
+    var nextBtn  = root.querySelector("[data-hscroll-next]");
     var priority = num(root, "data-hscroll-priority", 1);
     var drift    = num(root, "data-hscroll-parallax", 8); // kart içi görsel parallax dozu
     var debug    = root.hasAttribute("data-hscroll-debug");
@@ -221,7 +241,8 @@
     instances.push({ root: root, destroy: function () { mm.revert(); } });
 
     // ── Tablet & mobile (≤bp) — Swiper carousel ───────────────────
-    mm.add("(max-width: " + bp + "px)", function () {
+    //    Slider modunda her genişlikte (pin kurulmaz, aşağıya bkz.)
+    mm.add(slider ? "(min-width: 0px)" : "(max-width: " + bp + "px)", function () {
       if (typeof Swiper === "undefined") {
         console.warn("[Marveltour HScroll] Swiper not found — CSS scroll-snap fallback active.");
         return;
@@ -252,8 +273,13 @@
        * CSS'te de varsayılanı var, bu yalnız attribute'ları devreye sokar.
        */
       function applySpv() {
+        var w = global.innerWidth;
+        if (w > bp && spvD === "auto") {
+          root.style.removeProperty("--hscroll-spv");     // film şeridi: CSS genişliği görselden
+          return;
+        }
         root.style.setProperty("--hscroll-spv",
-          String(global.innerWidth < bpM ? spvM : spvT));
+          String(w > bp ? spvD : w < bpM ? spvM : spvT)); // w > bp yalnız slider modunda olur
       }
 
       var m = measure();                                  // ends with .is-swiper set
@@ -263,7 +289,7 @@
 
       var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      var sw = new Swiper(viewport, {
+      var opts = {
         slidesPerView: "auto",                            // film şeridi: karışık genişlikler
         spaceBetween: m.gap,
         slidesOffsetBefore: m.gutter,
@@ -284,7 +310,26 @@
             s.update();
           },
         },
-      });
+      };
+
+      /* Oklar — Designer'daki [data-hscroll-prev] / [data-hscroll-next].
+         JS buton ÜRETMEZ; yoksa bu blok atlanır. Swiper a11y modülü
+         role/tabindex/aria-label basar; başta/sonda .is-disabled, kart
+         sayısı ekrana sığıyorsa .is-locked (CSS gizler). */
+      if (prevBtn || nextBtn) {
+        opts.navigation = {
+          prevEl: prevBtn,
+          nextEl: nextBtn,
+          disabledClass: "is-disabled",
+          lockClass: "is-locked",
+        };
+      }
+
+      /* Masaüstü slider'da trackpad'in YATAY kaydırması slider'ı sürer;
+         forceToAxis dikey tekerleği yok sayar — sayfa scroll'u yakalanmaz. */
+      if (slider) opts.mousewheel = { forceToAxis: true };
+
+      var sw = new Swiper(viewport, opts);
 
       setActive(0);
 
@@ -302,7 +347,7 @@
     });
 
     // ── Desktop (>bp) + motion allowed — GSAP pin + scrub ─────────
-    mm.add(
+    if (!slider) mm.add(
       "(min-width: " + (bp + 1) + "px) and (prefers-reduced-motion: no-preference)",
       function () {
         /* NOT: "distance ≤ 0 → return" erken çıkışı KALDIRILDI — görseller
