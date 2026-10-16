@@ -1,5 +1,9 @@
 /*!
- * hero-carousel.js v1.2.0
+ * hero-carousel.js v1.3.0
+ * v1.3.0: Tek sayıda kartta aynı kart yan yana iki kez görünüyordu (son
+ *         ikilinin boş gözü 1. kartla doluyordu). Kartlar artık tek sürekli
+ *         şerit: kaydırma yine perView'lik, hiçbir kart dolgu olarak
+ *         tekrarlanmaz. Dot'lar şeritteki konumdan hesaplanır.
  * Hero + sonsuz (wrap-around) kart carousel'i — Squarespace
  * /solutions/education "#education-training-hero" bölümünün GSAP portu.
  * Orijinal React + Framer Motion; algoritma ve sabitler birebir korunur:
@@ -202,20 +206,23 @@
     var toggle  = carousel.querySelector("[data-hc-toggle]");
 
     var perView = 1, total = 1;
-    var index = 0;               // sonsuz sayaç
+    var pos = 0;                 // sonsuz KART sayacı: ortadaki slaytın ilk kartı
     var items = [];              // { el, e }
     var busy = false;            // prev/next/klavye geçiş kilidi
     var dots = [];
 
-    function active() { return mod(index, total); }
+    /* Aktif dot: şeritteki konumun düştüğü slayt (tek sayıda kartta konum
+       tek de olabilir; o zaman başladığı slayt). */
+    function active() { return Math.min(total - 1, Math.floor(mod(pos, cards.length) / perView)); }
 
-    function fill(el, slideIdx, isCenter) {
+    function fill(el, start, isCenter) {
       el.innerHTML = "";
-      var from = slideIdx * perView;
-      /* SARMALA — `i < cards.length` ile kesme YAPMA: kart sayısı perView'e
-         tam bölünmüyorsa (13 kart / 2) son slayt yarım kalır ve şeritte
-         gözle görülür bir boşluk açılır. Carousel zaten wrap-around; son
-         slaytın boş gözü baştaki kartla dolar. */
+      /* SÜREKLİ ŞERİT — slayt N, "N. ikili" değil şeritteki `start`
+         kartından başlayan perView kart. Kartlar mod ile sarılır, ama
+         slaytlar ayrı ayrı sarılmaz: tek sayıda kartta (7 kart / 2) son
+         slaytın boş gözüne 1. kart konup ardından gelen slayt da 1. kartla
+         başlıyordu — aynı kart yan yana iki kez görünüyordu. */
+      var from = start;
       for (var i = from; i < from + perView; i++) {
         var clone = cards[mod(i, cards.length)].cloneNode(true);
         clone.setAttribute("data-card-index", String(i - from));
@@ -237,13 +244,13 @@
 
     function build() {
       total = Math.max(1, Math.ceil(cards.length / perView));
-      index = 0;
+      pos = 0;
       track.innerHTML = "";
       items = WINDOW.map(function (e) {
         var el = document.createElement("div");
         el.className = "hero-carousel__item";
         gsap.set(el, { xPercent: 100 * e });
-        fill(el, mod(e, total), e === 0);
+        fill(el, e * perView, e === 0);
         track.appendChild(el);
         return { el: el, e: e };
       });
@@ -257,8 +264,7 @@
      * @param {boolean} [fromDrag]  drag bırakınca kısa/easeOutCubic geçiş
      */
     function step(dir, fromDrag) {
-      index += dir;
-      var act = active();
+      pos += dir * perView;
       var dur  = reduce ? 0 : (fromDrag ? D_DUR : T_DUR);
       var ease = fromDrag ? EASE_DRAG_END : EASE_SLIDE;
       busy = true;
@@ -268,7 +274,7 @@
           it.e = dir > 0 ? 2 : -2;
           gsap.killTweensOf(it.el);
           gsap.set(it.el, { xPercent: 100 * it.e });
-          fill(it.el, mod(act + it.e, total), false);
+          fill(it.el, pos + it.e * perView, false);
         } else {
           setCenter(it.el, it.e === 0);
           gsap.to(it.el, { xPercent: 100 * it.e, duration: dur, ease: ease, overwrite: true,
@@ -281,12 +287,14 @@
     function next() { step(1); }
     function prev() { step(-1); }
     function goTo(slide) {
-      var d = slide - active();
+      /* Hedef: o slaytın (dot'un) ilk kartı. Fark KART cinsinden, en kısa
+         yoldan; tek sayıda kartta şerit tek konumda olabilir. */
+      var n = cards.length;
+      var d = slide * perView - mod(pos, n);
       if (!d) return;
-      /* en kısa yol */
-      if (Math.abs(d) > total / 2) d = d > 0 ? d - total : d + total;
+      if (Math.abs(d) > n / 2) d = d > 0 ? d - n : d + n;
       var dir = d > 0 ? 1 : -1;
-      if (Math.abs(d) === 1) { step(dir); return; }
+      if (d === dir * perView) { step(dir); return; }
 
       /* UZAK SLAYT — step()'i aynı karede N kez çağırma: her çağrı
          `overwrite: true` ile bir öncekinin tween'ini öldürür, araya N kez
@@ -294,15 +302,14 @@
          Pencere hedefin etrafında bir kerede yeniden doldurulur, sonra
          geliş yönünden tek slayt boyu kaydırılır — yön hissi korunur,
          tek tween oynar. */
-      index = slide;
-      var act = active();
+      pos += d;
       var dur = reduce ? 0 : T_DUR;
       busy = true;
       items.forEach(function (it, i) {
         it.e = WINDOW[i];
         gsap.killTweensOf(it.el);
         gsap.set(it.el, { xPercent: 100 * (it.e + dir) });
-        fill(it.el, mod(act + it.e, total), it.e === 0);
+        fill(it.el, pos + it.e * perView, it.e === 0);
       });
       items.forEach(function (it) {
         gsap.to(it.el, { xPercent: 100 * it.e, duration: dur, ease: EASE_SLIDE,

@@ -1,5 +1,6 @@
 /*!
- * hero-carousel-react-patch.js v1.0.0
+ * hero-carousel-react-patch.js v1.1.0
+ * v1.1.0 — 3) Tek sayıda kartta yan yana aynı kart (aşağıda).
  * GEÇİCİ YAMA — Capabilities'teki React HeroCarousel code component'i için.
  *
  * Neden: HeroCarousel v1.1.2'deki düzeltmeler (react/components/HeroCarousel)
@@ -15,9 +16,18 @@
  *     sürüklemesi başlıyordu. dragstart composed bir olay: Shadow DOM'dan
  *     document'a çıkar; yolu HeroCarousel içinden geçiyorsa iptal edilir.
  *
- * Kütüphane bağlantısı düzelip v1.1.2 sayfaya gelince yama hiçbir şeyi
- * değiştirmez (zaten "auto"; dragstart zaten iptal) — o zaman head'den ve
- * repodan silinebilir.
+ *  3) Yan yana aynı kart — masaüstünde (≥744px, 2 kart/slayt) kart sayısı
+ *     tekse son ikilinin boş gözü 1. kartla dolup ardından gelen ikili de
+ *     1. kartla başlıyordu. Component kartları CMS listesinden okuyor ve o
+ *     listeyi MutationObserver ile izliyor (useCards). Liste tekse
+ *     kaynağın SONUNA listenin bir kopyası eklenir (7 → 14, sıra aynı):
+ *     ikililer tam oturur, şerit 1–7, 1–7 kesintisiz akar. Component
+ *     değişikliği görüp kendini yeniden kurar. 744px altında (1 kart/slayt)
+ *     sorun yok; kopyalar kaldırılır.
+ *
+ * Kütüphane bağlantısı düzelip HeroCarousel v1.1.3 sayfaya gelince 1) ve 2)
+ * etkisiz kalır; 3) zararsızdır ama gereksizdir — o zaman bu dosya head'den
+ * ve repodan silinebilir.
  *
  * Kurulum: head'de gsap'TEN SONRA, defer. init YOK (kendi kurulur), Barba'dan
  * etkilenmez (yalnız global gsap ve document dinleyicisi).
@@ -78,4 +88,68 @@
     var path = e.composedPath ? e.composedPath() : [e.target];
     if (inHeroCarousel(path)) e.preventDefault();
   }, true);
+
+  /* ── 3) Tek sayıda kart: listeyi masaüstünde bir kez tekrarla ── */
+  var BP = 744;          // HeroCarousel'in 2 kart/slayt eşiği (bp prop varsayılanı)
+  var DUP = "data-mt-hc-dup";
+  var mq = global.matchMedia ? global.matchMedia("(min-width: " + BP + "px)") : null;
+
+  /* useCards'ın okuduğu kaynaklar: Cards slot'u (shadow'daki veri kutusu ya
+     da host'un light DOM'u) ve sayfadaki [data-hero-carousel-cards] kutusu.
+     Carousel'in KENDİ şablon kutusu (.hc__carousel > .hc__data) hariç. */
+  function sources() {
+    var out = [];
+    var doc = global.document;
+    Array.prototype.forEach.call(doc.querySelectorAll("[data-hero-carousel-cards]"), function (el) { out.push(el); });
+    Array.prototype.forEach.call(doc.querySelectorAll("*"), function (host) {
+      var sr = host.shadowRoot;
+      if (!sr || !sr.querySelector(".hc__carousel")) return;
+      var slotBox = sr.querySelector(".hc > .hc__data");
+      if (slotBox) out.push(slotBox);
+      Array.prototype.forEach.call(host.children, function (c) { if (c.hasAttribute("slot")) out.push(c); });
+    });
+    return out;
+  }
+
+  /* useCards.itemRoots ile aynı öncelik */
+  function originals(root) {
+    var sel = [".w-dyn-item, [data-hc-item]", "[data-hc-card]", "a"];
+    for (var i = 0; i < sel.length; i++) {
+      var list = Array.prototype.filter.call(root.querySelectorAll(sel[i]), function (el) {
+        return !el.closest("[" + DUP + "]");
+      });
+      if (list.length) return list;
+    }
+    return [];
+  }
+
+  function sync() {
+    var wide = !mq || mq.matches;
+    sources().forEach(function (root) {
+      var dups = root.querySelectorAll("[" + DUP + "]");
+      var items = originals(root);
+      var want = wide && items.length > 1 && items.length % 2 === 1;
+      if (want && !dups.length) {
+        items.forEach(function (item) {
+          var c = item.cloneNode(true);
+          c.setAttribute(DUP, "");
+          c.setAttribute("aria-hidden", "true");
+          item.parentNode.appendChild(c);   // aynı liste içinde, sona — sıra korunur
+        });
+      } else if (!want && dups.length) {
+        Array.prototype.forEach.call(dups, function (d) { d.remove(); });
+      }
+    });
+  }
+
+  /* Component geç hydrate olabilir: yükleme boyunca birkaç kez dene */
+  sync();
+  global.document.addEventListener("DOMContentLoaded", sync);
+  global.addEventListener("load", sync);
+  var tries = 0;
+  var t = global.setInterval(function () { sync(); if (++tries >= 20) global.clearInterval(t); }, 500);
+  if (mq) {
+    if (mq.addEventListener) mq.addEventListener("change", sync);
+    else if (mq.addListener) mq.addListener(sync);
+  }
 })(window);
