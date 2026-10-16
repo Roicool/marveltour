@@ -1,5 +1,7 @@
 /**
- * HeroCarousel — v1.1.2
+ * HeroCarousel — v1.1.3
+ * v1.1.3 — Tek sayıda kartta yan yana aynı kart: kartlar sürekli şerit
+ *          (engine.ts v1.3.0).
  * v1.1.2 — Bug fix: imleç-takip ok kolona yeniden girişte donuyordu; kartı
  *          fareyle sürükleyince kopyası sürükleniyordu (engine.ts v1.2.0,
  *          CSS v1.1.2, kartlarda draggable=false).
