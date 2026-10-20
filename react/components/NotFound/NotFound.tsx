@@ -1,5 +1,7 @@
 /**
- * NotFound — v1.1.0
+ * NotFound — v1.1.1
+ * v1.1.1 — Yedek linkler var olan sayfalara: /destinations, /how-we-work,
+ *          /contact-us (/turkiye, /capabilities, /start-a-conversation yok).
  * v1.1.0 — Tam ekran yükseklik, scroll yok: sayfa viewport'a sabit
  *          (height + overflow hidden), yönlendirme listesi dikey
  *          satırlardan tek satıra alındı, dikey boşluklar sıkıldı.
@@ -94,15 +96,15 @@ export function NotFound({
   attributes,
 }: NotFoundProps) {
   const routes: Array<{ label: string; to: string; link?: NavLink }> = [
-    { label: destinationsLabel, to: href(destinationsLink, "/turkiye"), link: destinationsLink },
-    { label: capabilitiesLabel, to: href(capabilitiesLink, "/capabilities"), link: capabilitiesLink },
+    { label: destinationsLabel, to: href(destinationsLink, "/destinations"), link: destinationsLink },
+    { label: capabilitiesLabel, to: href(capabilitiesLink, "/how-we-work"), link: capabilitiesLink },
     { label: howWeWorkLabel, to: href(howWeWorkLink, "/how-we-work"), link: howWeWorkLink },
     { label: journalLabel, to: href(journalLink, "/journals"), link: journalLink },
     { label: aboutLabel, to: href(aboutLink, "/about"), link: aboutLink },
   ].filter((r) => !!r.label.trim());
 
   const home = href(homeLink, "/");
-  const cta = href(ctaLink, "/start-a-conversation");
+  const cta = href(ctaLink, "/contact-us");
   const mail = email.trim();
   const tel = phone.trim();
 

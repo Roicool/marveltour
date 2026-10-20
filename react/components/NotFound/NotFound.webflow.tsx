@@ -35,16 +35,16 @@ export default declareComponent(NotFound, {
 
     // --- Linkler ---
     ctaLabel: props.Text({ name: "CTA label", group: G_LINKS, defaultValue: "Start a Conversation" }),
-    ctaLink: props.Link({ name: "CTA link", group: G_LINKS, tooltip: "Boşsa /start-a-conversation" }),
+    ctaLink: props.Link({ name: "CTA link", group: G_LINKS, tooltip: "Boşsa /contact-us" }),
     homeLabel: props.Text({ name: "Home label", group: G_LINKS, defaultValue: "Back to home" }),
     homeLink: props.Link({ name: "Home link", group: G_LINKS, tooltip: "Logo ve 'Back to home' hedefi. Boşsa /" }),
 
     // --- Yönlendirme listesi ---
     routesEyebrow: props.Text({ name: "List eyebrow", group: G_ROUTES, defaultValue: "Or pick up where you left off" }),
     destinationsLabel: props.Text({ name: "Türkiye label", group: G_ROUTES, defaultValue: "Türkiye", tooltip: "Boş bırakırsan satır hiç çıkmaz." }),
-    destinationsLink: props.Link({ name: "Türkiye link", group: G_ROUTES, tooltip: "Boşsa /turkiye" }),
+    destinationsLink: props.Link({ name: "Türkiye link", group: G_ROUTES, tooltip: "Boşsa /destinations" }),
     capabilitiesLabel: props.Text({ name: "Capabilities label", group: G_ROUTES, defaultValue: "Capabilities" }),
-    capabilitiesLink: props.Link({ name: "Capabilities link", group: G_ROUTES, tooltip: "Boşsa /capabilities" }),
+    capabilitiesLink: props.Link({ name: "Capabilities link", group: G_ROUTES, tooltip: "Boşsa /how-we-work" }),
     howWeWorkLabel: props.Text({ name: "How We Work label", group: G_ROUTES, defaultValue: "How We Work" }),
     howWeWorkLink: props.Link({ name: "How We Work link", group: G_ROUTES, tooltip: "Boşsa /how-we-work" }),
     journalLabel: props.Text({ name: "Journal label", group: G_ROUTES, defaultValue: "Journal" }),
