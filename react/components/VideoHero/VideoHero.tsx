@@ -1,5 +1,9 @@
 /**
- * VideoHero — v1.3.0
+ * VideoHero — v1.4.0
+ * v1.4.0 — Gri ekran düzeltmesi: poster yoksa Cloudflare Stream kaynağından
+ *          thumbnail türetilir (video oynayana / oynayamazsa görsel görünür);
+ *          autoplay + muted attribute'u + preload="metadata"; tek seferlik
+ *          play() yerine canplay'de yeniden dener (iOS/Android autoplay).
  * v1.3.0 — Hero değil, sayfa içi section: giriş reveal'ı scroll'a bağlı
  *          (revealMode "scroll", tersinir); "once" eski zaman tabanlı mod.
  * v1.2.0 — Çıkış scrub'ı: aşağı inerken video clip ile geri küçülür, metin
@@ -28,7 +32,13 @@ import { createReveal, type RevealApi } from "./reveal";
 import { Logo } from "./Logo";
 import "./VideoHero.css";
 
-export type NavLink = { href: string; target?: string; preload?: string };
+/** Cloudflare Stream URL'inden (…cloudflarestream.com/<uid>/…) thumbnail türetir. */
+function streamThumbnail(src: string): string {
+  const m = /^(https:\/\/[^/]*cloudflarestream\.com\/[0-9a-f]{32})\//i.exec(src || "");
+  return m ? `${m[1]}/thumbnails/thumbnail.jpg?height=1080` : "";
+}
+
+export type NavLink ={ href: string; target?: string; preload?: string };
 export type NavImage = { src: string; alt?: string };
 
 export interface VideoHeroProps {
@@ -111,7 +121,9 @@ export function VideoHero({
   const href = link?.href && link.href !== "#" ? link.href : "";
   const isImage = mediaType === "image";
   const hasVideo = !isImage && Boolean(videoMp4 || videoWebm || mobileVideoMp4 || mobileVideoWebm);
-  const still = isImage ? image?.src || poster?.src || "" : poster?.src || "";
+  const autoPoster = isImage ? "" : streamThumbnail(videoMp4 || mobileVideoMp4 || videoWebm || mobileVideoWebm);
+  const posterSrc = poster?.src || autoPoster;
+  const still = isImage ? image?.src || poster?.src || "" : posterSrc;
   const desktopMq = `(min-width:${mobileBreakpoint}px)`;
   const hasMobile = Boolean(mobileVideoMp4 || mobileVideoWebm);
 
@@ -124,19 +136,25 @@ export function VideoHero({
     const reduce = win.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     v.muted = true;
     v.defaultMuted = true;
+    // React `muted`'ı attribute olarak basmaz; mobil autoplay politikası attribute'a bakar
+    v.setAttribute("muted", "");
+    let inView = !("IntersectionObserver" in win);
     const tryPlay = () => {
-      if (reduce) return;
+      if (reduce || !inView) return;
       if (v.readyState === 0) v.load();
       const p = v.play();
       if (p && p.catch) p.catch(() => {});
     };
     const onPlaying = () => v.classList.add("is-playing");
     v.addEventListener("playing", onPlaying);
+    // İlk play() veri gelmeden reddedilebilir — oynatılabilir olunca yeniden dene
+    v.addEventListener("canplay", tryPlay);
     let io: IntersectionObserver | null = null;
     if ("IntersectionObserver" in win) {
       io = new win.IntersectionObserver(
         (entries) => {
-          if (entries.some((e) => e.isIntersecting)) tryPlay();
+          inView = entries.some((e) => e.isIntersecting);
+          if (inView) tryPlay();
           else v.pause();
         },
         { threshold: 0.05 }
@@ -146,6 +164,7 @@ export function VideoHero({
     return () => {
       io?.disconnect();
       v.removeEventListener("playing", onPlaying);
+      v.removeEventListener("canplay", tryPlay);
       v.pause();
     };
   }, [hasVideo, videoMp4, videoWebm, mobileVideoMp4, mobileVideoWebm]);
@@ -202,7 +221,7 @@ export function VideoHero({
       <div className="vh__media" ref={mediaRef} aria-hidden="true">
         <div className="vh__media-inner" ref={mediaInnerRef}>
           {hasVideo && (
-            <video ref={videoRef} className="vh__video" playsInline muted loop preload="none" poster={poster?.src || undefined}>
+            <video ref={videoRef} className="vh__video" playsInline muted loop autoPlay preload="metadata" poster={posterSrc || undefined}>
               {hasMobile && videoWebm && <source src={videoWebm} media={desktopMq} type="video/webm" />}
               {hasMobile && videoMp4 && <source src={videoMp4} media={desktopMq} type="video/mp4" />}
               {hasMobile && mobileVideoWebm && <source src={mobileVideoWebm} media="(min-width:1px)" type="video/webm" />}
