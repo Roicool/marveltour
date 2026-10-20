@@ -258,6 +258,7 @@ export function JourneyTimeline({
   const sectionStyle: CSSProperties = CONTAINER_FALLBACK[container]
     ? { ["--jt-container" as string]: `var(--container--${container}, ${CONTAINER_FALLBACK[container]})` }
     : {};
+  // Timeline'a yazılır: orbit ve arc'taki güneş aynı açıyı miras alır
   const orbitStyle: CSSProperties = { ["--mt-jt-rotation" as string]: `${rotation}deg` };
 
   return (
@@ -292,7 +293,7 @@ export function JourneyTimeline({
             ))}
           </div>
 
-          <div className="mt-jt__timeline" ref={wrapRef}
+          <div className="mt-jt__timeline" ref={wrapRef} style={orbitStyle}
             onPointerEnter={() => { pausedRef.current.pointer = true; stop(); }}
             onPointerLeave={() => { pausedRef.current.pointer = false; schedule(); }}
             onFocus={() => { pausedRef.current.focus = true; stop(); }}
@@ -309,7 +310,7 @@ export function JourneyTimeline({
               <div className="mt-jt__circle" />
             </div>
 
-            <div className="mt-jt__orbit" style={orbitStyle}>
+            <div className="mt-jt__orbit">
               {items.map((it, i) => {
                 const angle = angles[i] ?? 0;
                 const outside = Math.abs(angle + rotation) > limit;

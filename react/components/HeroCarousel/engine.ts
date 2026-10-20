@@ -1,5 +1,14 @@
 /**
- * engine.ts — v1.1.0 (imleç-takip ok, kontrol satırı okları)
+ * engine.ts — v1.3.0
+ * v1.3.0 — Tek sayıda kartta aynı kart yan yana iki kez görünüyordu (son
+ *          ikilinin boş gözü 1. kartla doluyordu). Kartlar artık tek sürekli
+ *          şerit: kaydırma yine perView'lik, ama hiçbir kart dolgu olarak
+ *          tekrarlanmaz. Dot'lar şeritteki konumdan hesaplanır.
+ * v1.2.0 — İmleç-takip ok kolondan çıkıp geri girince donuyordu (enter/leave
+ *          tween'leri overwrite:true ile quickTo'yu öldürüyordu → "auto").
+ *          Masaüstünde karta basıp sürükleyince kartın kopyası sürükleniyordu
+ *          (native link/img drag) → carousel'de dragstart her genişlikte kapalı.
+ * v1.1.0 — imleç-takip ok, kontrol satırı okları
  * js/components/hero-carousel.js v1.0.0'ın birebir portu (GSAP).
  * React yalnız iskeleti ve kart şablonlarını render eder; bu motor
  * orijinaldeki gibi DOM'u sürer: 5'li sanal pencere (xPercent), responsive
@@ -134,20 +143,23 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
 
   let perView = 1;
   let total = 1;
-  let index = 0;
+  let pos = 0; // sonsuz KART sayacı: ortadaki slaytın ilk kartı
   let items: Array<{ el: HTMLElement; e: number }> = [];
   let busy = false;
   let dots: HTMLElement[] = [];
 
-  const active = () => mod(index, total);
+  /* Aktif dot: şeritteki konumun düştüğü slayt (tek sayıda kartta konum tek
+     de olabilir; o zaman başladığı slayt). */
+  const active = () => Math.min(total - 1, Math.floor(mod(pos, cards.length) / perView));
 
-  function fill(el: HTMLElement, slideIdx: number, isCenter: boolean) {
+  function fill(el: HTMLElement, start: number, isCenter: boolean) {
     el.innerHTML = "";
-    const from = slideIdx * perView;
-    /* SARMALA — `i < cards.length` ile kesme YAPMA: kart sayısı perView'e
-       tam bölünmüyorsa (13 kart / 2) son slayt yarım kalır ve şeritte gözle
-       görülür bir boşluk açılır. Carousel zaten wrap-around; son slaytın boş
-       gözü baştaki kartla dolar. */
+    /* SÜREKLİ ŞERİT — slayt N, "N. ikili" değil şeritteki `start` kartından
+       başlayan perView kart. Kartlar mod ile sarılır, ama slaytlar ayrı ayrı
+       sarılmaz: tek sayıda kartta (7 kart / 2) son slaytın boş gözüne 1. kart
+       konup ardından gelen slayt da 1. kartla başlıyordu — aynı kart yan yana
+       iki kez görünüyordu. */
+    const from = start;
     for (let i = from; i < from + perView; i++) {
       const clone = cards[mod(i, cards.length)].cloneNode(true) as HTMLElement;
       clone.setAttribute("data-card-index", String(i - from));
@@ -168,13 +180,13 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
 
   function build() {
     total = Math.max(1, Math.ceil(cards.length / perView));
-    index = 0;
+    pos = 0;
     track.innerHTML = "";
     items = WINDOW.map((e) => {
       const el = doc.createElement("div");
       el.className = "hc__item";
       gsap.set(el, { xPercent: 100 * e });
-      fill(el, mod(e, total), e === 0);
+      fill(el, e * perView, e === 0);
       track.appendChild(el);
       return { el, e };
     });
@@ -182,8 +194,7 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
   }
 
   function step(dir: number, fromDrag?: boolean) {
-    index += dir;
-    const act = active();
+    pos += dir * perView;
     const dur = reduce ? 0 : fromDrag ? D_DUR : T_DUR;
     const ease = fromDrag ? EASE_DRAG_END : EASE_SLIDE;
     busy = true;
@@ -193,7 +204,7 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
         it.e = dir > 0 ? 2 : -2;
         gsap.killTweensOf(it.el);
         gsap.set(it.el, { xPercent: 100 * it.e });
-        fill(it.el, mod(act + it.e, total), false);
+        fill(it.el, pos + it.e * perView, false);
       } else {
         setCenter(it.el, it.e === 0);
         gsap.to(it.el, {
@@ -210,26 +221,28 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
   }
   const next = () => step(1);
   function goTo(slide: number) {
-    let d = slide - active();
+    /* Hedef: o slaytın (dot'un) ilk kartı. Fark KART cinsinden, en kısa
+       yoldan; tek sayıda kartta şerit tek konumda olabilir. */
+    const n = cards.length;
+    let d = slide * perView - mod(pos, n);
     if (!d) return;
-    if (Math.abs(d) > total / 2) d = d > 0 ? d - total : d + total;
+    if (Math.abs(d) > n / 2) d = d > 0 ? d - n : d + n;
     const dir = d > 0 ? 1 : -1;
-    if (Math.abs(d) === 1) { step(dir); return; }
+    if (d === dir * perView) { step(dir); return; }
 
     /* UZAK SLAYT — step()'i aynı karede N kez çağırma: her çağrı
        `overwrite: true` ile bir öncekinin tween'ini öldürür, araya N kez
        innerHTML yeniden kurulur ve geçiş gözle görülür şekilde takılır.
        Pencere hedefin etrafında bir kerede yeniden doldurulur, sonra geliş
        yönünden tek slayt boyu kaydırılır — yön hissi korunur, tek tween. */
-    index = slide;
-    const act = active();
+    pos += d;
     const dur = reduce ? 0 : T_DUR;
     busy = true;
     items.forEach((it, i) => {
       it.e = WINDOW[i];
       gsap.killTweensOf(it.el);
       gsap.set(it.el, { xPercent: 100 * (it.e + dir) });
-      fill(it.el, mod(act + it.e, total), it.e === 0);
+      fill(it.el, pos + it.e * perView, it.e === 0);
     });
     items.forEach((it) => {
       gsap.to(it.el, {
@@ -405,6 +418,14 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
     });
   }
 
+  /* ── Native sürükleme: HER genişlikte kapalı ──
+     Kartlar <a><img>. Masaüstünde (≥bpDrag) drag motoru yok; fareyle
+     kaydırmaya çalışan ziyaretçi tarayıcının link/görsel sürüklemesini
+     başlatıyor, imlecin altında kartın yarı saydam KOPYASI geziyordu. */
+  const noNativeDrag = (e: Event) => e.preventDefault();
+  carousel.addEventListener("dragstart", noNativeDrag);
+  destroyers.push(() => carousel.removeEventListener("dragstart", noNativeDrag));
+
   /* ── İmleci takip eden yuvarlak ok (prev/next hover kolonları) ────
      Squarespace davranışı: kolon üstünde imleç yerine yumuşak takip eden
      bir daire; yön sınıfı (is-prev / is-next) oku çevirir; tıklamada
@@ -423,15 +444,22 @@ export function createHeroCarousel(o: EngineOptions): EngineApi {
       };
       const enter = (e: PointerEvent) => {
         const r = carousel.getBoundingClientRect();
-        gsap.set(cursor, { x: e.clientX - r.left, y: e.clientY - r.top });
+        /* Başlangıcı quickTo'nun kendisiyle sıfırla (gsap.set yarıda kalan
+           takip tween'iyle yarışıyordu: ok bir kare eski yere zıplıyordu). */
+        qx(e.clientX - r.left, e.clientX - r.left);
+        qy(e.clientY - r.top, e.clientY - r.top);
         cursor.classList.toggle("is-prev", dir === "prev");
         cursor.classList.toggle("is-next", dir === "next");
         carousel.classList.add("is-hover-" + dir);
-        gsap.to(cursor, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out", overwrite: true });
+        /* overwrite "auto" — true OLMAMALI: true imlecin TÜM tween'lerini,
+           quickTo'nun x/y takip tween'leri dahil öldürüyor; ölü quickTo bir
+           daha hareket etmiyor → kolondan çıkıp geri girince ok donup
+           kalıyordu. "auto" yalnız çakışan autoAlpha/scale'i keser. */
+        gsap.to(cursor, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out", overwrite: "auto" });
       };
       const leave = () => {
         carousel.classList.remove("is-hover-" + dir);
-        gsap.to(cursor, { autoAlpha: 0, scale: 0.6, duration: 0.25, ease: "power2.in", overwrite: true });
+        gsap.to(cursor, { autoAlpha: 0, scale: 0.6, duration: 0.25, ease: "power2.in", overwrite: "auto" });
       };
       const press = () => {
         gsap.fromTo(cursor, { scale: 0.85 }, { scale: 1, duration: 0.45, ease: "elastic.out(1, 0.5)", overwrite: "auto" });

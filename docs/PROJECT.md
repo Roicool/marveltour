@@ -369,11 +369,15 @@ Logo kaynağı (öncelik sırasıyla): sayfadaki gizli `[data-transition-logo]` 
   > - **Runtime Anchor** (`react/components/RuntimeAnchor`): görünmez code component,
   >   kalıcı katmana (footer Webflow Component'inin içine) tek instance konur →
   >   runtime her sayfada yüklenir, geçiş animasyonları korunur.
-  > - `initBarba({ preventPaths: ['/about-us', '/capabilities'] })` — bu yollara giden
+  > - `initBarba({ preventPaths: ['/capabilities'] })` — bu yollara giden
   >   linkler Barba'ya girmez, tarayıcı tam sayfa yükler. Geçiş animasyonu kaybolur
   >   ama runtime mekanizmasından bağımsız olarak her koşulda çalışır.
   >
   > **Yeni bir sayfaya code component koyarsan ya listeye ekle ya da vanilla'ya çevir.**
+  >
+  > **Webflow native form'lu sayfalar da listede** (`/contact-us`, `/start-a-conversation`):
+  > webflow.js form gönderimini yalnız tam sayfa yüklemede bağlar; Barba swap'inden
+  > sonra gelen form gönderilmez. Yeni bir sayfaya form koyarsan listeye ekle.
 - **Sayfa katmanı** (her geçişte yeniden): ScrollTrigger kuran ya da container içi DOM'a
   bağlanan HER ŞEY. Bunlar `initBarba({ onEach })` içinden çağrılır, asla dışından.
 

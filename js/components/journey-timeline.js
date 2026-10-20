@@ -1,5 +1,5 @@
 /*!
- * journey-timeline.js v1.0.0
+ * journey-timeline.js v1.1.0
  * react/components/JourneyTimeline'ın vanilla portu. Code component'ler Barba
  * container swap'inde mount olmadığı için (PROJECT.md Kural B1) zaman çizelgesi
  * sayfa geçişlerinde ölüyordu; bu modül container-scoped ve yeniden
@@ -189,7 +189,9 @@
     function paint() {
       var rotation = -(angles[active] || 0);
       var lim = limit();
-      orbit.style.setProperty("--mt-jt-rotation", rotation + "deg");
+      /* Timeline'a yazılır: orbit ve arc'taki güneş (.mt-jt__circle::before)
+         aynı açıyı miras alır */
+      timeline.style.setProperty("--mt-jt-rotation", rotation + "deg");
 
       itemEls.forEach(function (node, i) {
         var outside = Math.abs(angles[i] + rotation) > lim;

@@ -1,10 +1,17 @@
 /*!
- * accordion.css v1.1.0
+ * accordion.css v2.0.0
  * CSS for js/components/accordion.js — iki katman:
  *   1) Davranışsal/kritik kurallar (her kullanımda gerekli)
  *   2) OPT-IN "FAQ" görünümü — root'a data-accordion="faq" ver
  *      (boş data-accordion = yalnız davranış; stili Designer yapar)
  * (roicool/sestek accordion.css v1.0.0'dan port.)
+ *
+ * v2.0.0 (js v2.0.0 ile birlikte) — Kapalı durum burada: panel yalnız
+ *   height:0 değil, padding/margin/border-block da 0 ve visibility:hidden
+ *   (Designer'daki panel padding'i kapalı satırların altında boşluk
+ *   bırakıyordu). Panel her zaman overflow:hidden — içerideki son
+ *   paragrafın margin'i açılış bitince dışarı taşıp paneli büyütmüyor.
+ *   will-change:height kaldırıldı (kalıcı katman, gereksiz bellek).
  */
 
 /* ── Trigger (soru başlığı) ─────────────────────────────────── */
@@ -29,14 +36,25 @@
   outline-offset: 2px;
 }
 
-/* ── Panel — yüksekliği GSAP sürer; animasyonda overflow clip.
+/* ── Panel — yüksekliği GSAP sürer.
    .is-enhanced'i JS basar: JS/GSAP yokken paneller DOĞAL yükseklikte kalır
-   (tüm cevaplar görünür — erişilebilir fallback). ── */
+   (tüm cevaplar görünür — erişilebilir fallback).
+   overflow:hidden HER ZAMAN (açıkken de): panel kendi blok bağlamı olur,
+   çocukların margin'i dışarı taşmaz; ölçülen yükseklik = son yükseklik. ── */
 [data-accordion].is-enhanced [data-accordion-panel] {
-  height: 0;
   overflow: hidden;
-  /* CSS transition YOK — height tween'inin sahibi GSAP (auto'ya oturur) */
-  will-change: height;
+}
+
+/* Kapalı (.is-collapsed'i JS panele basar — DOM ne kadar iç içe olursa
+   olsun): kutunun TAMAMI sıfır (Designer panele padding/margin/border
+   verse de iz bırakmaz). Açılış/kapanışta JS bu değerleri inline sürer,
+   bitince inline'ı siler — son hâl hep buradaki doğal hâl. */
+[data-accordion].is-enhanced [data-accordion-panel].is-collapsed {
+  height: 0;
+  padding-block: 0;
+  margin-block: 0;
+  border-block-width: 0;
+  visibility: hidden; /* kapalı cevaptaki linkler Tab'la odaklanmasın */
 }
 
 /* ── İkon — item açıkken döner (kozmetik, CSS sürer) ── */
@@ -51,9 +69,7 @@
 
 /* ── Reduced motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  [data-accordion-panel],
   [data-accordion-icon] {
-    will-change: auto;
     transition: none !important;
   }
 }

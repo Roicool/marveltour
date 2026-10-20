@@ -1,6 +1,6 @@
 # Webflow Custom Code — kopyala/yapıştır
 
-Yayındaki pin: **`806be32d0bb8c0d82f4ccb8de13046d39e9e545d`** (navbar v2.5.0 + css v3.7.3 · barba-init v1.8.0 · hero-cinematic v2.6.0 · manifesto v1.4.0 · h-scroll v1.3.0 + css v1.5.0 · expertise-showcase v1.7.1 · lightbox v1.4.0 · gallery-slider v1.1.0 · static-slider v1.0.0 · about-hero + journey-timeline + video-hero · 2026-10-04)
+Yayındaki pin: **`b391c3edbc9fe50c3f3c95b264cb8daeed305383`** (hero-carousel-react-patch v1.1.0 · hero-carousel v1.3.0 · hero-carousel-react-patch v1.0.0 · accordion v2.0.0 · navbar v2.5.0 + css v3.7.3 · h-scroll v1.3.0 + css v1.5.2 · static-slider v1.0.0 · utils.css v1.1.2 · process-steps v1.2.0 · journey-timeline css v3.2.0 + js v1.1.0 · contact preventPaths · barba-init v1.8.0 · hero-cinematic v2.6.0 · manifesto v1.4.0 · expertise-showcase v1.7.1 · lightbox v1.4.0 · gallery-slider v1.1.0 · about-hero + journey-timeline + video-hero · 2026-10-16)
 
 Aşağıdaki iki blok sitenin TAMAMI. Barba kullanıldığı için hepsi
 **Site Settings → Custom Code**'a girer; page-level custom code sayfa
@@ -20,26 +20,15 @@ karakter sınırının altında, ikisi de tek parça yapıştırılır.
 
 ## 1) Site Settings → Custom Code → **Head Code**
 
-Aşağıdaki iki bölüm, eşzamanlı çalışılan başka oturumların commit'lerine
-pinli (bu branch'te YOKLAR — toptan SHA değiştirirken bunları EZME):
-
-| Dosyalar | Pin | Ne |
-|---|---|---|
-| `journey-timeline.css` + `.js` | `175bc1e` | güneş eski haline döndü, mobilde düz kesik çizgi giderildi (css v3.1.1) |
-| `process-steps.css` + `.js` | `51f03d6` | tablet + mobilde pin'siz adım kartları (v1.2.0) — **CSS de JS'le aynı pinde olmalı** (`.is-stacked` kart düzeni CSS'te) |
-
-Canlı head'in sonunda ayrıca kullanıcının kendi `<style>` bloğu var (rich
-text köşe yuvarlaklığı + `.line__clamp-2/3`) — korunur.
-
 ```html
-<!-- ═══ Marveltour — pin: 806be32d0bb8c0d82f4ccb8de13046d39e9e545d ═══ -->
+<!-- ═══ Marveltour — pin: b391c3edbc9fe50c3f3c95b264cb8daeed305383 ═══ -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
 <!-- CSS — 21 modülün TAMAMI tek istekte (jsDelivr /combine). Sıra = cascade
      sırası, bozma. Modül CSS'lerini media="print" onload ile non-blocking
      YAPMA: pinli ScrollTrigger bölümleri (hero-cinematic, h-scroll, manifesto,
      stat-counter…) CSS geç geldiğinde yanlış ölçüp layout kaydırıyor. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/core/utils.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/navbar.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/stagger-button.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/animations/parallax.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/hero-cinematic.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/hero-frame.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/hero-carousel.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/marquee.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/h-scroll.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/expertise-showcase.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/effects/noise.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/manifesto.css,gh/roicool/marveltour@51f03d638fb67c0bf58648532ebe20c912f4a85e/css/components/process-steps.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/accordion.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/stat-counter.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/lightbox.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/gallery-slider.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/static-slider.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/about-hero.css,gh/roicool/marveltour@175bc1e3528cd1a4475db72cfed5105b18aa48ed/css/components/journey-timeline.css,gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/css/components/video-hero.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/core/utils.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/navbar.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/stagger-button.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/animations/parallax.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/hero-cinematic.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/hero-frame.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/hero-carousel.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/marquee.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/h-scroll.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/expertise-showcase.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/effects/noise.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/manifesto.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/process-steps.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/accordion.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/stat-counter.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/lightbox.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/gallery-slider.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/static-slider.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/about-hero.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/journey-timeline.css,gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/css/components/video-hero.css">
 
 <!-- ── Vendor ── -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
@@ -52,9 +41,9 @@ text köşe yuvarlaklığı + `.line__clamp-2/3`) — korunur.
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 
 <!-- ── Core — bu sırayla ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/core/lenis-init.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/core/utils.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/core/barba-init.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/core/lenis-init.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/core/utils.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/core/barba-init.js" defer></script>
 
 <!-- ── Navbar — YALNIZ DAVRANIŞ ──
      Bar, mega menü, paneller, Collection List'ler ve mobil görünümler
@@ -63,40 +52,45 @@ text köşe yuvarlaklığı + `.line__clamp-2/3`) — korunur.
      KOYMA. Destinasyonlar hem masaüstünde hem mobilde TEK Collection List'ten
      gelir: her link data-region ile Region alanına bağlı, JS aktif satıra göre
      eşleşmeyeni gizler (sayfa başına 20 Collection List sınırı için şart). -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/navbar.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/navbar.js" defer></script>
 
 <!-- ── Components ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/stagger-button.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/hero-cinematic.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/hero-frame.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/hero-carousel.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/marquee.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/step-scroll.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/h-scroll.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/expertise-showcase.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/manifesto.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@51f03d638fb67c0bf58648532ebe20c912f4a85e/js/components/process-steps.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/stat-counter.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/accordion.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/stagger-button.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/hero-cinematic.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/hero-frame.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/hero-carousel.js" defer></script>
+<!-- hero-carousel-react-patch: GEÇİCİ — Capabilities'teki React HeroCarousel
+     kütüphane bağlantısı kopuk olduğu için eski sürümde; ok donması + kart
+     kopyası + tek sayıda kartta tekrar yaması. init YOK. Bağlantı düzelince
+     silinebilir. -->
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/hero-carousel-react-patch.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/marquee.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/step-scroll.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/h-scroll.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/expertise-showcase.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/manifesto.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/process-steps.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/stat-counter.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/accordion.js" defer></script>
 <!-- lightbox: bağımlılıksız, init YOK (kendi kurulur); galeri köküne data-lightbox -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/lightbox.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/lightbox.js" defer></script>
 <!-- gallery-slider: lightbox'ın sayfa içi Swiper sürümü, init YOK (kendi kurulur);
      Collection List Wrapper'a data-lightbox data-lightbox-layout="slider" -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/gallery-slider.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/gallery-slider.js" defer></script>
 <!-- static-slider: gallery-slider'ın CMS'SİZ kopyası, init YOK (kendi kurulur);
      kök Div'e data-lightbox data-lightbox-layout="static-slider" -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/static-slider.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/static-slider.js" defer></script>
 <!-- about-hero + journey-timeline: React code component'lerin vanilla portu.
      Barba container swap'inde code component'ler mount olmuyordu (PROJECT.md
      Kural B1); bu ikisi her gecişte onEach'ten yeniden kuruluyor. -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/about-hero.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@175bc1e3528cd1a4475db72cfed5105b18aa48ed/js/components/journey-timeline.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/components/video-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/about-hero.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/journey-timeline.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/components/video-hero.js" defer></script>
 
 <!-- ── Animations — preset'ler; parallax dışında CSS'i yok ── -->
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/animations/text-reveal.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/animations/parallax.js" defer></script>
-<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@806be32d0bb8c0d82f4ccb8de13046d39e9e545d/js/animations/reveal.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/animations/text-reveal.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/animations/parallax.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/roicool/marveltour@b391c3edbc9fe50c3f3c95b264cb8daeed305383/js/animations/reveal.js" defer></script>
 ```
 
 ---
@@ -144,8 +138,8 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
          MOUNT OLMUYOR (yalniz tam sayfa yuklemede hydrate oluyorlar), bu yuzden
          onlari barindiran sayfalar Barba'ya hic girmemeli: linkler normal
          navigasyon yapar, gecis animasyonu olmaz ama sayfa dogru kurulur.
-         Eslesme yol on-eki ustunden: "/about-us" -> /about-us ve /about-us/...
-         ("/about-us-old" HAYIR).
+         Eslesme yol on-eki ustunden: "/capabilities" -> /capabilities ve
+         /capabilities/... ("/capabilities-old" HAYIR).
          Liste 2026-09'da Designer taranarak cikarildi:
            /capabilities -> Hero Carousel, Video Hero (Capabilities Template)
          /about-us LISTEDEN CIKTI: About Hero + Journey Timeline vanilla'ya
@@ -153,8 +147,11 @@ Head'deki scriptler `defer` olduğu için hepsi DOMContentLoaded'dan ÖNCE
          sayfadan silindi -> artik Barba gecisi ile calisiyor.
          Diger sayfalarda code component YOK. Yeni sayfaya koyarsan listeye ekle.
          /capabilities icin bu gecici bir cozum: dogrusu o ikisini de vanilla
-         js/ modulune cevirmek (bkz. PROJECT.md Kural B1). */
-      preventPaths: ['/capabilities'],
+         js/ modulune cevirmek (bkz. PROJECT.md Kural B1).
+         Contact: Webflow native form'u webflow.js YALNIZ tam sayfa yuklemede
+         baglar — Barba swap'inden sonra form gonderilmez. Bu yuzden contact
+         da tam yuklenir (/start-a-conversation'a tasinirsa o da listede). */
+      preventPaths: ['/capabilities', '/contact-us', '/start-a-conversation'],
       onEach: function (container) {
         /* Hepsi container-scoped. Biri patlarsa digerleri yine kurulur;
            eksik/hatali modulun adi konsola dusur. */
@@ -629,7 +626,7 @@ Ayarlar gallery-slider'la aynı, önek `ss`: `data-ss-autoplay`,
 ## Sürüm yükseltme
 
 1. `main`'e merge et, yeni commit SHA'sını al.
-2. Bu dosyadaki ve Webflow head'indeki `806be32d0bb8c0d82f4ccb8de13046d39e9e545d` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 21 kez geçiyor).
+2. Bu dosyadaki ve Webflow head'indeki `b391c3edbc9fe50c3f3c95b264cb8daeed305383` dizisini yeni SHA ile toptan değiştir (CSS combine satırında 21 kez geçiyor).
 3. Publish.
 
 Acilde pin yerine `@main` kullanıp purge edebilirsin: `https://purge.jsdelivr.net/`

@@ -1,5 +1,10 @@
 /**
- * HeroCarousel — v1.1.1
+ * HeroCarousel — v1.1.3
+ * v1.1.3 — Tek sayıda kartta yan yana aynı kart: kartlar sürekli şerit
+ *          (engine.ts v1.3.0).
+ * v1.1.2 — Bug fix: imleç-takip ok kolona yeniden girişte donuyordu; kartı
+ *          fareyle sürükleyince kopyası sürükleniyordu (engine.ts v1.2.0,
+ *          CSS v1.1.2, kartlarda draggable=false).
  * v1.1.1 — Kontrol satırı: dots ortada çizgi formunda (aktif uzun), play/pause
  *          en sağda; ok butonları varsayılan kapalı (yan kolon hover'ı yeter).
  * v1.1.0 — Play/pause butonu varsayılan görünür (ikon durumla değişir);
@@ -201,8 +206,8 @@ export function HeroCarousel({
         {/* Şablon kartlar: motor bunları pencereye klonlar; kendisi görünmez */}
         <div className="hc__data" ref={templateRef} aria-hidden="true">
           {cards.map((c, i) => (
-            <a key={c.url + i} className="hc__card" href={c.url || undefined}>
-              {c.image && <img className="hc__card-image" src={c.image} alt={c.alt} loading={i < 2 ? "eager" : "lazy"} />}
+            <a key={c.url + i} className="hc__card" href={c.url || undefined} draggable={false}>
+              {c.image && <img className="hc__card-image" src={c.image} alt={c.alt} loading={i < 2 ? "eager" : "lazy"} draggable={false} />}
               <div className="hc__card-overlay" />
               {c.title && <p className="hc__card-title">{c.title}</p>}
               <Arrow />
